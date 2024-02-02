@@ -8,12 +8,12 @@ data class UserUpdateDTO (
     @field:NotBlank(message = "Id is required.")
     val id: Long,
 
-    val username: String?,
+    val username: String? = null,
 
     @field:Email(message = "Email should be valid.")
-    val email: String?,
+    val email: String? = null,
 
-    val name: String?,
+    val name: String? = null,
 
-    val password: String?
+    val password: String? = null
 )

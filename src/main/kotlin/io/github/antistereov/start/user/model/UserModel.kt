@@ -40,5 +40,5 @@ class UserModel(
         joinColumns = [JoinColumn(name = "user_id")],
         inverseJoinColumns = [JoinColumn(name = "role_id")]
     )
-    var roles: Set<RoleModel>
+    var roles: Set<RoleModel> = emptySet()
 )
