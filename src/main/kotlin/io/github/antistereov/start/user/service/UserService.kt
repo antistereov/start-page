@@ -71,18 +71,24 @@ class UserService(
     fun update(userUpdateDTO: UserUpdateDTO) {
         val user = userRepository.findById(userUpdateDTO.id).orElseThrow { IllegalArgumentException("User not found") }
 
-        if (userRepository.existsByUsername(userUpdateDTO.username)) {
-            throw IllegalArgumentException("Username is already taken")
+        if (userUpdateDTO.username != null) {
+            if (userRepository.existsByUsername(userUpdateDTO.username)) {
+                throw IllegalArgumentException("Username is already taken")
+            }
+            user.username = userUpdateDTO.username
         }
-
-        if(userRepository.existsByEmail(userUpdateDTO.email)) {
-            throw IllegalArgumentException("Email is already in use")
+        if (userUpdateDTO.email != null) {
+            if(userRepository.existsByEmail(userUpdateDTO.email)) {
+                throw IllegalArgumentException("Email is already in use")
+            }
+            user.email = userUpdateDTO.email
         }
-
-        user.name = userUpdateDTO.name
-        user.email = userUpdateDTO.email
-        user.name = userUpdateDTO.name
-        user.password = passwordEncoder.encode(userUpdateDTO.password)
+        if (userUpdateDTO.name != null) {
+            user.name = userUpdateDTO.name
+        }
+        if (userUpdateDTO.password != null) {
+            user.password = passwordEncoder.encode(userUpdateDTO.password)
+        }
 
         try {
             userRepository.save(user)
