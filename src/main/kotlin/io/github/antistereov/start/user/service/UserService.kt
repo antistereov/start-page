@@ -1,6 +1,6 @@
 package io.github.antistereov.start.user.service
 
-import io.github.antistereov.start.user.dto.UserRequestDTO
+import io.github.antistereov.start.user.dto.UserCreateDTO
 import io.github.antistereov.start.user.dto.UserResponseDTO
 import io.github.antistereov.start.user.dto.UserUpdateDTO
 import io.github.antistereov.start.user.model.RoleModel
@@ -32,16 +32,16 @@ class UserService(
     private val userRole = roleRepository.findByName("USER")!!
     private val adminRole = roleRepository.findByName("ADMIN")!!
 
-    fun create(userRequestDTO: UserRequestDTO) {
-        if (userRepository.existsByUsername(userRequestDTO.username)) {
+    fun create(userCreateDTO: UserCreateDTO) {
+        if (userRepository.existsByUsername(userCreateDTO.username)) {
             throw IllegalArgumentException("Username already exists")
         }
 
-        if (userRepository.existsByEmail(userRequestDTO.email)) {
+        if (userRepository.existsByEmail(userCreateDTO.email)) {
             throw IllegalArgumentException("Email is already in use")
         }
 
-        val newUser = toModel(userRequestDTO)
+        val newUser = toModel(userCreateDTO)
         try {
             userRepository.save(newUser)
         } catch(e: DataIntegrityViolationException) {
@@ -49,16 +49,16 @@ class UserService(
         }
     }
 
-    fun createAdmin(userRequestDTO: UserRequestDTO) {
-        if (userRepository.existsByUsername(userRequestDTO.username)) {
+    fun createAdmin(userCreateDTO: UserCreateDTO) {
+        if (userRepository.existsByUsername(userCreateDTO.username)) {
             throw IllegalArgumentException("Username already exists")
         }
 
-        if (userRepository.existsByEmail(userRequestDTO.email)) {
+        if (userRepository.existsByEmail(userCreateDTO.email)) {
             throw IllegalArgumentException("Email is already in use")
         }
 
-        val newUser = toModel(userRequestDTO)
+        val newUser = toModel(userCreateDTO)
         newUser.roles = setOf(adminRole, userRole)
 
         try {
@@ -104,12 +104,12 @@ class UserService(
         }
     }
 
-    private fun toModel(userRequestDTO: UserRequestDTO): UserModel {
+    private fun toModel(userCreateDTO: UserCreateDTO): UserModel {
         return UserModel(
-            username = userRequestDTO.username,
-            name = userRequestDTO.name,
-            email = userRequestDTO.email,
-            password = passwordEncoder.encode(userRequestDTO.password),
+            username = userCreateDTO.username,
+            name = userCreateDTO.name,
+            email = userCreateDTO.email,
+            password = passwordEncoder.encode(userCreateDTO.password),
             roles = setOf(userRole)
         )
     }

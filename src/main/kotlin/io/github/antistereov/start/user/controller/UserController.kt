@@ -1,8 +1,9 @@
 package io.github.antistereov.start.user.controller
 
-import io.github.antistereov.start.user.dto.UserRequestDTO
+import io.github.antistereov.start.user.dto.UserCreateDTO
 import io.github.antistereov.start.user.dto.UserUpdateDTO
 import io.github.antistereov.start.user.service.UserService
+import jakarta.validation.Valid
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -15,20 +16,20 @@ class UserController(
     private val userService: UserService
 ) {
     @PostMapping("/create")
-    fun createUser(@RequestBody userRequestDTO: UserRequestDTO): ResponseEntity<*> {
+    fun createUser(@RequestBody @Valid userCreateDTO: UserCreateDTO): ResponseEntity<*> {
         return try {
-            userService.create(userRequestDTO)
-            ResponseEntity.ok("User ${userRequestDTO.username} created successfully.")
+            userService.create(userCreateDTO)
+            ResponseEntity.ok("User ${userCreateDTO.username} created successfully.")
         } catch (e: IllegalArgumentException) {
             ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.message)
         }
     }
 
     @PostMapping("/admin")
-    fun createAdmin(@RequestBody userRequestDTO: UserRequestDTO): ResponseEntity<*> {
+    fun createAdmin(@RequestBody @Valid userCreateDTO: UserCreateDTO): ResponseEntity<*> {
         return try {
-            userService.createAdmin(userRequestDTO)
-            ResponseEntity.ok("User ${userRequestDTO.username} created successfully.")
+            userService.createAdmin(userCreateDTO)
+            ResponseEntity.ok("User ${userCreateDTO.username} created successfully.")
         } catch (e: IllegalArgumentException) {
             ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.message)
         }
@@ -43,7 +44,7 @@ class UserController(
 
 
     @PutMapping("/update")
-    fun update(@RequestBody userUpdateDTO: UserUpdateDTO): ResponseEntity<*> {
+    fun update(@RequestBody @Valid userUpdateDTO: UserUpdateDTO): ResponseEntity<*> {
         return try {
             userService.update(userUpdateDTO)
             return ResponseEntity.ok("User ${userUpdateDTO.username} updated successfully.")
