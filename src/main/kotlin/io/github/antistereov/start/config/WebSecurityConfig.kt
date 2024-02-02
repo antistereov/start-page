@@ -21,8 +21,10 @@ class WebSecurityConfig {
     @Bean
     fun filterChain(http: HttpSecurity): SecurityFilterChain {
         http.invoke {
+            csrf { disable() }
             authorizeRequests {
-                authorize("/**", hasRole("USER"))
+                authorize("/api/users/**", permitAll)
+                authorize(anyRequest, hasRole("USER"))
             }
             httpBasic {}
         }

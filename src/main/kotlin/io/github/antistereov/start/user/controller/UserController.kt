@@ -1,10 +1,10 @@
 package io.github.antistereov.start.user.controller
 
 import io.github.antistereov.start.user.dto.UserRequestDTO
-import io.github.antistereov.start.user.model.UserModel
-import io.github.antistereov.start.user.repository.UserRepository
+import io.github.antistereov.start.user.dto.UserUpdateDTO
 import io.github.antistereov.start.user.service.UserService
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 
@@ -14,10 +14,14 @@ class UserController(
     @Autowired
     private val userService: UserService
 ) {
-    @PostMapping
+    @PostMapping("/create")
     fun createUser(@RequestBody userRequestDTO: UserRequestDTO): ResponseEntity<*> {
-        userService.save(userRequestDTO)
-        return ResponseEntity.ok("User created successfully.")
+        return try {
+            userService.create(userRequestDTO)
+            ResponseEntity.ok("User created successfully.")
+        } catch (e: IllegalArgumentException) {
+            ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.message)
+        }
     }
 
     @GetMapping("/{id}")
@@ -27,10 +31,15 @@ class UserController(
         return ResponseEntity.ok(user)
     }
 
-    @PutMapping
-    fun update(@RequestBody userRequestDTO: UserRequestDTO): ResponseEntity<*> {
-        userService.save(userRequestDTO)
-        return ResponseEntity.ok("User updated successfully.")
+
+    @PutMapping("/update")
+    fun update(@RequestBody userUpdateDTO: UserUpdateDTO): ResponseEntity<*> {
+        return try {
+            userService.update(userUpdateDTO)
+            return ResponseEntity.ok("User updated successfully.")
+        } catch (e: IllegalArgumentException) {
+            ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.message)
+        }
     }
 
     @DeleteMapping("/{id}")

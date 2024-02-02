@@ -11,7 +11,4 @@ class RoleModel(
 
     @Column(nullable = false)
     var name: String = "",
-) {
-    @ManyToMany(mappedBy = "roles")
-    lateinit var users: Set<UserModel>
-}
+)

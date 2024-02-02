@@ -10,13 +10,13 @@ class UserModel(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long = 0,
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     var username: String = "",
 
     @Column(nullable = false)
     var name: String = "",
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     var email: String = "",
 
     @Column(nullable = false)
@@ -40,5 +40,5 @@ class UserModel(
         joinColumns = [JoinColumn(name = "user_id")],
         inverseJoinColumns = [JoinColumn(name = "role_id")]
     )
-    var roles: Set<RoleModel> = HashSet()
+    var roles: Set<RoleModel>
 )
