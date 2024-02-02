@@ -3,6 +3,7 @@ package io.github.antistereov.start.user.service
 import io.github.antistereov.start.user.dto.UserRequestDTO
 import io.github.antistereov.start.user.dto.UserResponseDTO
 import io.github.antistereov.start.user.dto.UserUpdateDTO
+import io.github.antistereov.start.user.model.RoleModel
 import io.github.antistereov.start.user.model.UserModel
 import io.github.antistereov.start.user.repository.RoleRepository
 import io.github.antistereov.start.user.repository.UserRepository
@@ -16,6 +17,20 @@ class UserService(
     roleRepository: RoleRepository,
     private val passwordEncoder: PasswordEncoder,
 ) {
+    // Initialize ADMIN and USER role at startup
+    init {
+        if (!roleRepository.existsByName("ADMIN")) {
+            val adminRole = RoleModel(name = "ADMIN")
+            roleRepository.save(adminRole)
+        }
+        if (!roleRepository.existsByName("USER")) {
+            val adminRole = RoleModel(name = "USER")
+            roleRepository.save(adminRole)
+        }
+    }
+
+    private val userRole = roleRepository.findByName("USER")!!
+    private val adminRole = roleRepository.findByName("ADMIN")!!
 
     fun create(userRequestDTO: UserRequestDTO) {
         if (userRepository.existsByUsername(userRequestDTO.username)) {
@@ -32,6 +47,25 @@ class UserService(
         } catch(e: DataIntegrityViolationException) {
             throw IllegalArgumentException("Failed to create user")
         }
+    }
+
+    fun createAdmin(userRequestDTO: UserRequestDTO) {
+        if (userRepository.existsByUsername(userRequestDTO.username)) {
+            throw IllegalArgumentException("Username already exists")
+        }
+
+        if (userRepository.existsByEmail(userRequestDTO.email)) {
+            throw IllegalArgumentException("Email is already in use")
+        }
+
+        val newUser = toModel(userRequestDTO)
+        newUser.roles = setOf(adminRole, userRole)
+
+        try {
+            userRepository.save(newUser)
+        } catch(e: DataIntegrityViolationException) {
+            throw IllegalArgumentException("Failed to create admin user")
+            }
     }
 
     fun update(userUpdateDTO: UserUpdateDTO) {
@@ -61,11 +95,14 @@ class UserService(
         return toResponseDTO(userRepository.findById(id).orElse(null))
     }
 
-    fun deleteById(id: Long) {
-        userRepository.deleteById(id)
+    fun deleteById(id: Long): Boolean {
+        return if (userRepository.existsById(id)) {
+            userRepository.deleteById(id)
+            true
+        } else {
+            false
+        }
     }
-
-    val userRole = roleRepository.findByName("USER")!!
 
     private fun toModel(userRequestDTO: UserRequestDTO): UserModel {
         return UserModel(

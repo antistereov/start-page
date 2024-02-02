@@ -18,7 +18,17 @@ class UserController(
     fun createUser(@RequestBody userRequestDTO: UserRequestDTO): ResponseEntity<*> {
         return try {
             userService.create(userRequestDTO)
-            ResponseEntity.ok("User created successfully.")
+            ResponseEntity.ok("User ${userRequestDTO.username} created successfully.")
+        } catch (e: IllegalArgumentException) {
+            ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.message)
+        }
+    }
+
+    @PostMapping("/admin")
+    fun createAdmin(@RequestBody userRequestDTO: UserRequestDTO): ResponseEntity<*> {
+        return try {
+            userService.createAdmin(userRequestDTO)
+            ResponseEntity.ok("User ${userRequestDTO.username} created successfully.")
         } catch (e: IllegalArgumentException) {
             ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.message)
         }
@@ -36,7 +46,7 @@ class UserController(
     fun update(@RequestBody userUpdateDTO: UserUpdateDTO): ResponseEntity<*> {
         return try {
             userService.update(userUpdateDTO)
-            return ResponseEntity.ok("User updated successfully.")
+            return ResponseEntity.ok("User ${userUpdateDTO.username} updated successfully.")
         } catch (e: IllegalArgumentException) {
             ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.message)
         }
@@ -44,7 +54,10 @@ class UserController(
 
     @DeleteMapping("/{id}")
     fun delete(@PathVariable id: Long): ResponseEntity<*> {
-        userService.deleteById(id)
-        return ResponseEntity.ok("User deleted successfully.")
+        return if (userService.deleteById(id)) {
+            ResponseEntity.ok("User $id deleted successfully.")
+        } else {
+            ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found.")
+        }
     }
 }

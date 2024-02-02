@@ -23,7 +23,8 @@ class WebSecurityConfig {
         http.invoke {
             csrf { disable() }
             authorizeRequests {
-                authorize("/api/users/**", permitAll)
+                authorize("/api/users/create", permitAll)
+                authorize("/api/users/**", hasRole("ADMIN"))
                 authorize(anyRequest, hasRole("USER"))
             }
             httpBasic {}
