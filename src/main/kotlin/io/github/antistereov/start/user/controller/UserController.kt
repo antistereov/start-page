@@ -38,7 +38,7 @@ class UserController(
     @GetMapping("/{id}")
     fun getUser(@PathVariable id: Long): ResponseEntity<*> {
         val user = userService.findById(id)
-            ?: return ResponseEntity.notFound().build<Any>()
+            ?: return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found.")
         return ResponseEntity.ok(user)
     }
 
