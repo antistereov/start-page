@@ -1,0 +1,12 @@
+server:
+  port: 8000
+
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/start_page
+    username: root
+    password: ywE4EirWmHsd5LVeru8tsHkf
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
