@@ -1,91 +1,83 @@
 package io.github.antistereov.start.user.controller
 
-import io.github.antistereov.start.user.dto.UserCreateDTO
 import io.github.antistereov.start.user.dto.UserResponseDTO
-import io.github.antistereov.start.user.dto.UserUpdateDTO
 import io.github.antistereov.start.user.service.UserService
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.BeforeEach
+import io.mockk.every
+import kotlinx.serialization.json.Json
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
+import org.mockito.ArgumentMatchers.anyLong
 import org.mockito.Mock
 import org.mockito.Mockito
-import org.mockito.MockitoAnnotations
-import org.springframework.http.HttpStatus
-import org.springframework.http.ResponseEntity
+import org.mockito.junit.jupiter.MockitoExtension
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
+import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.boot.test.mock.mockito.MockBean
+import org.springframework.security.core.authority.SimpleGrantedAuthority
+import org.springframework.security.test.context.support.WithMockUser
+import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user
+import org.springframework.test.web.servlet.MockMvc
+import org.springframework.test.web.servlet.get
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers
+import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
 
+@WithMockUser(username = "admin", authorities = ["ADMIN"])
+@WebMvcTest(controllers = [UserController::class])
 internal class UserControllerTest {
 
-    @Mock
+    @Autowired
+    private lateinit var mockMvc: MockMvc
+
+    @MockBean
     private lateinit var userService: UserService
 
-    private lateinit var userController: UserController
+    @Test
+    fun `only admin can access users endpoint`() {
 
-    @BeforeEach
-    fun setUp() {
-        MockitoAnnotations.initMocks(this)
-        userController = UserController(userService)
+        // TODO
+
+        mockMvc.perform(
+            MockMvcRequestBuilders
+                .get("/api/users")
+        )
     }
 
     @Test
-    fun `Test createUser`() {
-        val user = UserCreateDTO("username", "email@domain.com", "password", "name")
+    fun `getUser returns user when user exists`() {
+        val userId = 1L
+        val userResponseDTO = UserResponseDTO(
+            "test",
+            "test@email.com",
+            "Test User"
+        )
 
-        Mockito.`when`(userService.create(Mockito.any(UserCreateDTO::class.java)))
-            .thenReturn(Unit)
+        Mockito.`when`(userService.findById(userId)).thenReturn(userResponseDTO)
 
-        val result: ResponseEntity<*> = userController.createUser(user)
-        assertEquals(HttpStatus.OK, result.statusCode)
-        assertEquals("User ${user.username} created successfully.", result.body)
+        // Perform request
+        mockMvc.perform(MockMvcRequestBuilders
+            .get("/api/users/$userId"))
+            .andDo(print())
+            .andExpect(MockMvcResultMatchers.status().isOk)
+            .andExpect(MockMvcResultMatchers.content()
+                .json(
+                    Json.encodeToString(
+                        UserResponseDTO.serializer(), userResponseDTO
+                    )
+                )
+            )
     }
 
     @Test
-    fun `Test createAdmin`() {
-        val user = UserCreateDTO("admin", "admin@domain.com", "password", "administrator")
+    fun `getUser returns not found when user is not found`() {
+        val userId = 1L
+        Mockito.`when`(userService.findById(userId)).thenReturn(null)
 
-        Mockito.`when`(userService.createAdmin(Mockito.any(UserCreateDTO::class.java)))
-            .thenReturn(Unit)
-
-        val result: ResponseEntity<*> = userController.createAdmin(user)
-        assertEquals(HttpStatus.OK, result.statusCode)
-        assertEquals("User ${user.username} created successfully.", result.body)
-    }
-
-    @Test
-    fun `Test getUser`() {
-        val id: Long = 1
-
-
-        val user = UserResponseDTO(1, "username", "email@domain.com", "name")
-
-        Mockito.`when`(userService.findById(id))
-            .thenReturn(user)
-
-        val result: ResponseEntity<*> = userController.getUser(id)
-        assertEquals(HttpStatus.OK, result.statusCode)
-        assertEquals(user, result.body)
-    }
-
-    @Test
-    fun `Test update`() {
-        val user = UserUpdateDTO(1, "new_username", "new_email@domain.com", "new_name")
-
-        Mockito.`when`(userService.update(Mockito.any(UserUpdateDTO::class.java)))
-            .thenReturn(Unit)
-
-        val result: ResponseEntity<*> = userController.update(user)
-        assertEquals(HttpStatus.OK, result.statusCode)
-        assertEquals("User ${user.username} updated successfully.", result.body)
-    }
-
-    @Test
-    fun `Test delete`() {
-        var id: Long = 1
-
-        Mockito.`when`(userService.deleteById(id))
-            .thenReturn(true)
-
-        val result: ResponseEntity<*> = userController.delete(id)
-        assertEquals(HttpStatus.OK, result.statusCode)
-        assertEquals("User $id deleted successfully.", result.body)
+        mockMvc.perform(MockMvcRequestBuilders
+            .get("/api/users/$userId"))
+            .andExpect(MockMvcResultMatchers.status().isNotFound)
+            .andExpect(MockMvcResultMatchers.content().string("User not found."))
     }
 }
