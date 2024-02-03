@@ -25,7 +25,7 @@ class WebSecurityConfig {
             authorizeRequests {
                 authorize("/api/users/create", permitAll)
                 authorize("/api/users/**", hasAuthority("ADMIN"))
-                authorize(anyRequest, hasAuthority("USER"))
+                authorize(anyRequest, authenticated)
             }
             httpBasic {}
         }
