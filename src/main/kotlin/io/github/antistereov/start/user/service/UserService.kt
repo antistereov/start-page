@@ -71,6 +71,12 @@ class UserService(
     fun update(userUpdateDTO: UserUpdateDTO) {
         val user = userRepository.findById(userUpdateDTO.id).orElseThrow { IllegalArgumentException("User not found") }
 
+        if(userUpdateDTO.username == null &&
+            userUpdateDTO.email == null &&
+            userUpdateDTO.name == null &&
+            userUpdateDTO.password == null
+            ) { throw IllegalArgumentException("No fields to update") }
+
         if (userUpdateDTO.username != null) {
             if (userRepository.existsByUsername(userUpdateDTO.username)) {
                 throw IllegalArgumentException("Username is already taken")
@@ -123,7 +129,6 @@ class UserService(
     private fun toResponseDTO(userModel: UserModel?): UserResponseDTO? {
         return userModel?.let {
             UserResponseDTO(
-                id = userModel.id,
                 username = userModel.username,
                 email = userModel.email,
                 name = userModel.name,
