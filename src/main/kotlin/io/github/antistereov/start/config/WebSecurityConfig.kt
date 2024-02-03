@@ -24,8 +24,8 @@ class WebSecurityConfig {
             csrf { disable() }
             authorizeRequests {
                 authorize("/api/users/create", permitAll)
-                authorize("/api/users/**", hasRole("ADMIN"))
-                authorize(anyRequest, hasRole("USER"))
+                authorize("/api/users/**", hasAuthority("ADMIN"))
+                authorize(anyRequest, hasAuthority("USER"))
             }
             httpBasic {}
         }
