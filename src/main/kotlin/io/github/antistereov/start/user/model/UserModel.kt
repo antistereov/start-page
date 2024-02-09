@@ -1,6 +1,5 @@
 package io.github.antistereov.start.user.model
 
-import io.github.antistereov.start.user.model.RoleModel
 import jakarta.persistence.*
 
 @Entity

@@ -20,7 +20,6 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
-import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import java.util.*
 
@@ -85,7 +84,6 @@ internal class UserControllerTest {
     @Test
     fun `createUser - failed to save user`() {
         val createUserDto = CreateUserDto("test", "test@email.com", "Password0.#", "Test User")
-        val user = UserModel(1L,"test", "test@email.com", "EncodedPassword", "Test User")
 
         Mockito.`when`(userRepository.existsByUsername(createUserDto.username)).thenReturn(false)
         Mockito.`when`(userRepository.existsByEmail(createUserDto.email)).thenReturn(false)

@@ -30,7 +30,6 @@ class UserService(
     }
 
     private val userRole = roleRepository.findByName("USER")!!
-    private val adminRole = roleRepository.findByName("ADMIN")!!
 
     fun createUser(createUserDto: CreateUserDto): UserModel {
         if (userRepository.existsByUsername(createUserDto.username)) {
