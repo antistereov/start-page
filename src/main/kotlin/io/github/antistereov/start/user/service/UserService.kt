@@ -50,27 +50,6 @@ class UserService(
         return newUser
     }
 
-    fun createAdmin(createUserDto: CreateUserDto): UserModel {
-        if (userRepository.existsByUsername(createUserDto.username)) {
-            throw IllegalArgumentException("Username already exists")
-        }
-
-        if (userRepository.existsByEmail(createUserDto.email)) {
-            throw IllegalArgumentException("Email is already in use")
-        }
-
-        val newUser = toModel(createUserDto)
-        newUser.roles = setOf(adminRole, userRole)
-
-        try {
-            userRepository.save(newUser)
-        } catch(e: DataIntegrityViolationException) {
-            throw IllegalArgumentException("Failed to create admin user")
-            }
-
-        return newUser
-    }
-
     fun update(updateUserDTO: UpdateUserDTO): UserModel {
         val user = userRepository.findById(updateUserDTO.id).orElseThrow { IllegalArgumentException("User not found") }
 

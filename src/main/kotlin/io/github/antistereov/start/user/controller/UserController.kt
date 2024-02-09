@@ -26,16 +26,6 @@ class UserController(
         }
     }
 
-    @PostMapping("/admin")
-    fun createAdmin(@RequestBody @Valid createUserDto: CreateUserDto): ResponseEntity<*> {
-        return try {
-            val user: UserModel = userService.createAdmin(createUserDto)
-            ResponseEntity.ok(user)
-        } catch (e: IllegalArgumentException) {
-            ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.message)
-        }
-    }
-
     @GetMapping("/{id}")
     fun getUser(@PathVariable id: Long): ResponseEntity<*> {
         val user = userService.findById(id)
