@@ -7,7 +7,7 @@ import jakarta.validation.constraints.Size
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class UserCreateDTO (
+data class CreateUserDto (
     @field:NotBlank(message = "Username is required.")
     val username: String,
 
