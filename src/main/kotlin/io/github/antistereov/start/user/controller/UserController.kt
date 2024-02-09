@@ -1,7 +1,8 @@
 package io.github.antistereov.start.user.controller
 
-import io.github.antistereov.start.user.dto.UserCreateDTO
-import io.github.antistereov.start.user.dto.UserUpdateDTO
+import io.github.antistereov.start.user.dto.CreateUserDto
+import io.github.antistereov.start.user.dto.UpdateUserDTO
+import io.github.antistereov.start.user.model.UserModel
 import io.github.antistereov.start.user.service.UserService
 import jakarta.validation.Valid
 import org.springframework.beans.factory.annotation.Autowired
@@ -16,20 +17,20 @@ class UserController(
     private val userService: UserService
 ) {
     @PostMapping("/create")
-    fun createUser(@RequestBody @Valid userCreateDTO: UserCreateDTO): ResponseEntity<*> {
+    fun createUser(@RequestBody @Valid createUserDto: CreateUserDto): ResponseEntity<*> {
         return try {
-            userService.create(userCreateDTO)
-            ResponseEntity.ok("User ${userCreateDTO.username} created successfully.")
+            val user: UserModel = userService.createUser(createUserDto)
+            ResponseEntity.ok(user)
         } catch (e: IllegalArgumentException) {
             ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.message)
         }
     }
 
     @PostMapping("/admin")
-    fun createAdmin(@RequestBody @Valid userCreateDTO: UserCreateDTO): ResponseEntity<*> {
+    fun createAdmin(@RequestBody @Valid createUserDto: CreateUserDto): ResponseEntity<*> {
         return try {
-            userService.createAdmin(userCreateDTO)
-            ResponseEntity.ok("User ${userCreateDTO.username} created successfully.")
+            val user: UserModel = userService.createAdmin(createUserDto)
+            ResponseEntity.ok(user)
         } catch (e: IllegalArgumentException) {
             ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.message)
         }
@@ -44,10 +45,10 @@ class UserController(
 
 
     @PutMapping("/update")
-    fun update(@RequestBody @Valid userUpdateDTO: UserUpdateDTO): ResponseEntity<*> {
+    fun update(@RequestBody @Valid updateUserDTO: UpdateUserDTO): ResponseEntity<*> {
         return try {
-            userService.update(userUpdateDTO)
-            return ResponseEntity.ok("User ${userUpdateDTO.username} updated successfully.")
+            val user: UserModel = userService.update(updateUserDTO)
+            return ResponseEntity.ok(user)
         } catch (e: IllegalArgumentException) {
             ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.message)
         }
