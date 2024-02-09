@@ -38,6 +38,11 @@ dependencies {
     implementation 'org.hibernate.validator:hibernate-validator'
     implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json'
     testImplementation 'io.mockk:mockk:1.9.3'
+
+    implementation("org.springframework.boot:spring-boot-starter-security")
+    implementation("org.springframework.security:spring-security-oauth2-resource-server")
+    implementation("org.springframework.security:spring-security-oauth2-jose")
+    implementation("org.springframework.security:spring-security-config")
 }
 
 tasks.named('compileKotlin', KotlinCompilationTask.class) {
