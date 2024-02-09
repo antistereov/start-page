@@ -13,7 +13,7 @@ data class UserCreateDTO (
     @field:Email(message = "Email should be valid.")
     val email: String,
 
-    @field:NotBlank(message = "Name is required.")
+    @field:NotBlank(message = "Password is required.")
     @field:Size(min = 8, message = "Password must be between 8 and 20 characters.")
     @field:Pattern(regexp = "(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=])(?=\\S+$).{8,}",
         message = "Password must have at least one digit, " +
@@ -21,6 +21,6 @@ data class UserCreateDTO (
                 "one special character and no spaces.")
     val password: String,
 
-    @field:NotBlank(message = "Password is required.")
+    @field:NotBlank(message = "Name is required.")
     val name: String,
 )
