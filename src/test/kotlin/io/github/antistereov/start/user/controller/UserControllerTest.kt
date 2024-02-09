@@ -2,6 +2,7 @@ package io.github.antistereov.start.user.controller
 
 import io.github.antistereov.start.user.dto.CreateUserDto
 import io.github.antistereov.start.user.dto.UpdateUserDTO
+import io.github.antistereov.start.user.dto.UserLoginDTO
 import io.github.antistereov.start.user.dto.UserResponseDTO
 import io.github.antistereov.start.user.model.UserModel
 import io.github.antistereov.start.user.service.UserService
@@ -40,7 +41,7 @@ internal class UserControllerTest {
     @WithMockUser(username = "admin", authorities = ["ADMIN"])
     fun `getUser returns user when user exists`() {
         val userId = 1L
-        val userResponseDTO = UserResponseDTO("test", "test@email.com", "Test User")
+        val userResponseDTO = UserResponseDTO(userId,"test", "test@email.com", "Test User")
 
         Mockito.`when`(userService.findById(userId)).thenReturn(userResponseDTO)
 
@@ -71,10 +72,9 @@ internal class UserControllerTest {
     @Test
     fun `createUser creates new user`() {
         val createUserDto = CreateUserDto("test", "test@email.com", "Password0.#", "Test User")
-        val userResponseDTO = UserResponseDTO("test","test@email.com","Test User")
-        val user = UserModel(1L,"test","test@email.com","Password0.#", "Test User")
+        val userResponseDTO = UserResponseDTO(1L,"test","test@email.com","Test User")
 
-        Mockito.`when`(userService.createUser(createUserDto)).thenReturn(user)
+        Mockito.`when`(userService.createUser(createUserDto)).thenReturn(userResponseDTO)
 
         mockMvc.perform(MockMvcRequestBuilders
             .post("/api/users/create")
@@ -93,10 +93,9 @@ internal class UserControllerTest {
     @WithMockUser(username = "admin", authorities = ["ADMIN"])
     fun `updateUser updates user`() {
         val updateUserDTO = UpdateUserDTO(1L, "test")
-        val user = UserModel(1L,"test","test@email.com","Password0.#", "Test User")
-        val userResponseDTO = UserResponseDTO("test","test@email.com","Test User")
+        val userResponseDTO = UserResponseDTO(1L, "test","test@email.com","Test User")
 
-        Mockito.`when`(userService.update(updateUserDTO)).thenReturn(user)
+        Mockito.`when`(userService.update(updateUserDTO)).thenReturn(userResponseDTO)
 
         mockMvc.perform(MockMvcRequestBuilders
             .put("/api/users/update")
@@ -130,5 +129,38 @@ internal class UserControllerTest {
         mockMvc.perform(MockMvcRequestBuilders.delete("/api/users/$id"))
             .andExpect(status().isNotFound)
             .andExpect(MockMvcResultMatchers.content().string("User not found."))
+    }
+
+    @Test
+    fun `loginUser logs in a valid user`() {
+        val userLoginDTO = UserLoginDTO("testuser", "password")
+        val userResponseDTO = UserResponseDTO(1L, "testuser","testuser@email.com", "Test User")
+
+        Mockito.`when`(userService.loginUser(userLoginDTO)).thenReturn(userResponseDTO)
+
+        mockMvc.perform(MockMvcRequestBuilders
+            .post("/api/users/login")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(Json.encodeToString(UserLoginDTO.serializer(), userLoginDTO)))
+            .andExpect(status().isOk)
+            .andExpect(MockMvcResultMatchers.content()
+                .json(
+                    Json.encodeToString(UserResponseDTO.serializer(), userResponseDTO)
+                )
+            )
+    }
+
+    @Test
+    @WithMockUser(username = "admin", authorities = ["ADMIN"])
+    fun `loginUser doesnt login an invalid user`() {
+        val userLoginDTO = UserLoginDTO("invaliduser", "password")
+
+        Mockito.`when`(userService.loginUser(userLoginDTO)).thenThrow(IllegalArgumentException::class.java)
+
+        mockMvc.perform(MockMvcRequestBuilders
+            .post("/api/users/login")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(Json.encodeToString(UserLoginDTO.serializer(), userLoginDTO)))
+            .andExpect(status().isBadRequest)
     }
 }
