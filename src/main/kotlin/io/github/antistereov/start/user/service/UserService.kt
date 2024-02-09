@@ -3,6 +3,7 @@ package io.github.antistereov.start.user.service
 import io.github.antistereov.start.user.dto.CreateUserDto
 import io.github.antistereov.start.user.dto.UserResponseDTO
 import io.github.antistereov.start.user.dto.UpdateUserDTO
+import io.github.antistereov.start.user.dto.UserLoginDTO
 import io.github.antistereov.start.user.model.RoleModel
 import io.github.antistereov.start.user.model.UserModel
 import io.github.antistereov.start.user.repository.RoleRepository
@@ -31,7 +32,7 @@ class UserService(
 
     private val userRole = roleRepository.findByName("USER")!!
 
-    fun createUser(createUserDto: CreateUserDto): UserModel {
+    fun createUser(createUserDto: CreateUserDto): UserResponseDTO {
         if (userRepository.existsByUsername(createUserDto.username)) {
             throw IllegalArgumentException("Username already exists")
         }
@@ -46,10 +47,10 @@ class UserService(
         } catch(e: DataIntegrityViolationException) {
             throw IllegalArgumentException("Failed to create user")
         }
-        return newUser
+        return toResponseDTO(newUser)!!
     }
 
-    fun update(updateUserDTO: UpdateUserDTO): UserModel {
+    fun update(updateUserDTO: UpdateUserDTO): UserResponseDTO {
         val user = userRepository.findById(updateUserDTO.id).orElseThrow { IllegalArgumentException("User not found") }
 
         if(updateUserDTO.username == null &&
@@ -83,7 +84,7 @@ class UserService(
             throw IllegalArgumentException("Updating user failed")
         }
 
-        return user
+        return toResponseDTO(user)!!
     }
 
     fun findById(id: Long): UserResponseDTO? {
@@ -99,6 +100,18 @@ class UserService(
         }
     }
 
+    fun loginUser(userLoginDTO: UserLoginDTO): UserResponseDTO {
+        val user: UserModel = userRepository.findByUsername(userLoginDTO.username)
+            ?: userRepository.findByEmail(userLoginDTO.username)
+            ?: throw IllegalArgumentException("Invalid username or email")
+
+        if (!passwordEncoder.matches(userLoginDTO.password, user.password)) {
+            throw IllegalArgumentException("Invalid password")
+        }
+
+        return toResponseDTO(user)!!
+    }
+
     private fun toModel(createUserDto: CreateUserDto): UserModel {
         return UserModel(
             username = createUserDto.username,
@@ -112,6 +125,7 @@ class UserService(
     private fun toResponseDTO(userModel: UserModel?): UserResponseDTO? {
         return userModel?.let {
             UserResponseDTO(
+                id = userModel.id,
                 username = userModel.username,
                 email = userModel.email,
                 name = userModel.name,
