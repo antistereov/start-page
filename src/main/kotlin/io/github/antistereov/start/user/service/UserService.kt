@@ -32,7 +32,7 @@ class UserService(
     private val userRole = roleRepository.findByName("USER")!!
     private val adminRole = roleRepository.findByName("ADMIN")!!
 
-    fun create(userCreateDTO: UserCreateDTO) {
+    fun createUser(userCreateDTO: UserCreateDTO): UserModel {
         if (userRepository.existsByUsername(userCreateDTO.username)) {
             throw IllegalArgumentException("Username already exists")
         }
@@ -47,9 +47,10 @@ class UserService(
         } catch(e: DataIntegrityViolationException) {
             throw IllegalArgumentException("Failed to create user")
         }
+        return newUser
     }
 
-    fun createAdmin(userCreateDTO: UserCreateDTO) {
+    fun createAdmin(userCreateDTO: UserCreateDTO): UserModel {
         if (userRepository.existsByUsername(userCreateDTO.username)) {
             throw IllegalArgumentException("Username already exists")
         }
@@ -66,9 +67,11 @@ class UserService(
         } catch(e: DataIntegrityViolationException) {
             throw IllegalArgumentException("Failed to create admin user")
             }
+
+        return newUser
     }
 
-    fun update(userUpdateDTO: UserUpdateDTO) {
+    fun update(userUpdateDTO: UserUpdateDTO): UserModel {
         val user = userRepository.findById(userUpdateDTO.id).orElseThrow { IllegalArgumentException("User not found") }
 
         if(userUpdateDTO.username == null &&
@@ -101,6 +104,8 @@ class UserService(
         } catch(e: DataIntegrityViolationException) {
             throw IllegalArgumentException("Updating user failed")
         }
+
+        return user
     }
 
     fun findById(id: Long): UserResponseDTO? {
