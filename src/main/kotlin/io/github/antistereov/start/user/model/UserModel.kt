@@ -13,14 +13,14 @@ class UserModel(
     @Column(nullable = false, unique = true)
     var username: String = "",
 
-    @Column(nullable = false)
-    var name: String = "",
-
     @Column(nullable = false, unique = true)
     var email: String = "",
 
     @Column(nullable = false)
     var password: String = "",
+
+    @Column(nullable = false)
+    var name: String = "",
 
     @Column(nullable = false)
     var isEnabled: Boolean = true,
