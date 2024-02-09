@@ -1,13 +1,15 @@
 package io.github.antistereov.start.user.dto
 
-import io.github.antistereov.start.user.model.RoleModel
 import jakarta.validation.constraints.Email
 import jakarta.validation.constraints.NotBlank
+import jakarta.validation.constraints.NotNull
 import jakarta.validation.constraints.Pattern
 import jakarta.validation.constraints.Size
+import kotlinx.serialization.Serializable
 
-data class UserUpdateDTO (
-    @field:NotBlank(message = "Id is required.")
+@Serializable
+data class UpdateUserDTO (
+    @field:NotNull(message = "Id is required.")
     val id: Long,
 
     val username: String? = null,
