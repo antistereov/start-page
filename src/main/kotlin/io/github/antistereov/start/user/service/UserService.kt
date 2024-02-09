@@ -1,8 +1,8 @@
 package io.github.antistereov.start.user.service
 
-import io.github.antistereov.start.user.dto.UserCreateDTO
+import io.github.antistereov.start.user.dto.CreateUserDto
 import io.github.antistereov.start.user.dto.UserResponseDTO
-import io.github.antistereov.start.user.dto.UserUpdateDTO
+import io.github.antistereov.start.user.dto.UpdateUserDTO
 import io.github.antistereov.start.user.model.RoleModel
 import io.github.antistereov.start.user.model.UserModel
 import io.github.antistereov.start.user.repository.RoleRepository
@@ -32,16 +32,16 @@ class UserService(
     private val userRole = roleRepository.findByName("USER")!!
     private val adminRole = roleRepository.findByName("ADMIN")!!
 
-    fun createUser(userCreateDTO: UserCreateDTO): UserModel {
-        if (userRepository.existsByUsername(userCreateDTO.username)) {
+    fun createUser(createUserDto: CreateUserDto): UserModel {
+        if (userRepository.existsByUsername(createUserDto.username)) {
             throw IllegalArgumentException("Username already exists")
         }
 
-        if (userRepository.existsByEmail(userCreateDTO.email)) {
+        if (userRepository.existsByEmail(createUserDto.email)) {
             throw IllegalArgumentException("Email is already in use")
         }
 
-        val newUser = toModel(userCreateDTO)
+        val newUser = toModel(createUserDto)
         try {
             userRepository.save(newUser)
         } catch(e: DataIntegrityViolationException) {
@@ -50,16 +50,16 @@ class UserService(
         return newUser
     }
 
-    fun createAdmin(userCreateDTO: UserCreateDTO): UserModel {
-        if (userRepository.existsByUsername(userCreateDTO.username)) {
+    fun createAdmin(createUserDto: CreateUserDto): UserModel {
+        if (userRepository.existsByUsername(createUserDto.username)) {
             throw IllegalArgumentException("Username already exists")
         }
 
-        if (userRepository.existsByEmail(userCreateDTO.email)) {
+        if (userRepository.existsByEmail(createUserDto.email)) {
             throw IllegalArgumentException("Email is already in use")
         }
 
-        val newUser = toModel(userCreateDTO)
+        val newUser = toModel(createUserDto)
         newUser.roles = setOf(adminRole, userRole)
 
         try {
@@ -71,32 +71,32 @@ class UserService(
         return newUser
     }
 
-    fun update(userUpdateDTO: UserUpdateDTO): UserModel {
-        val user = userRepository.findById(userUpdateDTO.id).orElseThrow { IllegalArgumentException("User not found") }
+    fun update(updateUserDTO: UpdateUserDTO): UserModel {
+        val user = userRepository.findById(updateUserDTO.id).orElseThrow { IllegalArgumentException("User not found") }
 
-        if(userUpdateDTO.username == null &&
-            userUpdateDTO.email == null &&
-            userUpdateDTO.name == null &&
-            userUpdateDTO.password == null
+        if(updateUserDTO.username == null &&
+            updateUserDTO.email == null &&
+            updateUserDTO.name == null &&
+            updateUserDTO.password == null
             ) { throw IllegalArgumentException("No fields to update") }
 
-        if (userUpdateDTO.username != null) {
-            if (userRepository.existsByUsername(userUpdateDTO.username)) {
+        if (updateUserDTO.username != null) {
+            if (userRepository.existsByUsername(updateUserDTO.username)) {
                 throw IllegalArgumentException("Username is already taken")
             }
-            user.username = userUpdateDTO.username
+            user.username = updateUserDTO.username
         }
-        if (userUpdateDTO.email != null) {
-            if(userRepository.existsByEmail(userUpdateDTO.email)) {
+        if (updateUserDTO.email != null) {
+            if(userRepository.existsByEmail(updateUserDTO.email)) {
                 throw IllegalArgumentException("Email is already in use")
             }
-            user.email = userUpdateDTO.email
+            user.email = updateUserDTO.email
         }
-        if (userUpdateDTO.name != null) {
-            user.name = userUpdateDTO.name
+        if (updateUserDTO.name != null) {
+            user.name = updateUserDTO.name
         }
-        if (userUpdateDTO.password != null) {
-            user.password = passwordEncoder.encode(userUpdateDTO.password)
+        if (updateUserDTO.password != null) {
+            user.password = passwordEncoder.encode(updateUserDTO.password)
         }
 
         try {
@@ -121,12 +121,12 @@ class UserService(
         }
     }
 
-    private fun toModel(userCreateDTO: UserCreateDTO): UserModel {
+    private fun toModel(createUserDto: CreateUserDto): UserModel {
         return UserModel(
-            username = userCreateDTO.username,
-            name = userCreateDTO.name,
-            email = userCreateDTO.email,
-            password = passwordEncoder.encode(userCreateDTO.password),
+            username = createUserDto.username,
+            name = createUserDto.name,
+            email = createUserDto.email,
+            password = passwordEncoder.encode(createUserDto.password),
             roles = setOf(userRole)
         )
     }
