@@ -2,7 +2,10 @@ package io.github.antistereov.start.user.controller
 
 import io.github.antistereov.start.user.dto.CreateUserDto
 import io.github.antistereov.start.user.dto.UpdateUserDTO
+import io.github.antistereov.start.user.dto.UserLoginDTO
+import io.github.antistereov.start.user.dto.UserResponseDTO
 import io.github.antistereov.start.user.model.UserModel
+import io.github.antistereov.start.user.scope.UserSession
 import io.github.antistereov.start.user.service.UserService
 import jakarta.validation.Valid
 import org.springframework.beans.factory.annotation.Autowired
@@ -19,8 +22,8 @@ class UserController(
     @PostMapping("/create")
     fun createUser(@RequestBody @Valid createUserDto: CreateUserDto): ResponseEntity<*> {
         return try {
-            val user: UserModel = userService.createUser(createUserDto)
-            ResponseEntity.ok(user)
+            val userResponseDTO: UserResponseDTO = userService.createUser(createUserDto)
+            ResponseEntity.ok(userResponseDTO)
         } catch (e: IllegalArgumentException) {
             ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.message)
         }
@@ -28,17 +31,17 @@ class UserController(
 
     @GetMapping("/{id}")
     fun getUser(@PathVariable id: Long): ResponseEntity<*> {
-        val user = userService.findById(id)
+        val userResponseDTO = userService.findById(id)
             ?: return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found.")
-        return ResponseEntity.ok(user)
+        return ResponseEntity.ok(userResponseDTO)
     }
 
 
     @PutMapping("/update")
     fun update(@RequestBody @Valid updateUserDTO: UpdateUserDTO): ResponseEntity<*> {
         return try {
-            val user: UserModel = userService.update(updateUserDTO)
-            return ResponseEntity.ok(user)
+            val userResponseDTO: UserResponseDTO = userService.update(updateUserDTO)
+            return ResponseEntity.ok(userResponseDTO)
         } catch (e: IllegalArgumentException) {
             ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.message)
         }
@@ -50,6 +53,17 @@ class UserController(
             ResponseEntity.ok("User $id deleted successfully.")
         } else {
             ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found.")
+        }
+    }
+
+    @PostMapping("/login")
+    fun loginUser(@RequestBody userLoginDTO: UserLoginDTO, userSession: UserSession): ResponseEntity<Any> {
+        try {
+            val userResponseDTO: UserResponseDTO = userService.loginUser(userLoginDTO)
+            userSession.currentUserId = userResponseDTO.id
+            return ResponseEntity.ok(userResponseDTO)
+        } catch (e: IllegalArgumentException) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.message)
         }
     }
 }
