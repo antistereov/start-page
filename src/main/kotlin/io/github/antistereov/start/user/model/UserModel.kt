@@ -39,5 +39,17 @@ class UserModel(
         joinColumns = [JoinColumn(name = "user_id")],
         inverseJoinColumns = [JoinColumn(name = "role_id")]
     )
-    var roles: Set<RoleModel> = emptySet()
+    var roles: Set<RoleModel> = emptySet(),
+
+    @Column(name = "spotify_user_id")
+    var spotifyUserId: String? = null,
+
+    @Column(name = "spotify_access_token")
+    var accessToken: String? = null,
+
+    @Column(name = "spotify_refresh_token")
+    var refreshToken: String? = null,
+
+    @Column(name = "spotify_access_token_expiration_date")
+    var accessTokenExpirationDate: java.time.LocalDateTime? = null,
 )
