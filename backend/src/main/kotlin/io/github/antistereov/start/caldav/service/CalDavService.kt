@@ -96,5 +96,36 @@ class CalDavService {
         return response.body?.string() ?: ""
     }
 
+    fun getCalendars(calDavCredentials: CalDavCredentials): String {
+        val calendarsHomeSetPath = "${calDavCredentials.url}/remote.php/dav/calendars/${calDavCredentials.username}"
+
+        val propfindXml = """
+            <d:propfind xmlns:d="DAV:" xmlns:c="urn:ietf:params:xml:ns:caldav">
+              <d:prop>
+                <d:displayname/>
+                <c:calendar-color/>
+                <c:supported-calendar-component-set/>
+              </d:prop>
+            </d:propfind>
+        """.trimIndent()
+
+        val credentials = Credentials.basic(calDavCredentials.username, calDavCredentials.password)
+
+        val mediaType = "application/xml".toMediaType()
+
+        val request = Request.Builder()
+            .url(calendarsHomeSetPath)
+            .header("Authorization", credentials)
+            .header("Depth", "1")
+            .method("PROPFIND", propfindXml.toRequestBody(mediaType))
+            .build()
+
+        val client = OkHttpClient()
+
+        val response = client.newCall(request).execute()
+
+        return response.body?.string() ?: ""
+    }
+
 
 }

@@ -46,4 +46,17 @@ class CalDavController {
             ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Failed to claim credentials: $e")
         }
     }
+
+    @GetMapping("/calendars")
+    fun getCalendars(authentication: Authentication): ResponseEntity<String> {
+        val principal = authentication.principal as Jwt
+        val userId = principal.claims["sub"].toString()
+
+        return try {
+            val calDavCredentials = calDavService.getCredentials(userId)
+            ResponseEntity.ok(calDavService.getCalendars(calDavCredentials))
+        } catch (e: RuntimeException) {
+            ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Failed to claim credentials: $e")
+        }
+    }
 }
