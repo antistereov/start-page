@@ -2,11 +2,8 @@ package io.github.antistereov.start.security
 
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
-import java.security.SecureRandom
 import java.util.Base64
 import javax.crypto.Cipher
-import javax.crypto.KeyGenerator
-import javax.crypto.SecretKey
 import javax.crypto.spec.SecretKeySpec
 
 @Component

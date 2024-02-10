@@ -8,9 +8,6 @@ class User(
     @Id
     var id: String = "",
 
-    @Column(name = "spotify_user_id")
-    var spotifyUserId: String? = null,
-
     @Column(name = "spotify_access_token", length = 512)
     var spotifyAccessToken: String? = null,
 
