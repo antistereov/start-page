@@ -1,6 +1,6 @@
-package io.github.antistereov.start.todoist.controller
+package io.github.antistereov.start.widgets.todoist.controller
 
-import io.github.antistereov.start.todoist.service.TodoistService
+import io.github.antistereov.start.widgets.todoist.service.TodoistService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity

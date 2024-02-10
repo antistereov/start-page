@@ -1,7 +1,7 @@
-package io.github.antistereov.start.caldav.service
+package io.github.antistereov.start.widgets.caldav.service
 
 
-import io.github.antistereov.start.caldav.model.CalDavCredentials
+import io.github.antistereov.start.widgets.caldav.model.CalDavCredentials
 import io.github.antistereov.start.security.AESEncryption
 import io.github.antistereov.start.user.repository.UserRepository
 import okhttp3.Credentials

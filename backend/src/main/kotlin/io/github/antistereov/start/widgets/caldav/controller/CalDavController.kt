@@ -1,7 +1,7 @@
-package io.github.antistereov.start.caldav.controller
+package io.github.antistereov.start.widgets.caldav.controller
 
-import io.github.antistereov.start.caldav.model.CalDavCredentials
-import io.github.antistereov.start.caldav.service.CalDavService
+import io.github.antistereov.start.widgets.caldav.model.CalDavCredentials
+import io.github.antistereov.start.widgets.caldav.service.CalDavService
 import jakarta.validation.Valid
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus

@@ -1,4 +1,4 @@
-package io.github.antistereov.start.caldav.model
+package io.github.antistereov.start.widgets.caldav.model
 
 import jakarta.validation.constraints.NotBlank
 import org.hibernate.validator.constraints.URL

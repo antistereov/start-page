@@ -1,6 +1,6 @@
-package io.github.antistereov.start.spotify.controller
+package io.github.antistereov.start.widgets.spotify.controller
 
-import io.github.antistereov.start.spotify.service.SpotifyService
+import io.github.antistereov.start.widgets.spotify.service.SpotifyService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity

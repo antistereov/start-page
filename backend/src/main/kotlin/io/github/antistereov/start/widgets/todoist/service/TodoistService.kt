@@ -1,7 +1,7 @@
-package io.github.antistereov.start.todoist.service
+package io.github.antistereov.start.widgets.todoist.service
 
 import io.github.antistereov.start.security.AESEncryption
-import io.github.antistereov.start.todoist.model.TodoistTokenResponse
+import io.github.antistereov.start.widgets.todoist.model.TodoistTokenResponse
 import io.github.antistereov.start.user.repository.UserRepository
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
