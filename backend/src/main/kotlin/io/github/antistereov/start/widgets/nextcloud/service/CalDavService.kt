@@ -1,7 +1,7 @@
-package io.github.antistereov.start.widgets.caldav.service
+package io.github.antistereov.start.widgets.nextcloud.service
 
 
-import io.github.antistereov.start.widgets.caldav.model.CalDavCredentials
+import io.github.antistereov.start.widgets.nextcloud.model.NextcloudCredentials
 import io.github.antistereov.start.security.AESEncryption
 import io.github.antistereov.start.user.repository.UserRepository
 import okhttp3.Credentials
@@ -19,46 +19,10 @@ import java.time.temporal.ChronoUnit
 @Service
 class CalDavService {
 
-    @Autowired
-    private lateinit var userRepository: UserRepository
-
-    @Autowired
-    private lateinit var aesEncryption: AESEncryption
-
-    fun getCredentials(userId: String): CalDavCredentials {
-        val user = userRepository.findById(userId).orElseThrow { throw RuntimeException("User not found") }
-        return CalDavCredentials(
-            aesEncryption.decrypt(user.calDavUrl
-                ?: throw RuntimeException("No CalDav URL found for user $userId.")),
-            aesEncryption.decrypt(user.calDavUsername
-                ?: throw RuntimeException("No CalDav URL found for user $userId.")),
-            aesEncryption.decrypt(user.calDavPassword
-                ?: throw RuntimeException("No CalDav URL found for user $userId.")),
-        )
-    }
-
-    fun authentication(userId: String, calDavCredentials: CalDavCredentials) {
-        val user = userRepository.findById(userId).orElseThrow { RuntimeException("User not found") }
-
-        val url = if (calDavCredentials.url.endsWith("/")) {
-            calDavCredentials.url.substring(0, calDavCredentials.url.length - 1)
-        } else {
-            calDavCredentials.url
-        }
-
-        user.calDavUrl = aesEncryption.encrypt(url)
-        user.calDavUsername = aesEncryption.encrypt(calDavCredentials.username)
-        // TODO remove encryption for password since it will be encoded in frontend already
-        user.calDavPassword = aesEncryption.encrypt(calDavCredentials.password)
-
-        userRepository.save(user)
-    }
-
-
     private val dateFormatter = DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmmss'Z'")
 
-    fun getEvents(calDavCredentials: CalDavCredentials, calendarName: String): String {
-        val calendarPath = "${calDavCredentials.url}/remote.php/dav/calendars/${calDavCredentials.username}/$calendarName"
+    fun getEvents(nextcloudCredentials: NextcloudCredentials, calendarName: String): String {
+        val calendarPath = "${nextcloudCredentials.url}/remote.php/dav/calendars/${nextcloudCredentials.username}/$calendarName"
 
         val now = ZonedDateTime.now(ZoneOffset.UTC).truncatedTo(ChronoUnit.SECONDS)
 
@@ -78,7 +42,7 @@ class CalDavService {
             </c:calendar-query>
         """.trimIndent()
 
-        val credentials = Credentials.basic(calDavCredentials.username, calDavCredentials.password)
+        val credentials = Credentials.basic(nextcloudCredentials.username, nextcloudCredentials.password)
 
         val mediaType = "application/xml".toMediaType()
 
@@ -96,8 +60,8 @@ class CalDavService {
         return response.body?.string() ?: ""
     }
 
-    fun getCalendars(calDavCredentials: CalDavCredentials): String {
-        val calendarsHomeSetPath = "${calDavCredentials.url}/remote.php/dav/calendars/${calDavCredentials.username}"
+    fun getCalendars(nextcloudCredentials: NextcloudCredentials): String {
+        val calendarsHomeSetPath = "${nextcloudCredentials.url}/remote.php/dav/calendars/${nextcloudCredentials.username}"
 
         val propfindXml = """
             <d:propfind xmlns:d="DAV:" xmlns:c="urn:ietf:params:xml:ns:caldav">
@@ -109,7 +73,7 @@ class CalDavService {
             </d:propfind>
         """.trimIndent()
 
-        val credentials = Credentials.basic(calDavCredentials.username, calDavCredentials.password)
+        val credentials = Credentials.basic(nextcloudCredentials.username, nextcloudCredentials.password)
 
         val mediaType = "application/xml".toMediaType()
 

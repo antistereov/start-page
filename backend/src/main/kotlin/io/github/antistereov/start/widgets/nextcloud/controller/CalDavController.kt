@@ -1,7 +1,8 @@
-package io.github.antistereov.start.widgets.caldav.controller
+package io.github.antistereov.start.widgets.nextcloud.controller
 
-import io.github.antistereov.start.widgets.caldav.model.CalDavCredentials
-import io.github.antistereov.start.widgets.caldav.service.CalDavService
+import io.github.antistereov.start.widgets.nextcloud.model.NextcloudCredentials
+import io.github.antistereov.start.widgets.nextcloud.service.AuthService
+import io.github.antistereov.start.widgets.nextcloud.service.CalDavService
 import jakarta.validation.Valid
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
@@ -11,27 +12,11 @@ import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.web.bind.annotation.*
 
 @RestController
-@RequestMapping("/api/caldav")
-class CalDavController {
-
-    @Autowired
-    private lateinit var calDavService: CalDavService
-
-    @PostMapping("/auth")
-    fun auth(
-        authentication: Authentication,
-        @Valid @RequestBody calDavCredentials: CalDavCredentials
-    ): ResponseEntity<String> {
-        val principal = authentication.principal as Jwt
-        val userId = principal.claims["sub"].toString()
-
-        return try {
-            calDavService.authentication(userId, calDavCredentials)
-            ResponseEntity.ok("Credentials stored successfully.")
-        } catch(e: RuntimeException) {
-            ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Failed to store credentials: $e")
-        }
-    }
+@RequestMapping("/api/nextcloud/caldav")
+class CalDavController(
+    private val calDavService: CalDavService,
+    private val authService: AuthService,
+) {
 
     @GetMapping("/events/{calendarName}")
     fun getEvents(authentication: Authentication, @PathVariable calendarName: String): ResponseEntity<String> {
@@ -39,7 +24,7 @@ class CalDavController {
         val userId = principal.claims["sub"].toString()
 
         return try {
-            val calDavCredentials = calDavService.getCredentials(userId)
+            val calDavCredentials = authService.getCredentials(userId)
              ResponseEntity.ok(calDavService.getEvents(calDavCredentials, calendarName))
 
         } catch (e: RuntimeException) {
@@ -53,7 +38,7 @@ class CalDavController {
         val userId = principal.claims["sub"].toString()
 
         return try {
-            val calDavCredentials = calDavService.getCredentials(userId)
+            val calDavCredentials = authService.getCredentials(userId)
             ResponseEntity.ok(calDavService.getCalendars(calDavCredentials))
         } catch (e: RuntimeException) {
             ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Failed to claim credentials: $e")

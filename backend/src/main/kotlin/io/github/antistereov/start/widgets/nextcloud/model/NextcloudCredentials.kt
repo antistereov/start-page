@@ -1,9 +1,9 @@
-package io.github.antistereov.start.widgets.caldav.model
+package io.github.antistereov.start.widgets.nextcloud.model
 
 import jakarta.validation.constraints.NotBlank
 import org.hibernate.validator.constraints.URL
 
-data class CalDavCredentials(
+data class NextcloudCredentials(
     @field:URL(message = "Invalid URL format")
     val url: String,
 

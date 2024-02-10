@@ -20,12 +20,12 @@ class User(
     @Column(name = "todist_access_token")
     var todoistAccessToken: String? = null,
 
-    @Column(name = "caldav_url")
-    var calDavUrl: String? = null,
+    @Column(name = "nextcloud_url")
+    var nextcloudHost: String? = null,
 
-    @Column(name = "caldav_username")
-    var calDavUsername: String? = null,
+    @Column(name = "nextcloud_username")
+    var nextcloudUsername: String? = null,
 
-    @Column(name = "caldav_password")
-    var calDavPassword: String? = null,
+    @Column(name = "nextcloud_password")
+    var nextcloudPassword: String? = null,
 )

@@ -16,6 +16,8 @@ import java.time.LocalDateTime
 class SpotifyService(
     private val webClientBuilder: WebClient.Builder,
     private val webClient: WebClient,
+    private val userRepository: UserRepository,
+    private val aesEncryption: AESEncryption,
 ) {
 
     @Value("\${spotify.clientId}")
@@ -26,12 +28,6 @@ class SpotifyService(
 
     @Value("\${spotify.redirectUri}")
     private lateinit var redirectUri: String
-
-    @Autowired
-    private lateinit var userRepository: UserRepository
-
-    @Autowired
-    private lateinit var aesEncryption: AESEncryption
 
     private val spotifyApiUrl = "https://api.spotify.com/v1"
     private val scopes = "user-read-currently-playing"
