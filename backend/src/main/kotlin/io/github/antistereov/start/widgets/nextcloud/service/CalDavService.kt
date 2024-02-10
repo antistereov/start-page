@@ -2,14 +2,11 @@ package io.github.antistereov.start.widgets.nextcloud.service
 
 
 import io.github.antistereov.start.widgets.nextcloud.model.NextcloudCredentials
-import io.github.antistereov.start.security.AESEncryption
-import io.github.antistereov.start.user.repository.UserRepository
 import okhttp3.Credentials
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import java.time.ZoneOffset
 import java.time.ZonedDateTime

@@ -1,10 +1,7 @@
 package io.github.antistereov.start.widgets.nextcloud.controller
 
-import io.github.antistereov.start.widgets.nextcloud.model.NextcloudCredentials
 import io.github.antistereov.start.widgets.nextcloud.service.AuthService
 import io.github.antistereov.start.widgets.nextcloud.service.CalDavService
-import jakarta.validation.Valid
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.Authentication

@@ -2,7 +2,6 @@ package io.github.antistereov.start.widgets.nextcloud.service
 
 import io.github.antistereov.start.security.AESEncryption
 import io.github.antistereov.start.user.repository.UserRepository
-import io.github.antistereov.start.widgets.news.model.NewsCredentials
 import io.github.antistereov.start.widgets.nextcloud.model.NextcloudCredentials
 import org.springframework.stereotype.Service
 
