@@ -18,5 +18,14 @@ class User(
     var spotifyAccessTokenExpirationDate: java.time.LocalDateTime? = null,
 
     @Column(name = "todist_access_token")
-    var todoistAccessToken: String? = null
+    var todoistAccessToken: String? = null,
+
+    @Column(name = "caldav_url")
+    var calDavUrl: String? = null,
+
+    @Column(name = "caldav_username")
+    var calDavUsername: String? = null,
+
+    @Column(name = "caldav_password")
+    var calDavPassword: String? = null,
 )

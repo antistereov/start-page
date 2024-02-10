@@ -44,6 +44,7 @@ dependencies {
     implementation("org.springframework.security:spring-security-oauth2-jose")
     implementation("org.springframework.security:spring-security-config")
     implementation( "org.springframework.boot:spring-boot-starter-webflux")
+    implementation 'com.squareup.okhttp3:okhttp'
 }
 
 tasks.named('compileKotlin', KotlinCompilationTask.class) {
