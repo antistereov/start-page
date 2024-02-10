@@ -19,4 +19,7 @@ class User(
 
     @Column(name = "spotify_access_token_expiration_date")
     var spotifyAccessTokenExpirationDate: java.time.LocalDateTime? = null,
+
+    @Column(name = "todist_access_token")
+    var todoistAccessToken: String? = null
 )
