@@ -17,6 +17,7 @@ import org.springframework.security.oauth2.jwt.*
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter
 import org.springframework.security.web.SecurityFilterChain
+import org.springframework.web.reactive.function.client.WebClient
 import java.util.*
 
 @Configuration
@@ -44,7 +45,7 @@ class WebSecurityConfig {
                 }
             }
             authorizeRequests {
-//                authorize("/api/users/create", permitAll)
+                authorize("/api/spotify/callback", permitAll)
 //                authorize("/api/users/login", permitAll)
 //                authorize("/api/users/session-test", permitAll)
 //                authorize("/api/users/**", hasRole("ADMIN"))
@@ -88,6 +89,16 @@ class WebSecurityConfig {
         val jwtAuthenticationConverter = JwtAuthenticationConverter()
         jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(jwtGrantedAuthoritiesConverter)
         return jwtAuthenticationConverter
+    }
+
+    @Bean
+    fun webClientBuilder(): WebClient.Builder {
+        return WebClient.builder()
+    }
+
+    @Bean
+    fun webClient(): WebClient {
+        return WebClient.create()
     }
 
 }

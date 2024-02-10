@@ -11,12 +11,12 @@ class User(
     @Column(name = "spotify_user_id")
     var spotifyUserId: String? = null,
 
-    @Column(name = "spotify_access_token")
-    var accessToken: String? = null,
+    @Column(name = "spotify_access_token", length = 512)
+    var spotifyAccessToken: String? = null,
 
-    @Column(name = "spotify_refresh_token")
-    var refreshToken: String? = null,
+    @Column(name = "spotify_refresh_token", length = 512)
+    var spotifyRefreshToken: String? = null,
 
     @Column(name = "spotify_access_token_expiration_date")
-    var accessTokenExpirationDate: java.time.LocalDateTime? = null,
+    var spotifyAccessTokenExpirationDate: java.time.LocalDateTime? = null,
 )
