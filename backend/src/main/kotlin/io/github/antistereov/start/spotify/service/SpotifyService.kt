@@ -2,7 +2,6 @@ package io.github.antistereov.start.spotify.service
 
 import io.github.antistereov.start.security.AESEncryption
 import io.github.antistereov.start.spotify.model.SpotifyTokenResponse
-import io.github.antistereov.start.user.model.User
 import io.github.antistereov.start.user.repository.UserRepository
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
@@ -69,7 +68,8 @@ class SpotifyService(
             val user = userRepository.findById(userId).orElseThrow { RuntimeException("User not found: $userId") }
 
             val spotifyAccessToken = aesEncryption.encrypt(it.accessToken)
-            val spotifyRefreshToken = aesEncryption.encrypt(it.refreshToken)
+            val spotifyRefreshToken = aesEncryption.encrypt(it.refreshToken
+                ?: throw RuntimeException("No refresh token found for user ${user.id}"))
 
             user.spotifyAccessToken = spotifyAccessToken
             user.spotifyRefreshToken = spotifyRefreshToken
@@ -81,7 +81,9 @@ class SpotifyService(
         }
     }
 
-    fun refreshToken(user: User): SpotifyTokenResponse {
+    fun refreshToken(userId: String): SpotifyTokenResponse {
+        val user = userRepository.findById(userId).orElseThrow { RuntimeException("User not found: $userId") }
+
         val encryptedSpotifyRefreshToken = user.spotifyRefreshToken
             ?: throw RuntimeException("No refresh token found for user ${user.id}")
 
@@ -101,7 +103,7 @@ class SpotifyService(
             .block() ?: throw RuntimeException("Request to Spotify API failed or timed out.")
 
         user.spotifyAccessToken = aesEncryption.encrypt(response.accessToken)
-        user.spotifyRefreshToken = aesEncryption.encrypt(response.refreshToken)
+        if (response.refreshToken != null) { user.spotifyRefreshToken = aesEncryption.encrypt(response.refreshToken) }
         user.spotifyAccessTokenExpirationDate = LocalDateTime.now().plusSeconds(response.expiresIn)
 
         userRepository.save(user)
@@ -114,7 +116,7 @@ class SpotifyService(
         val currentTime = LocalDateTime.now()
 
         if (currentTime.isAfter(user.spotifyAccessTokenExpirationDate)) {
-            val newTokens = this.refreshToken(user)
+            val newTokens = this.refreshToken(userId)
             return newTokens.accessToken
         } else {
             val encryptedSpotifyAccessToken = user.spotifyAccessToken

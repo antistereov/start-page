@@ -34,6 +34,19 @@ class SpotifyController{
         }
     }
 
+    @GetMapping("/refresh")
+    fun refreshAccessToken(authentication: Authentication): ResponseEntity<String> {
+        val principal = authentication.principal as Jwt
+        val userId = principal.claims["sub"].toString()
+
+        return try {
+            val spotifyTokenResponse = spotifyService.refreshToken(userId)
+            ResponseEntity.ok(spotifyTokenResponse.accessToken)
+        } catch (e: RuntimeException) {
+            ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Refresh access token failed: $e")
+        }
+    }
+
     @GetMapping("/current-song")
     fun getCurrentSong(authentication: Authentication): Mono<String> {
         val principal = authentication.principal as Jwt
