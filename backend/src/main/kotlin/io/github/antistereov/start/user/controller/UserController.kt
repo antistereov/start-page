@@ -1,37 +1,28 @@
 package io.github.antistereov.start.user.controller
 
+import io.github.antistereov.start.security.AuthenticationPrincipalExtractor
+import io.github.antistereov.start.user.model.User
 import io.github.antistereov.start.user.service.UserService
-import org.hibernate.service.spi.ServiceException
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.http.HttpStatus
-import org.springframework.http.ResponseEntity
 import org.springframework.security.core.Authentication
-import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.web.bind.annotation.*
+import reactor.core.publisher.Mono
 
 @RestController
 @RequestMapping("/api/users")
-class UserController {
+class UserController(
+    private val userService: UserService,
+    private val authenticationPrincipalExtractor: AuthenticationPrincipalExtractor,
+) {
 
-    @Autowired
-    private lateinit var userService: UserService
-
-    @PostMapping("/token-login")
-    fun handleLogin(authentication: Authentication): ResponseEntity<String> {
-        val principal = authentication.principal as Jwt
-        val userId = principal.claims["sub"].toString()
-
-        return try {
-            val user = userService.findOrCreateUser(userId)
-            ResponseEntity.status(HttpStatus.OK).body(user.id)
-        } catch (ex: ServiceException) {
-            ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ex.message)
-        }
+    @PostMapping("/auth")
+    fun handleAuth(authentication: Authentication): Mono<User> {
+        return authenticationPrincipalExtractor.getUserId(authentication)
+            .flatMap { userService.findOrCreateUser(it) }
     }
 
     @GetMapping("/profile")
-    fun getUserProfile(authentication: Authentication): Map<String, Any> {
-        val details = authentication.principal as Jwt
-        return details.claims
+    fun getUserProfile(authentication: Authentication): Mono<Map<String, Any>> {
+        return authenticationPrincipalExtractor.getJwt(authentication)
+            .map { it.claims }
     }
 }
