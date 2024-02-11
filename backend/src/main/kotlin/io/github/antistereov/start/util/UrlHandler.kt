@@ -1,6 +1,5 @@
 package io.github.antistereov.start.util
 
-import jakarta.persistence.Column
 import org.springframework.stereotype.Component
 import java.net.URL
 
