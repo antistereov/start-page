@@ -1,9 +1,12 @@
 package io.github.antistereov.start.widgets.todoist.service
 
+import io.github.antistereov.start.model.CannotSaveUserException
+import io.github.antistereov.start.model.NoAccessTokenException
+import io.github.antistereov.start.model.UnexpectedErrorException
+import io.github.antistereov.start.model.UserNotFoundException
 import io.github.antistereov.start.security.AESEncryption
 import io.github.antistereov.start.widgets.todoist.model.TodoistTokenResponse
 import io.github.antistereov.start.user.repository.UserRepository
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
@@ -17,6 +20,8 @@ import reactor.core.publisher.Mono
 class TodoistService(
     private val webClientBuilder: WebClient.Builder,
     private val webClient: WebClient,
+    private val userRepository: UserRepository,
+    private val aesEncryption: AESEncryption,
 ) {
 
     @Value("\${todoist.clientId}")
@@ -28,11 +33,6 @@ class TodoistService(
     @Value("\${todoist.redirectUri}")
     private lateinit var redirectUri: String
 
-    @Autowired
-    private lateinit var userRepository: UserRepository
-
-    @Autowired
-    private lateinit var aesEncryption: AESEncryption
 
     private val todoistApiUrl = "https://api.todoist.com/rest/v2/"
     private val scopes = "data:read"
@@ -47,8 +47,8 @@ class TodoistService(
             .toUriString()
     }
 
-    fun authenticate(code: String, encryptedUserId: String): TodoistTokenResponse {
-        val response = webClient.post()
+    fun authenticate(code: String, encryptedUserId: String): Mono<TodoistTokenResponse> {
+        return webClient.post()
             .uri("https://todoist.com/oauth/access_token")
             .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
             .body(
@@ -59,26 +59,34 @@ class TodoistService(
             )
             .retrieve()
             .bodyToMono(TodoistTokenResponse::class.java)
-            .block() ?: throw RuntimeException("Request to Todoist API failed or timed out")
-
-        response.let {
-            val userId = aesEncryption.decrypt(encryptedUserId)
-            val user = userRepository.findById(userId).orElseThrow { RuntimeException("User not found: $userId") }
-
-            user.todoistAccessToken = aesEncryption.encrypt(it.accessToken)
-
-            userRepository.save(user)
-
-            return it
-        }
+            .flatMap { response ->
+                val userId = aesEncryption.decrypt(encryptedUserId)
+                handleUser(userId, response)
+            }
     }
 
-    fun getAccessToken(userId: String): String {
-        val user = userRepository.findById(userId).orElseThrow { RuntimeException("User not found: $userId")}
-        val encryptedTodoistAccessToken = user.todoistAccessToken
-            ?: throw RuntimeException("No Todoist Access token found.")
+    private fun handleUser(userId: String, response: TodoistTokenResponse): Mono<TodoistTokenResponse> {
+        return userRepository.findById(userId)
+            .switchIfEmpty(Mono.error(UserNotFoundException(userId)))
+            .flatMap { user ->
+                user.todoistAccessToken = aesEncryption.encrypt(response.accessToken)
 
-        return aesEncryption.decrypt(encryptedTodoistAccessToken)
+                userRepository.save(user)
+                    .onErrorMap { throwable ->
+                        CannotSaveUserException(throwable)
+                    }
+                    .thenReturn(response)
+            }
+    }
+
+    fun getAccessToken(userId: String): Mono<String> {
+        return userRepository.findById(userId)
+            .switchIfEmpty(Mono.error(UserNotFoundException(userId)))
+            .flatMap { user ->
+                val encryptedAccessToken = user.todoistAccessToken
+                    ?: return@flatMap Mono.error(NoAccessTokenException("Todoist", userId))
+                Mono.just(aesEncryption.decrypt(encryptedAccessToken))
+            }
     }
 
     fun getTasks(accessToken: String): Mono<String> {
@@ -93,6 +101,8 @@ class TodoistService(
                     }
             })
             .bodyToMono(String::class.java)
-
+            .onErrorResume { exception ->
+                Mono.error(UnexpectedErrorException("An unexpected error occurred during the Todoist getTasks method.", exception))
+            }
     }
 }
