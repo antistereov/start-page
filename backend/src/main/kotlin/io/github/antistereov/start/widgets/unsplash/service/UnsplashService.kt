@@ -1,5 +1,8 @@
 package io.github.antistereov.start.widgets.unsplash.service
 
+import io.github.antistereov.start.model.CannotSaveUserException
+import io.github.antistereov.start.model.NoAccessTokenException
+import io.github.antistereov.start.model.UserNotFoundException
 import io.github.antistereov.start.security.AESEncryption
 import io.github.antistereov.start.user.repository.UserRepository
 import io.github.antistereov.start.widgets.unsplash.model.UnsplashTokenResponse
@@ -44,8 +47,8 @@ class UnsplashService(
             .toUriString()
     }
 
-    fun authenticate(code: String, encryptedUserId: String): UnsplashTokenResponse {
-        val response = webClient.post()
+    fun authenticate(code: String, encryptedUserId: String): Mono<UnsplashTokenResponse> {
+        return webClient.post()
             .uri("https://unsplash.com/oauth/token")
             .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
             .body(
@@ -57,25 +60,34 @@ class UnsplashService(
             )
             .retrieve()
             .bodyToMono(UnsplashTokenResponse::class.java)
-            .block() ?: throw RuntimeException("Request to Unsplash API failed or timed out.")
-
-        response.let {
-            val userId = aesEncryption.decrypt(encryptedUserId)
-            val user = userRepository.findById(userId).orElseThrow { RuntimeException("User not found: $userId") }
-
-            user.unsplashAccessToken = aesEncryption.encrypt(it.accessToken)
-
-            userRepository.save(user)
-            return it
-        }
+            .flatMap { response ->
+                val userId = aesEncryption.decrypt(encryptedUserId)
+                handleUser(userId, response)
+            }
     }
 
-    fun getAccessToken(userId: String): String {
-        val user = userRepository.findById(userId).orElseThrow { RuntimeException("User not found: $userId")}
-        val encryptedUnsplashAccessToken = user.unsplashAccessToken
-            ?: throw RuntimeException("No Todoist Access token found.")
+    fun handleUser(userId: String, response: UnsplashTokenResponse): Mono<UnsplashTokenResponse> {
+        return userRepository.findById(userId)
+            .switchIfEmpty(Mono.error(UserNotFoundException(userId)))
+            .flatMap { user ->
+                user.unsplashAccessToken = aesEncryption.encrypt(response.accessToken)
 
-        return aesEncryption.decrypt(encryptedUnsplashAccessToken)
+                userRepository.save(user)
+                    .onErrorMap { throwable ->
+                        CannotSaveUserException(throwable)
+                    }
+                    .thenReturn(response)
+            }
+    }
+
+    fun getAccessToken(userId: String): Mono<String> {
+        return userRepository.findById(userId)
+            .switchIfEmpty(Mono.error(UserNotFoundException(userId)))
+            .flatMap { user ->
+                val encryptedAccessToken = user.unsplashAccessToken
+                    ?: return@flatMap Mono.error(NoAccessTokenException("Unsplash", userId))
+                Mono.just(aesEncryption.decrypt(encryptedAccessToken))
+            }
     }
 
     fun getRandomPhoto(query: String? = null): Mono<String> {
