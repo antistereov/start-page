@@ -47,6 +47,7 @@ class WebSecurityConfig {
             authorizeRequests {
                 authorize("/api/spotify/callback", permitAll)
                 authorize("/api/todoist/callback", permitAll)
+                authorize("/api/unsplash/callback", permitAll)
 //                authorize("/api/users/login", permitAll)
 //                authorize("/api/users/session-test", permitAll)
 //                authorize("/api/users/**", hasRole("ADMIN"))

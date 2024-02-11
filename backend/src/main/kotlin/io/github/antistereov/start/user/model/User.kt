@@ -20,6 +20,9 @@ class User(
     @Column(name = "todist_access_token")
     var todoistAccessToken: String? = null,
 
+    @Column(name = "unsplash_access_token")
+    var unsplashAccessToken: String? = null,
+
     @Column(name = "nextcloud_url")
     var nextcloudHost: String? = null,
 
