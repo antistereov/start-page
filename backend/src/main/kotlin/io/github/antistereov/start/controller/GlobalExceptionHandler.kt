@@ -45,6 +45,13 @@ class GlobalExceptionHandler {
         return Mono.just(mapOf("error" to message))
     }
 
+    @ExceptionHandler(NoAccessTokenException::class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    fun handleMissingClaimException(ex: NoAccessTokenException): Mono<Map<String, Any>> {
+        val message = ex.message ?: "No access token found"
+        return Mono.just(mapOf("error" to message))
+    }
+
     @ExceptionHandler(NoRefreshTokenException::class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     fun handleMissingClaimException(ex: NoRefreshTokenException): Mono<Map<String, Any>> {
