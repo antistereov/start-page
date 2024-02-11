@@ -1,5 +1,8 @@
 package io.github.antistereov.start.widgets.spotify.service
 
+import io.github.antistereov.start.model.CannotSaveUserException
+import io.github.antistereov.start.model.NoRefreshTokenException
+import io.github.antistereov.start.model.UserNotFoundException
 import io.github.antistereov.start.security.AESEncryption
 import io.github.antistereov.start.widgets.spotify.model.SpotifyTokenResponse
 import io.github.antistereov.start.user.repository.UserRepository
@@ -43,84 +46,93 @@ class SpotifyService(
             .toUriString()
     }
 
-    fun authenticate(code: String, encryptedUserId: String): SpotifyTokenResponse {
-        val response = webClient.post()
+    fun authenticate(code: String, encryptedUserId: String): Mono<SpotifyTokenResponse> {
+        return webClient
+            .post()
             .uri("https://accounts.spotify.com/api/token")
             .header("Content-Type", "application/x-www-form-urlencoded")
-            .body(
-                BodyInserters.fromFormData("grant_type", "authorization_code")
-                    .with("code", code)
-                    .with("redirect_uri", redirectUri)
-                    .with("client_id", clientId)
-                    .with("client_secret", clientSecret)
+            .body(BodyInserters.fromFormData("grant_type", "authorization_code")
+                .with("code", code)
+                .with("redirect_uri", redirectUri)
+                .with("client_id", clientId)
+                .with("client_secret", clientSecret)
             )
             .retrieve()
             .bodyToMono(SpotifyTokenResponse::class.java)
-            .block() ?: throw RuntimeException("Request to Spotify API failed or timed out.")
-
-        response.let {
-            val userId = aesEncryption.decrypt(encryptedUserId)
-            val user = userRepository.findById(userId).orElseThrow { RuntimeException("User not found: $userId") }
-
-            val spotifyAccessToken = aesEncryption.encrypt(it.accessToken)
-            val spotifyRefreshToken = aesEncryption.encrypt(it.refreshToken
-                ?: throw RuntimeException("No refresh token found for user ${user.id}"))
-
-            user.spotifyAccessToken = spotifyAccessToken
-            user.spotifyRefreshToken = spotifyRefreshToken
-            user.spotifyAccessTokenExpirationDate = LocalDateTime.now().plusSeconds(response.expiresIn)
-
-            userRepository.save(user)
-
-            return it
-        }
+            .flatMap { response ->
+                val userId = aesEncryption.decrypt(encryptedUserId)
+                handleUser(userId, response)
+            }
     }
 
-    fun refreshToken(userId: String): SpotifyTokenResponse {
-        val user = userRepository.findById(userId).orElseThrow { RuntimeException("User not found: $userId") }
+    private fun handleUser(userId: String, response: SpotifyTokenResponse): Mono<SpotifyTokenResponse> {
+        return userRepository.findById(userId)
+            .switchIfEmpty(Mono.error(UserNotFoundException(userId)))
+            .flatMap { user ->
+                val encryptedRefreshToken = user.spotifyRefreshToken
+                    ?: return@flatMap Mono.error(NoRefreshTokenException("Spotify", userId))
+                val refreshToken = aesEncryption.decrypt(encryptedRefreshToken)
+                val expirationDate = LocalDateTime.now().plusSeconds(response.expiresIn)
 
-        val encryptedSpotifyRefreshToken = user.spotifyRefreshToken
-            ?: throw RuntimeException("No refresh token found for user ${user.id}")
+                user.spotifyAccessToken = aesEncryption.encrypt(response.accessToken)
+                user.spotifyRefreshToken = refreshToken
+                user.spotifyAccessTokenExpirationDate = expirationDate
 
-        val spotifyRefreshToken = aesEncryption.decrypt(encryptedSpotifyRefreshToken)
-
-        val response = webClient.post()
-            .uri("https://accounts.spotify.com/api/token")
-            .header("Content-Type", "application/x-www-form-urlencoded")
-            .body(
-                BodyInserters.fromFormData("grant_type", "refresh_token")
-                    .with("refresh_token", spotifyRefreshToken)
-                    .with("client_id", clientId)
-                    .with("client_secret", clientSecret)
-            )
-            .retrieve()
-            .bodyToMono(SpotifyTokenResponse::class.java)
-            .block() ?: throw RuntimeException("Request to Spotify API failed or timed out.")
-
-        user.spotifyAccessToken = aesEncryption.encrypt(response.accessToken)
-        if (response.refreshToken != null) { user.spotifyRefreshToken = aesEncryption.encrypt(response.refreshToken) }
-        user.spotifyAccessTokenExpirationDate = LocalDateTime.now().plusSeconds(response.expiresIn)
-
-        userRepository.save(user)
-
-        return response
+                userRepository.save(user)
+                    .onErrorMap { throwable ->
+                        CannotSaveUserException(throwable)
+                    }
+                    .thenReturn(response)
+            }
     }
 
-    fun getAccessToken(userId: String): String {
-        val user = userRepository.findById(userId).orElseThrow { RuntimeException("User not found: $userId") }
+    fun refreshToken(userId: String): Mono<SpotifyTokenResponse> {
+        return userRepository.findById(userId)
+            .switchIfEmpty(Mono.error(UserNotFoundException(userId)))
+            .flatMap { user ->
+                val encryptedRefreshToken = user.spotifyRefreshToken
+                    ?: return@flatMap Mono.error(NoRefreshTokenException("Spotify", userId))
+                val refreshToken = aesEncryption.decrypt(encryptedRefreshToken)
+
+                webClient.post()
+                    .uri("https://accounts.spotify.com/api/token")
+                    .header("Content-Type", "application/x-www-form-urlencoded")
+                    .body(
+                        BodyInserters.fromFormData("grant_type", "refresh_token")
+                            .with("refresh_token", refreshToken)
+                            .with("client_id", clientId)
+                            .with("client_secret", clientSecret)
+                    )
+                    .retrieve()
+                    .bodyToMono(SpotifyTokenResponse::class.java)
+                    .flatMap { response ->
+                        user.spotifyAccessToken = aesEncryption.encrypt(response.accessToken)
+                        user.spotifyAccessTokenExpirationDate = LocalDateTime.now().plusSeconds(response.expiresIn)
+
+                        userRepository.save(user)
+                            .onErrorMap { throwable ->
+                                CannotSaveUserException(throwable)
+                            }
+                            .thenReturn(response)
+                    }
+            }
+    }
+
+    fun getAccessToken(userId: String): Mono<String> {
         val currentTime = LocalDateTime.now()
 
-        if (currentTime.isAfter(user.spotifyAccessTokenExpirationDate)) {
-            val newTokens = this.refreshToken(userId)
-            return newTokens.accessToken
-        } else {
-            val encryptedSpotifyAccessToken = user.spotifyAccessToken
-                ?: throw RuntimeException("No refresh token found for user ${user.id}")
-
-            return aesEncryption.decrypt(encryptedSpotifyAccessToken)
-        }
+        return userRepository.findById(userId)
+            .switchIfEmpty(Mono.error(UserNotFoundException(userId)))
+            .flatMap { user ->
+                if (currentTime.isAfter(user.spotifyAccessTokenExpirationDate)) {
+                    this.refreshToken(userId).map { it.accessToken }
+                } else {
+                    val encryptedSpotifyAccessToken = user.spotifyAccessToken
+                        ?: return@flatMap Mono.error(NoRefreshTokenException("Spotify", userId))
+                    Mono.just(aesEncryption.decrypt(encryptedSpotifyAccessToken))
+                }
+            }
     }
-
     fun getCurrentSong(accessToken: String): Mono<String> {
         return webClientBuilder.build().get()
             .uri("$spotifyApiUrl/me/player/currently-playing")
