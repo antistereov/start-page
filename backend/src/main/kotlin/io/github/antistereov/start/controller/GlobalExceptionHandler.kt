@@ -67,9 +67,16 @@ class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(SpotifyAPIException::class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     fun handleMissingClaimException(ex: SpotifyAPIException): Mono<Map<String, Any>> {
         val message = ex.message ?: "Error from Spotify API"
+        return Mono.just(mapOf("error" to message))
+    }
+
+    @ExceptionHandler(UnexpectedErrorException::class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    fun handleInternalServerError(ex: UnexpectedErrorException): Mono<Map<String, Any>> {
+        val message = ex.message ?: "Unexpected Error"
         return Mono.just(mapOf("error" to message))
     }
 
