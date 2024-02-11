@@ -1,10 +1,11 @@
 package io.github.antistereov.start.widgets.nextcloud.service
 
+import io.github.antistereov.start.widgets.nextcloud.model.NewsItem
 import io.github.antistereov.start.widgets.nextcloud.model.NextcloudCredentials
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.util.UriComponentsBuilder
-import reactor.core.publisher.Mono
+import reactor.core.publisher.Flux
 import java.util.*
 
 @Service
@@ -13,20 +14,20 @@ class NewsService(
 ) {
 
     fun getLatestNews(
-        nextcloudCredentials: NextcloudCredentials,
+        credentials: NextcloudCredentials,
         batchSize: Int = 30
-    ): Mono<String> {
-        val uri = UriComponentsBuilder.fromHttpUrl("${nextcloudCredentials.url}/index.php/apps/news/api/v1-3/items")
+    ): Flux<NewsItem> {
+        val uri = UriComponentsBuilder.fromHttpUrl("${credentials.url}/index.php/apps/news/api/v1-3/items")
             .queryParam("batchSize", batchSize)
             .toUriString()
 
         val authHeaderValue = Base64.getEncoder()
-            .encodeToString("${nextcloudCredentials.username}:${nextcloudCredentials.password}".toByteArray())
+            .encodeToString("${credentials.username}:${credentials.password}".toByteArray())
         return webClientBuilder.build()
             .get()
             .uri(uri)
             .header("Authorization", "Basic $authHeaderValue")
             .retrieve()
-            .bodyToMono(String::class.java)
+            .bodyToFlux(NewsItem::class.java)
     }
 }
