@@ -1,0 +1,46 @@
+server:
+  port: 8000
+
+spring:
+  data:
+    mongodb:
+      uri: mongodb://${MONGO_DB_USER}:${MONGO_DB_PASSWORD}@localhost:27017/start
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+  security:
+    oauth2:
+      client:
+        registration:
+          auth0:
+            client-id: ${auth0.clientId}
+            client-secret: ${auth0.clientSecret}
+      resourceserver:
+        jwt:
+          issuer-uri: https://${auth0.domain}/
+
+spotify:
+  clientId: ${SPOTIFY_CLIENT_ID}
+  clientSecret: ${SPOTIFY_CLIENT_SECRET}
+  redirectUri: ${SPOTIFY_REDIRECT_URI}
+
+todoist:
+  clientId: ${TODOIST_CLIENT_ID}
+  clientSecret: ${TODOIST_CLIENT_SECRET}
+  redirectUri: ${TODOIST_REDIRECT_URI}
+
+unsplash:
+  clientId: ${UNSPLASH_CLIENT_ID}
+  clientSecret: ${UNSPLASH_CLIENT_SECRET}
+  redirectUri: ${UNSPLASH_REDIRECT_URI}
+
+encryption:
+  secretKey: ${SECRET_KEY}
+
+
+auth0:
+  domain: ${AUTH0_DOMAIN}
+  clientId: ${AUTH0_CLIENT_ID}
+  clientSecret: ${AUTH0_CLIENT_SECRET}
+  audience: ${AUTH0_AUDIENCE}
