@@ -2,12 +2,10 @@ package io.github.antistereov.start.widgets.unsplash.service
 
 import io.github.antistereov.start.security.AESEncryption
 import io.github.antistereov.start.user.repository.UserRepository
-import io.github.antistereov.start.widgets.spotify.model.SpotifyTokenResponse
 import io.github.antistereov.start.widgets.unsplash.model.UnsplashTokenResponse
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
-import org.springframework.security.oauth2.core.OAuth2AccessToken
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.BodyInserters
 import org.springframework.web.reactive.function.client.WebClient
