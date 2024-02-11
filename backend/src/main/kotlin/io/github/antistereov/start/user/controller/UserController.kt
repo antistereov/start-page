@@ -11,18 +11,18 @@ import reactor.core.publisher.Mono
 @RequestMapping("/api/users")
 class UserController(
     private val userService: UserService,
-    private val authenticationPrincipalExtractor: AuthenticationPrincipalExtractor,
+    private val principalExtractor: AuthenticationPrincipalExtractor,
 ) {
 
     @PostMapping("/auth")
     fun handleAuth(authentication: Authentication): Mono<User> {
-        return authenticationPrincipalExtractor.getUserId(authentication)
+        return principalExtractor.getUserId(authentication)
             .flatMap { userService.findOrCreateUser(it) }
     }
 
     @GetMapping("/profile")
     fun getUserProfile(authentication: Authentication): Mono<Map<String, Any>> {
-        return authenticationPrincipalExtractor.getJwt(authentication)
+        return principalExtractor.getJwt(authentication)
             .map { it.claims }
     }
 }
