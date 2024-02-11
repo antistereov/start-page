@@ -10,10 +10,17 @@ import reactor.core.publisher.Mono
 @ControllerAdvice
 class GlobalExceptionHandler {
 
-    @ExceptionHandler(ServiceException::class)
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    fun handleInternalServerError(ex: ServiceException): Mono<Map<String, Any>> {
-        val message = ex.message ?: "Internal Server Error"
+    @ExceptionHandler(CannotSaveUserException::class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    fun handleCannotSaveUser(ex: CannotSaveUserException): Mono<Map<String, Any>> {
+        val message = ex.message ?: "Failed to save user"
+        return Mono.just(mapOf("error" to message))
+    }
+
+    @ExceptionHandler(InvalidNextcloudCredentialsException::class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    fun handeInvalidNextcloudCredentials(ex: InvalidNextcloudCredentialsException): Mono<Map<String, Any>> {
+        val message = ex.message ?: "Invalid Nextcloud credentials"
         return Mono.just(mapOf("error" to message))
     }
 
@@ -31,13 +38,6 @@ class GlobalExceptionHandler {
         return Mono.just(mapOf("error" to message))
     }
 
-    @ExceptionHandler(UserNotFoundException::class)
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    fun handleUserNotFound(ex: UserNotFoundException): Mono<Map<String, Any>> {
-        val message = ex.message ?: "User not found"
-        return Mono.just(mapOf("error" to message))
-    }
-
     @ExceptionHandler(MissingNextcloudCredentialsException::class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     fun handleMissingNextcloudCredentials(ex: MissingNextcloudCredentialsException): Mono<Map<String, Any>> {
@@ -45,17 +45,31 @@ class GlobalExceptionHandler {
         return Mono.just(mapOf("error" to message))
     }
 
-    @ExceptionHandler(InvalidNextcloudCredentialsException::class)
-    @ResponseStatus(HttpStatus.UNAUTHORIZED)
-    fun handeInvalidNextcloudCredentials(ex: InvalidNextcloudCredentialsException): Mono<Map<String, Any>> {
-        val message = ex.message ?: "Invalid Nextcloud credentials"
+    @ExceptionHandler(NoRefreshTokenException::class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    fun handleMissingClaimException(ex: NoRefreshTokenException): Mono<Map<String, Any>> {
+        val message = ex.message ?: "No refresh token found"
         return Mono.just(mapOf("error" to message))
     }
 
-    @ExceptionHandler(CannotSaveUserException::class)
+    @ExceptionHandler(ServiceException::class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    fun handleInternalServerError(ex: ServiceException): Mono<Map<String, Any>> {
+        val message = ex.message ?: "Internal Server Error"
+        return Mono.just(mapOf("error" to message))
+    }
+
+    @ExceptionHandler(SpotifyAPIException::class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    fun handleCannotSaveUser(ex: CannotSaveUserException): Mono<Map<String, Any>> {
-        val message = ex.message ?: "Failed to save user"
+    fun handleMissingClaimException(ex: SpotifyAPIException): Mono<Map<String, Any>> {
+        val message = ex.message ?: "Error from Spotify API"
+        return Mono.just(mapOf("error" to message))
+    }
+
+    @ExceptionHandler(UserNotFoundException::class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    fun handleUserNotFound(ex: UserNotFoundException): Mono<Map<String, Any>> {
+        val message = ex.message ?: "User not found"
         return Mono.just(mapOf("error" to message))
     }
 }
