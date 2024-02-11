@@ -3,7 +3,6 @@ package io.github.antistereov.start.widgets.nextcloud.controller
 import io.github.antistereov.start.security.AuthenticationPrincipalExtractor
 import io.github.antistereov.start.widgets.nextcloud.model.NextcloudCredentials
 import io.github.antistereov.start.widgets.nextcloud.service.AuthService
-import io.github.antistereov.start.widgets.spotify.controller.SpotifyController
 import jakarta.validation.Valid
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -13,7 +12,6 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import reactor.core.publisher.Mono
-import kotlin.math.log
 
 @RestController
 @RequestMapping("/api/nextcloud")

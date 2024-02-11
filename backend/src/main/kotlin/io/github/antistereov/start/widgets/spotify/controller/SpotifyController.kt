@@ -24,7 +24,7 @@ class SpotifyController(
 
         return principalExtractor.getUserId(authentication)
             .map { userId ->
-                logger.info("Redirecting user $userId to authorization URL.")
+                logger.info("Redirecting user $userId to Spotify authorization URL.")
 
                 "redirect:${spotifyService.getAuthorizationUrl(userId)}"
             }
@@ -41,7 +41,7 @@ class SpotifyController(
             .map {
                 logger.info("Spotify authentication successful.")
 
-                "Authentication successful."
+                "Spotify authentication successful."
             }
     }
 

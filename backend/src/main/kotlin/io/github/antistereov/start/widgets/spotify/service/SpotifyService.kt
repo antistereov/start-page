@@ -1,6 +1,7 @@
 package io.github.antistereov.start.widgets.spotify.service
 
 import io.github.antistereov.start.model.CannotSaveUserException
+import io.github.antistereov.start.model.NoAccessTokenException
 import io.github.antistereov.start.model.NoRefreshTokenException
 import io.github.antistereov.start.model.UserNotFoundException
 import io.github.antistereov.start.security.AESEncryption
@@ -128,7 +129,7 @@ class SpotifyService(
                     this.refreshToken(userId).map { it.accessToken }
                 } else {
                     val encryptedSpotifyAccessToken = user.spotifyAccessToken
-                        ?: return@flatMap Mono.error(NoRefreshTokenException("Spotify", userId))
+                        ?: return@flatMap Mono.error(NoAccessTokenException("Spotify", userId))
                     Mono.just(aesEncryption.decrypt(encryptedSpotifyAccessToken))
                 }
             }

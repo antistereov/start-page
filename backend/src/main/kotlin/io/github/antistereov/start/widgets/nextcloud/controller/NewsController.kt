@@ -4,7 +4,6 @@ import io.github.antistereov.start.security.AuthenticationPrincipalExtractor
 import io.github.antistereov.start.widgets.nextcloud.model.NewsItem
 import io.github.antistereov.start.widgets.nextcloud.service.AuthService
 import io.github.antistereov.start.widgets.nextcloud.service.NewsService
-import io.github.antistereov.start.widgets.spotify.controller.SpotifyController
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.security.core.Authentication
