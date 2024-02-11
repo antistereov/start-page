@@ -2,6 +2,7 @@ package io.github.antistereov.start.widgets.unsplash.service
 
 import io.github.antistereov.start.model.CannotSaveUserException
 import io.github.antistereov.start.model.NoAccessTokenException
+import io.github.antistereov.start.model.UnexpectedErrorException
 import io.github.antistereov.start.model.UserNotFoundException
 import io.github.antistereov.start.security.AESEncryption
 import io.github.antistereov.start.user.repository.UserRepository
@@ -66,7 +67,7 @@ class UnsplashService(
             }
     }
 
-    fun handleUser(userId: String, response: UnsplashTokenResponse): Mono<UnsplashTokenResponse> {
+    private fun handleUser(userId: String, response: UnsplashTokenResponse): Mono<UnsplashTokenResponse> {
         return userRepository.findById(userId)
             .switchIfEmpty(Mono.error(UserNotFoundException(userId)))
             .flatMap { user ->
@@ -107,6 +108,14 @@ class UnsplashService(
                     }
             })
             .bodyToMono(String::class.java)
+            .onErrorResume { exception ->
+                Mono.error(
+                    UnexpectedErrorException(
+                        "An unexpected error occurred during the Unsplash getRandomPhoto method.",
+                        exception
+                    )
+                )
+            }
     }
 
     fun getPhoto(id: String): Mono<String> {
@@ -124,6 +133,14 @@ class UnsplashService(
                     }
             })
             .bodyToMono(String::class.java)
+            .onErrorResume { exception ->
+                Mono.error(
+                    UnexpectedErrorException(
+                        "An unexpected error occurred during the Unsplash getPhoto method.",
+                        exception
+                    )
+                )
+            }
     }
 
     fun likePhoto(accessToken: String, photoId: String): Mono<String> {
@@ -138,6 +155,14 @@ class UnsplashService(
                     }
             })
             .bodyToMono(String::class.java)
+            .onErrorResume { exception ->
+                Mono.error(
+                    UnexpectedErrorException(
+                        "An unexpected error occurred during the Unsplash likePhoto method.",
+                        exception
+                    )
+                )
+            }
     }
 
     fun unlikePhoto(accessToken: String, photoId: String): Mono<String> {
@@ -152,6 +177,14 @@ class UnsplashService(
                     }
             })
             .bodyToMono(String::class.java)
+            .onErrorResume { exception ->
+                Mono.error(
+                    UnexpectedErrorException(
+                        "An unexpected error occurred during the Unsplash unlikePhoto method.",
+                        exception
+                    )
+                )
+            }
     }
 
 }

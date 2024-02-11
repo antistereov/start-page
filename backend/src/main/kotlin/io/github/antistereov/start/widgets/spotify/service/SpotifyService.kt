@@ -1,9 +1,6 @@
 package io.github.antistereov.start.widgets.spotify.service
 
-import io.github.antistereov.start.model.CannotSaveUserException
-import io.github.antistereov.start.model.NoAccessTokenException
-import io.github.antistereov.start.model.NoRefreshTokenException
-import io.github.antistereov.start.model.UserNotFoundException
+import io.github.antistereov.start.model.*
 import io.github.antistereov.start.security.AESEncryption
 import io.github.antistereov.start.widgets.spotify.model.SpotifyTokenResponse
 import io.github.antistereov.start.user.repository.UserRepository
@@ -146,6 +143,14 @@ class SpotifyService(
                     }
             })
             .bodyToMono(String::class.java)
+            .onErrorResume { exception ->
+                Mono.error(
+                    UnexpectedErrorException(
+                        "An unexpected error occurred during the Spotify getCurrentSong method.",
+                        exception
+                    )
+                )
+            }
     }
 
 }
