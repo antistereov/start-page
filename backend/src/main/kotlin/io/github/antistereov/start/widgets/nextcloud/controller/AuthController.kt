@@ -1,5 +1,6 @@
 package io.github.antistereov.start.widgets.nextcloud.controller
 
+import io.github.antistereov.start.security.AuthenticationPrincipalExtractor
 import io.github.antistereov.start.widgets.nextcloud.model.NextcloudCredentials
 import io.github.antistereov.start.widgets.nextcloud.service.AuthService
 import jakarta.validation.Valid
@@ -11,26 +12,23 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
+import reactor.core.publisher.Mono
 
 @RestController
 @RequestMapping("/api/nextcloud")
 class AuthController(
-    private val authService: AuthService
+    private val authService: AuthService,
+    private val principalExtractor: AuthenticationPrincipalExtractor,
 ) {
 
     @PostMapping("/auth")
     fun auth(
         authentication: Authentication,
-        @Valid @RequestBody nextcloudCredentials: NextcloudCredentials
-    ): ResponseEntity<String> {
-        val principal = authentication.principal as Jwt
-        val userId = principal.claims["sub"].toString()
-
-        return try {
-            authService.authentication(userId, nextcloudCredentials)
-            ResponseEntity.ok("Credentials stored successfully.")
-        } catch(e: RuntimeException) {
-            ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Failed to store credentials: $e")
-        }
+        @Valid @RequestBody credentials: NextcloudCredentials
+    ): Mono<String> {
+        return principalExtractor.getUserId(authentication)
+            .flatMap { userId ->
+                authService.authentication(userId, credentials)
+            }
     }
 }
