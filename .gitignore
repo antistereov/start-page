@@ -4,7 +4,6 @@ build/
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
 !**/src/test/**/build/
-application.yml
 
 ### STS ###
 .apt_generated
@@ -80,3 +79,5 @@ testem.log
 .DS_Store
 Thumbs.db
 
+/mongodb/.env
+/backend/.env
