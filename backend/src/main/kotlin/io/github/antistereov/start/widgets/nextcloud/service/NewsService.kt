@@ -1,6 +1,5 @@
 package io.github.antistereov.start.widgets.nextcloud.service
 
-import io.github.antistereov.start.widgets.nextcloud.model.NewsItem
 import io.github.antistereov.start.widgets.nextcloud.model.NextcloudCredentials
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
