@@ -58,9 +58,9 @@ class AuthService(
         return userRepository.findById(userId)
             .switchIfEmpty(Mono.error(UserNotFoundException(userId)))
             .map { user ->
-                user.nextcloudHost = urlHandler.normalizeBaseUrl(credentials.url)
-                user.nextcloudUsername = credentials.username
-                user.nextcloudPassword = credentials.password
+                user.nextcloudHost = aesEncryption.encrypt(urlHandler.normalizeBaseUrl(credentials.url))
+                user.nextcloudUsername = aesEncryption.encrypt(credentials.username)
+                user.nextcloudPassword = aesEncryption.encrypt(credentials.password)
 
                 user
             }
@@ -78,7 +78,7 @@ class AuthService(
 
     fun verifyCredentials(credentials: NextcloudCredentials): Mono<String> {
         val webClient = webClientBuilder
-            .baseUrl("${credentials.url}/ocs/v2.php/cloud/user")
+            .baseUrl("${credentials.url}/remote.php/dav/files/${credentials.username}")
             .defaultHeaders { headers ->
                 headers.setBasicAuth(credentials.username, credentials.password)
             }
