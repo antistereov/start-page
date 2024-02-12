@@ -11,6 +11,7 @@ import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.util.UriComponentsBuilder
 import reactor.core.publisher.Mono
 import java.time.LocalDateTime
+import java.util.*
 
 @Service
 class SpotifyService(
@@ -45,15 +46,16 @@ class SpotifyService(
     }
 
     fun authenticate(code: String, encryptedUserId: String): Mono<SpotifyTokenResponse> {
+        val auth = "$clientId:$clientSecret"
+        val encodedAuth = Base64.getEncoder().encodeToString(auth.toByteArray())
         return webClient
             .post()
             .uri("https://accounts.spotify.com/api/token")
             .header("Content-Type", "application/x-www-form-urlencoded")
+            .header("Authorization", "Basic $encodedAuth")
             .body(BodyInserters.fromFormData("grant_type", "authorization_code")
                 .with("code", code)
                 .with("redirect_uri", redirectUri)
-                .with("client_id", clientId)
-                .with("client_secret", clientSecret)
             )
             .retrieve()
             .bodyToMono(SpotifyTokenResponse::class.java)
@@ -67,13 +69,12 @@ class SpotifyService(
         return userRepository.findById(userId)
             .switchIfEmpty(Mono.error(UserNotFoundException(userId)))
             .flatMap { user ->
-                val encryptedRefreshToken = user.spotifyRefreshToken
+                val refreshToken = response.refreshToken
                     ?: return@flatMap Mono.error(NoRefreshTokenException("Spotify", userId))
-                val refreshToken = aesEncryption.decrypt(encryptedRefreshToken)
                 val expirationDate = LocalDateTime.now().plusSeconds(response.expiresIn)
 
                 user.spotifyAccessToken = aesEncryption.encrypt(response.accessToken)
-                user.spotifyRefreshToken = refreshToken
+                user.spotifyRefreshToken = aesEncryption.encrypt(refreshToken)
                 user.spotifyAccessTokenExpirationDate = expirationDate
 
                 userRepository.save(user)
