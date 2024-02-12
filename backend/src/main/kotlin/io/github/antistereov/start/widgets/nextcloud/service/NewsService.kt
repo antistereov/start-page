@@ -5,7 +5,7 @@ import io.github.antistereov.start.widgets.nextcloud.model.NextcloudCredentials
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.util.UriComponentsBuilder
-import reactor.core.publisher.Flux
+import reactor.core.publisher.Mono
 import java.util.*
 
 @Service
@@ -16,7 +16,7 @@ class NewsService(
     fun getLatestNews(
         credentials: NextcloudCredentials,
         batchSize: Int = 30
-    ): Flux<NewsItem> {
+    ): Mono<String> {
         val uri = UriComponentsBuilder.fromHttpUrl("${credentials.url}/index.php/apps/news/api/v1-3/items")
             .queryParam("batchSize", batchSize)
             .toUriString()
@@ -28,6 +28,6 @@ class NewsService(
             .uri(uri)
             .header("Authorization", "Basic $authHeaderValue")
             .retrieve()
-            .bodyToFlux(NewsItem::class.java)
+            .bodyToMono(String::class.java)
     }
 }

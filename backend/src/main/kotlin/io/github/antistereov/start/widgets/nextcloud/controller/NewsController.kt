@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import reactor.core.publisher.Flux
+import reactor.core.publisher.Mono
 
 @RestController
 @RequestMapping("/api/nextcloud/news")
@@ -27,13 +28,13 @@ class NewsController(
     fun getLatestNews(
         authentication: Authentication,
         @RequestParam batchSize: Int = 30
-    ): Flux<NewsItem> {
+    ): Mono<String> {
         logger.info("Executing Nextcloud getLatestNews method.")
 
         return principalExtractor.getUserId(authentication)
-            .flatMapMany { userId ->
+            .flatMap { userId ->
                 authService.getCredentials(userId)
-                    .flatMapMany { credentials ->
+                    .flatMap { credentials ->
                         newsService.getLatestNews(credentials, batchSize)
                     }
             }
