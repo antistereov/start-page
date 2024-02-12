@@ -21,8 +21,8 @@ class CalDavController(
         val userId = principal.claims["sub"].toString()
 
         return try {
-            val calDavCredentials = authService.getCredentials(userId)
-             ResponseEntity.ok(calDavService.getEvents(calDavCredentials, calendarName))
+            val nextcloudCredentials = authService.getCredentials(userId).block()!!
+             ResponseEntity.ok(calDavService.getEvents(nextcloudCredentials, calendarName))
 
         } catch (e: RuntimeException) {
             ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Failed to claim credentials: $e")
@@ -35,8 +35,8 @@ class CalDavController(
         val userId = principal.claims["sub"].toString()
 
         return try {
-            val calDavCredentials = authService.getCredentials(userId)
-            ResponseEntity.ok(calDavService.getCalendars(calDavCredentials))
+            val nextcloudCredentials = authService.getCredentials(userId).block()
+            ResponseEntity.ok(calDavService.getCalendars(nextcloudCredentials!!))
         } catch (e: RuntimeException) {
             ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Failed to claim credentials: $e")
         }
