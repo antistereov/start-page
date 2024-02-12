@@ -1,9 +1,9 @@
 package io.github.antistereov.start.widgets.nextcloud.service
 
-import io.github.antistereov.start.model.CannotSaveUserException
-import io.github.antistereov.start.model.InvalidNextcloudCredentialsException
-import io.github.antistereov.start.model.MissingNextcloudCredentialsException
-import io.github.antistereov.start.model.UserNotFoundException
+import io.github.antistereov.start.global.model.CannotSaveUserException
+import io.github.antistereov.start.global.model.InvalidNextcloudCredentialsException
+import io.github.antistereov.start.global.model.MissingNextcloudCredentialsException
+import io.github.antistereov.start.global.model.UserNotFoundException
 import io.github.antistereov.start.security.AESEncryption
 import io.github.antistereov.start.user.repository.UserRepository
 import io.github.antistereov.start.util.UrlHandler

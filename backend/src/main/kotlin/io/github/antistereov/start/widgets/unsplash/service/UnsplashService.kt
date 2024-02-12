@@ -1,9 +1,9 @@
 package io.github.antistereov.start.widgets.unsplash.service
 
-import io.github.antistereov.start.model.CannotSaveUserException
-import io.github.antistereov.start.model.NoAccessTokenException
-import io.github.antistereov.start.model.UnexpectedErrorException
-import io.github.antistereov.start.model.UserNotFoundException
+import io.github.antistereov.start.global.model.CannotSaveUserException
+import io.github.antistereov.start.global.model.NoAccessTokenException
+import io.github.antistereov.start.global.model.UnexpectedErrorException
+import io.github.antistereov.start.global.model.UserNotFoundException
 import io.github.antistereov.start.security.AESEncryption
 import io.github.antistereov.start.user.repository.UserRepository
 import io.github.antistereov.start.widgets.unsplash.model.UnsplashTokenResponse

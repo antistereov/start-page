@@ -1,7 +1,7 @@
 package io.github.antistereov.start.security
 
-import io.github.antistereov.start.model.InvalidPrincipalException
-import io.github.antistereov.start.model.MissingClaimException
+import io.github.antistereov.start.global.model.InvalidPrincipalException
+import io.github.antistereov.start.global.model.MissingClaimException
 import org.springframework.security.core.Authentication
 import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.stereotype.Component
