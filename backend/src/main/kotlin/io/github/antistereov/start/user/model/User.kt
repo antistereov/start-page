@@ -10,6 +10,7 @@ data class User(
     var spotifyAccessTokenExpirationDate: java.time.LocalDateTime? = null,
     var todoistAccessToken: String? = null,
     var unsplashAccessToken: String? = null,
+    var instagram: InstagramAuthDetails = InstagramAuthDetails(),
     var nextcloudHost: String? = null,
     var nextcloudUsername: String? = null,
     var nextcloudPassword: String? = null,
