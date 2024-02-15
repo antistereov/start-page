@@ -1,4 +1,4 @@
-package io.github.antistereov.start.global.model
+package io.github.antistereov.start.global.model.exception
 
 class MissingCredentialsException(
     userId: String,

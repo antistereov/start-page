@@ -1,6 +1,7 @@
 package io.github.antistereov.start.global.controller
 
 import io.github.antistereov.start.global.model.*
+import io.github.antistereov.start.global.model.exception.*
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.ControllerAdvice

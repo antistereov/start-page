@@ -1,13 +1,13 @@
 package io.github.antistereov.start.widgets.instagram.service
 
-import io.github.antistereov.start.global.model.CannotSaveUserException
-import io.github.antistereov.start.global.model.ExpiredTokenException
-import io.github.antistereov.start.global.model.NoAccessTokenException
-import io.github.antistereov.start.global.model.UserNotFoundException
+import io.github.antistereov.start.global.model.exception.CannotSaveUserException
+import io.github.antistereov.start.global.model.exception.ExpiredTokenException
+import io.github.antistereov.start.global.model.exception.NoAccessTokenException
+import io.github.antistereov.start.global.model.exception.UserNotFoundException
 import io.github.antistereov.start.security.AESEncryption
 import io.github.antistereov.start.user.model.User
 import io.github.antistereov.start.user.repository.UserRepository
-import io.github.antistereov.start.util.StateValidation
+import io.github.antistereov.start.global.component.StateValidation
 import io.github.antistereov.start.widgets.instagram.model.InstagramLongLivedTokenResponse
 import io.github.antistereov.start.widgets.instagram.model.InstagramShortLivedTokenResponse
 import org.springframework.beans.factory.annotation.Value

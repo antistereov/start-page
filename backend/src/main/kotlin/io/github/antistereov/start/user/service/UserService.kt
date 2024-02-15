@@ -1,6 +1,6 @@
 package io.github.antistereov.start.user.service
 
-import io.github.antistereov.start.global.model.ServiceException
+import io.github.antistereov.start.global.model.exception.ServiceException
 import io.github.antistereov.start.user.model.User
 import io.github.antistereov.start.user.repository.UserRepository
 import org.springframework.dao.DataAccessException

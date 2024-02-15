@@ -1,8 +1,8 @@
-package io.github.antistereov.start.util
+package io.github.antistereov.start.global.component
 
-import io.github.antistereov.start.global.model.InvalidStateParameterException
+import io.github.antistereov.start.global.model.exception.InvalidStateParameterException
 import io.github.antistereov.start.security.AESEncryption
-import io.github.antistereov.start.user.model.StateParameter
+import io.github.antistereov.start.global.model.StateParameter
 import io.github.antistereov.start.user.repository.StateRepository
 import org.springframework.stereotype.Component
 import reactor.core.publisher.Mono

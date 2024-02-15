@@ -1,4 +1,4 @@
-package io.github.antistereov.start.user.model
+package io.github.antistereov.start.global.model
 
 import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.mapping.Document
