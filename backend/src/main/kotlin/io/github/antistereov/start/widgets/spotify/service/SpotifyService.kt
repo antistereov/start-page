@@ -1,6 +1,5 @@
 package io.github.antistereov.start.widgets.spotify.service
 
-import io.github.antistereov.start.global.model.*
 import io.github.antistereov.start.global.model.exception.*
 import io.github.antistereov.start.security.AESEncryption
 import io.github.antistereov.start.widgets.spotify.model.SpotifyTokenResponse
