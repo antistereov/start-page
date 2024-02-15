@@ -1,9 +1,6 @@
 package io.github.antistereov.start.widgets.todoist.service
 
-import io.github.antistereov.start.global.model.CannotSaveUserException
-import io.github.antistereov.start.global.model.NoAccessTokenException
-import io.github.antistereov.start.global.model.UnexpectedErrorException
-import io.github.antistereov.start.global.model.UserNotFoundException
+import io.github.antistereov.start.global.model.*
 import io.github.antistereov.start.security.AESEncryption
 import io.github.antistereov.start.widgets.todoist.model.TodoistTokenResponse
 import io.github.antistereov.start.user.repository.UserRepository
@@ -33,7 +30,7 @@ class TodoistService(
     @Value("\${todoist.redirectUri}")
     private lateinit var redirectUri: String
 
-
+    private val serviceName = "Todoist"
     private val todoistApiUrl = "https://api.todoist.com/rest/v2/"
     private val scopes = "data:read"
 
@@ -97,7 +94,7 @@ class TodoistService(
             .onStatus({ status -> status.is4xxClientError || status.is5xxServerError }, {
                 it.bodyToMono(String::class.java)
                     .flatMap { errorMessage ->
-                        Mono.error(RuntimeException("Error from Spotify API: $errorMessage"))
+                        Mono.error(ThirdPartyAPIException(serviceName, errorMessage))
                     }
             })
             .bodyToMono(String::class.java)

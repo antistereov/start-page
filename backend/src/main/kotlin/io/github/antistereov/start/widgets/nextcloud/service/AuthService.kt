@@ -2,7 +2,7 @@ package io.github.antistereov.start.widgets.nextcloud.service
 
 import io.github.antistereov.start.global.model.CannotSaveUserException
 import io.github.antistereov.start.global.model.InvalidNextcloudCredentialsException
-import io.github.antistereov.start.global.model.MissingNextcloudCredentialsException
+import io.github.antistereov.start.global.model.MissingCredentialsException
 import io.github.antistereov.start.global.model.UserNotFoundException
 import io.github.antistereov.start.security.AESEncryption
 import io.github.antistereov.start.user.repository.UserRepository
@@ -21,6 +21,8 @@ class AuthService(
     private val webClientBuilder: WebClient.Builder
 ) {
 
+    private val serviceName = "Nextcloud"
+
     fun getCredentials(userId: String): Mono<NextcloudCredentials> {
         return userRepository.findById(userId)
             .switchIfEmpty(Mono.error(UserNotFoundException(userId)))
@@ -30,17 +32,17 @@ class AuthService(
                 val password = user.nextcloudPassword
 
                 if (host == null) {
-                    sink.error(MissingNextcloudCredentialsException(userId, "host URL"))
+                    sink.error(MissingCredentialsException(userId, serviceName, "host URL"))
                     return@handle
                 }
 
                 if (username == null) {
-                    sink.error(MissingNextcloudCredentialsException(userId, "username"))
+                    sink.error(MissingCredentialsException(userId, serviceName, "username"))
                     return@handle
                 }
 
                 if (password == null) {
-                    sink.error(MissingNextcloudCredentialsException(userId, "password"))
+                    sink.error(MissingCredentialsException(userId, serviceName, "password"))
                     return@handle
                 }
 
