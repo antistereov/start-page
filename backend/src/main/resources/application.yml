@@ -5,10 +5,6 @@ spring:
   data:
     mongodb:
       uri: mongodb://${MONGO_DB_USER}:${MONGO_DB_PASSWORD}@localhost:27017/start?authSource=admin
-  jpa:
-    hibernate:
-      ddl-auto: update
-    show-sql: true
   security:
     oauth2:
       client:
@@ -34,6 +30,11 @@ unsplash:
   clientId: ${UNSPLASH_CLIENT_ID}
   clientSecret: ${UNSPLASH_CLIENT_SECRET}
   redirectUri: ${UNSPLASH_REDIRECT_URI}
+
+instagram:
+  clientId: ${INSTAGRAM_CLIENT_ID}
+  clientSecret: ${INSTAGRAM_CLIENT_SECRET}
+  redirectUri: ${INSTAGRAM_REDIRECT_URI}
 
 encryption:
   secretKey: ${SECRET_KEY}
