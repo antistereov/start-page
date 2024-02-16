@@ -17,6 +17,7 @@ class GlobalExceptionHandler {
         InvalidNextcloudCredentialsException::class to HttpStatus.UNAUTHORIZED,
         InvalidPrincipalException::class to HttpStatus.UNAUTHORIZED,
         InvalidStateParameterException::class to HttpStatus.BAD_REQUEST,
+        InvalidThirdPartyAPIResponseException::class.java to HttpStatus.BAD_REQUEST,
         MissingClaimException::class to HttpStatus.BAD_REQUEST,
         MissingCredentialsException::class to HttpStatus.BAD_REQUEST,
         NoAccessTokenException::class to HttpStatus.BAD_REQUEST,
