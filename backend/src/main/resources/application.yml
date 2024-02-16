@@ -35,6 +35,7 @@ instagram:
   clientId: ${INSTAGRAM_CLIENT_ID}
   clientSecret: ${INSTAGRAM_CLIENT_SECRET}
   redirectUri: ${INSTAGRAM_REDIRECT_URI}
+  apiBaseUrl: https://graph.instagram.com/v19.0
 
 encryption:
   secretKey: ${SECRET_KEY}
