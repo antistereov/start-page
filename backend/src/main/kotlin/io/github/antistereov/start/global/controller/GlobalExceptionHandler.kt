@@ -13,14 +13,17 @@ class GlobalExceptionHandler {
     private val exceptionToHttpStatus = mapOf(
         CannotSaveUserException::class to HttpStatus.BAD_REQUEST,
         ExpiredTokenException::class to HttpStatus.BAD_REQUEST,
+        InvalidCallbackException::class to HttpStatus.BAD_REQUEST,
         InvalidNextcloudCredentialsException::class to HttpStatus.UNAUTHORIZED,
         InvalidPrincipalException::class to HttpStatus.UNAUTHORIZED,
+        InvalidStateParameterException::class to HttpStatus.BAD_REQUEST,
         MissingClaimException::class to HttpStatus.BAD_REQUEST,
         MissingCredentialsException::class to HttpStatus.BAD_REQUEST,
         NoAccessTokenException::class to HttpStatus.BAD_REQUEST,
         NoRefreshTokenException::class to HttpStatus.BAD_REQUEST,
         ServiceException::class to HttpStatus.INTERNAL_SERVER_ERROR,
         ThirdPartyAPIException::class to HttpStatus.INTERNAL_SERVER_ERROR,
+        ThirdPartyAuthorizationCanceledException::class to HttpStatus.UNAUTHORIZED,
         UnexpectedErrorException::class to HttpStatus.INTERNAL_SERVER_ERROR,
         UserNotFoundException::class to HttpStatus.NOT_FOUND
     )
