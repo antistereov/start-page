@@ -10,9 +10,10 @@ import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.bind.annotation.RestController
 import reactor.core.publisher.Mono
 
-@Controller
+@RestController
 @RequestMapping("/api/instagram")
 class InstagramAuthController(
     private val instagramAuthService: InstagramAuthService,
@@ -25,23 +26,26 @@ class InstagramAuthController(
     fun login(authentication: Authentication): Mono<String> {
         logger.info("Executing Instagram login method.")
 
-        return principalExtractor.getUserId(authentication)
-            .map { userId ->
-                val url = instagramAuthService.getAuthorizationUrl(userId)
+        return principalExtractor.getUserId(authentication).flatMap { userId ->
+            instagramAuthService.getAuthorizationUrl(userId).map { url ->
                 logger.info("Redirecting user $userId to Instagram authorization URL: $url.")
 
                 "redirect:$url"
             }
+        }
     }
 
     @GetMapping("/callback")
     fun callback(
-        @RequestParam(required = true) code: String,
-        @RequestParam(required = true) state: String
+        @RequestParam code: String?,
+        @RequestParam state: String?,
+        @RequestParam error: String?,
+        @RequestParam errorReason: String?,
+        @RequestParam errorDescription: String?,
     ): Mono<String> {
         logger.info("Received Instagram callback with code: $code and state: $state")
 
-        return instagramAuthService.authenticate(code, state)
+        return instagramAuthService.authenticate(code, state, error, errorReason, errorDescription)
             .map {
                 logger.info("Instagram authentication successful.")
 
@@ -50,13 +54,28 @@ class InstagramAuthController(
     }
 
     @GetMapping("/refresh")
-    fun refreshAccessToken(authentication: Authentication): Mono<InstagramLongLivedTokenResponse> {
+    fun refreshAccessToken(authentication: Authentication): Mono<String> {
         logger.info("Executing Instagram refreshAccessToken method.")
 
         return principalExtractor.getUserId(authentication)
             .flatMap { userId ->
-                instagramAuthService.refreshToken(userId)
+                instagramAuthService.refreshAccessToken(userId)
+                    .map { "Successfully refreshed Instagram access token for user: $userId." }
             }
+    }
+
+    @GetMapping("/user/update")
+    fun updateUserInfo(authentication: Authentication): Mono<String> {
+        logger.info("Executing Instagram updateUserInfo method.")
+
+        return principalExtractor.getUserId(authentication).flatMap { userId ->
+            instagramAuthService.updateUserInfo(userId)
+                .map {
+                    logger.info("Successfully updated Instagram user information for user: $userId")
+
+                    "Successfully updated Instagram user information for user: $userId"
+                }
+        }
     }
 
 }
