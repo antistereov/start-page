@@ -1,12 +1,10 @@
 package io.github.antistereov.start.widgets.instagram.controller
 
 import io.github.antistereov.start.security.AuthenticationPrincipalExtractor
-import io.github.antistereov.start.widgets.instagram.model.InstagramLongLivedTokenResponse
 import io.github.antistereov.start.widgets.instagram.service.InstagramAuthService
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.security.core.Authentication
-import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam

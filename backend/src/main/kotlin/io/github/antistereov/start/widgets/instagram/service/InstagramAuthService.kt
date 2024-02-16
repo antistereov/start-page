@@ -8,13 +8,10 @@ import io.github.antistereov.start.global.model.exception.*
 import io.github.antistereov.start.widgets.instagram.model.InstagramLongLivedTokenResponse
 import io.github.antistereov.start.widgets.instagram.model.InstagramShortLivedTokenResponse
 import io.github.antistereov.start.widgets.instagram.model.InstagramUser
-import jakarta.annotation.PostConstruct
-import okhttp3.internal.isSensitiveHeader
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.BodyInserters
 import org.springframework.web.reactive.function.client.WebClient
-import org.springframework.web.reactive.function.client.bodyToMono
 import org.springframework.web.util.UriComponentsBuilder
 import reactor.core.publisher.Mono
 import java.time.LocalDateTime
