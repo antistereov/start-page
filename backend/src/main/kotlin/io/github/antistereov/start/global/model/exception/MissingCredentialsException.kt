@@ -1,9 +1,9 @@
 package io.github.antistereov.start.global.model.exception
 
 class MissingCredentialsException(
-    userId: String,
+    service: String,
     detail: String,
-    service: String
+    userId: String
 ) : RuntimeException(
     "Missing $detail for service: $service user: $userId"
 )

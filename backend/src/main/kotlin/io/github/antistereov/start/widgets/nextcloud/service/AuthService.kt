@@ -32,17 +32,17 @@ class AuthService(
                 val password = user.nextcloudPassword
 
                 if (host == null) {
-                    sink.error(MissingCredentialsException(userId, serviceName, "host URL"))
+                    sink.error(MissingCredentialsException(serviceName, "host URL", userId))
                     return@handle
                 }
 
                 if (username == null) {
-                    sink.error(MissingCredentialsException(userId, serviceName, "username"))
+                    sink.error(MissingCredentialsException(serviceName, "username", userId))
                     return@handle
                 }
 
                 if (password == null) {
-                    sink.error(MissingCredentialsException(userId, serviceName, "password"))
+                    sink.error(MissingCredentialsException(serviceName, "password", userId))
                     return@handle
                 }
 
