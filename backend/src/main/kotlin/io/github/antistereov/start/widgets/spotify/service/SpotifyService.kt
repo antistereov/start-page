@@ -30,6 +30,7 @@ class SpotifyService(
     @Value("\${spotify.redirectUri}")
     private lateinit var redirectUri: String
 
+    private val serviceName = "Spotify"
     private val spotifyApiUrl = "https://api.spotify.com/v1"
     private val scopes = "user-read-currently-playing"
 
@@ -70,7 +71,7 @@ class SpotifyService(
             .switchIfEmpty(Mono.error(UserNotFoundException(userId)))
             .flatMap { user ->
                 val refreshToken = response.refreshToken
-                    ?: return@flatMap Mono.error(NoRefreshTokenException("Spotify", userId))
+                    ?: return@flatMap Mono.error(NoRefreshTokenException(serviceName, userId))
                 val expirationDate = LocalDateTime.now().plusSeconds(response.expiresIn)
 
                 user.spotifyAccessToken = aesEncryption.encrypt(response.accessToken)
@@ -90,7 +91,7 @@ class SpotifyService(
             .switchIfEmpty(Mono.error(UserNotFoundException(userId)))
             .flatMap { user ->
                 val encryptedRefreshToken = user.spotifyRefreshToken
-                    ?: return@flatMap Mono.error(NoRefreshTokenException("Spotify", userId))
+                    ?: return@flatMap Mono.error(NoRefreshTokenException(serviceName, userId))
                 val refreshToken = aesEncryption.decrypt(encryptedRefreshToken)
 
                 webClient.post()
@@ -127,7 +128,7 @@ class SpotifyService(
                     this.refreshToken(userId).map { it.accessToken }
                 } else {
                     val encryptedSpotifyAccessToken = user.spotifyAccessToken
-                        ?: return@flatMap Mono.error(NoAccessTokenException("Spotify", userId))
+                        ?: return@flatMap Mono.error(NoAccessTokenException(serviceName, userId))
                     Mono.just(aesEncryption.decrypt(encryptedSpotifyAccessToken))
                 }
             }
@@ -140,7 +141,7 @@ class SpotifyService(
             .onStatus({ status -> status.is4xxClientError || status.is5xxServerError }, {
                 it.bodyToMono(String::class.java)
                     .flatMap { errorMessage ->
-                        Mono.error(RuntimeException("Error from Spotify API: $errorMessage"))
+                        Mono.error(ThirdPartyAPIException(serviceName, errorMessage))
                     }
             })
             .bodyToMono(String::class.java)
