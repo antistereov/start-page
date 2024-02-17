@@ -44,6 +44,9 @@ dependencies {
 
     // Tests
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
+    // Parsing JSON
+    implementation 'com.fasterxml.jackson.module:jackson-module-kotlin:2.16.0'
 }
 
 tasks.named('compileKotlin', KotlinCompilationTask.class) {
