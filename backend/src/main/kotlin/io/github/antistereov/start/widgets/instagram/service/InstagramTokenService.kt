@@ -75,7 +75,7 @@ class InstagramTokenService(
         return Mono.error(InvalidCallbackException(serviceName, "Invalid request parameters."))
     }
 
-    private fun getAccessToken(userId: String): Mono<String> {
+    fun getAccessToken(userId: String): Mono<String> {
         return userRepository.findById(userId).flatMap { user ->
             val accessToken = user.instagram.accessToken
             if (accessToken != null) {
