@@ -4,7 +4,7 @@ import org.springframework.stereotype.Service
 
 @Service
 class InstagramService(
-    private val instagramAuthService: InstagramAuthService,
+    private val instagramTokenService: InstagramTokenService,
 ) {
 
     private val serviceName = "Instagram"

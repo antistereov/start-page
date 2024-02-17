@@ -1,8 +1,8 @@
 package io.github.antistereov.start.global.model.exception
 
 class InvalidThirdPartyAPIResponseException(
-    serviceName: String,
+    uri: String,
     message: String,
 ): RuntimeException(
-    "Invalid response for service: $serviceName. Message: $message."
+    "Invalid response when calling uri: $uri. Message: $message."
 )

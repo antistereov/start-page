@@ -27,9 +27,9 @@ class AuthService(
         return userRepository.findById(userId)
             .switchIfEmpty(Mono.error(UserNotFoundException(userId)))
             .handle { user, sink ->
-                val host = user.nextcloudHost
-                val username = user.nextcloudUsername
-                val password = user.nextcloudPassword
+                val host = user.nextcloud.host
+                val username = user.nextcloud.username
+                val password = user.nextcloud.password
 
                 if (host == null) {
                     sink.error(MissingCredentialsException(serviceName, "host URL", userId))
@@ -60,9 +60,9 @@ class AuthService(
         return userRepository.findById(userId)
             .switchIfEmpty(Mono.error(UserNotFoundException(userId)))
             .map { user ->
-                user.nextcloudHost = aesEncryption.encrypt(urlHandler.normalizeBaseUrl(credentials.url))
-                user.nextcloudUsername = aesEncryption.encrypt(credentials.username)
-                user.nextcloudPassword = aesEncryption.encrypt(credentials.password)
+                user.nextcloud.host = aesEncryption.encrypt(urlHandler.normalizeBaseUrl(credentials.url))
+                user.nextcloud.username = aesEncryption.encrypt(credentials.username)
+                user.nextcloud.password = aesEncryption.encrypt(credentials.password)
 
                 user
             }

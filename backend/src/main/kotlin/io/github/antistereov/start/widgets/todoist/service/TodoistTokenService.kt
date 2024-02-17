@@ -1,52 +1,69 @@
 package io.github.antistereov.start.widgets.todoist.service
 
+import io.github.antistereov.start.global.component.StateValidation
 import io.github.antistereov.start.global.model.exception.*
+import io.github.antistereov.start.global.service.BaseService
 import io.github.antistereov.start.security.AESEncryption
 import io.github.antistereov.start.widgets.todoist.model.TodoistTokenResponse
 import io.github.antistereov.start.user.repository.UserRepository
+import io.netty.handler.codec.DecoderException
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.BodyInserters
 import org.springframework.web.reactive.function.client.WebClient
+import org.springframework.web.reactive.function.client.WebClientResponseException
 import org.springframework.web.util.UriComponentsBuilder
 import reactor.core.publisher.Mono
 
 @Service
-class TodoistService(
-    private val webClientBuilder: WebClient.Builder,
+class TodoistTokenService(
     private val webClient: WebClient,
     private val userRepository: UserRepository,
     private val aesEncryption: AESEncryption,
+    private val stateValidation: StateValidation,
+    private val baseService: BaseService,
 ) {
+
+    private val serviceName = "Todoist"
 
     @Value("\${todoist.clientId}")
     private lateinit var clientId: String
-
     @Value("\${todoist.clientSecret}")
     private lateinit var clientSecret: String
-
     @Value("\${todoist.redirectUri}")
     private lateinit var redirectUri: String
+    @Value("\${todoist.scopes}")
+    private lateinit var scopes: String
 
-    private val serviceName = "Todoist"
-    private val todoistApiUrl = "https://api.todoist.com/rest/v2/"
-    private val scopes = "data:read"
-
-    fun getAuthorizationUrl(userId: String): String {
-        val encryptedUserId = aesEncryption.encrypt(userId)
-
-        return UriComponentsBuilder.fromHttpUrl("https://todoist.com/oauth/authorize")
-            .queryParam("client_id", clientId)
-            .queryParam("scope", scopes)
-            .queryParam("state", encryptedUserId)
-            .toUriString()
+    fun getAuthorizationUrl(userId: String): Mono<String> {
+        return stateValidation.createState(userId).map { state ->
+            UriComponentsBuilder.fromHttpUrl("https://todoist.com/oauth/authorize")
+                .queryParam("client_id", clientId)
+                .queryParam("scope", scopes)
+                .queryParam("state", state)
+                .toUriString()
+        }
     }
 
-    fun authenticate(code: String, encryptedUserId: String): Mono<TodoistTokenResponse> {
+    fun authenticate(code: String?, state: String?, error: String?): Mono<TodoistTokenResponse> {
+        if (code != null && state != null) {
+            return handleAuthentication(code, state)
+        }
+
+        if (error != null) {
+            return Mono.error(ThirdPartyAuthorizationCanceledException(serviceName, error, error))
+        }
+
+        return Mono.error(InvalidCallbackException(serviceName, "Invalid request parameters."))
+    }
+
+    private fun handleAuthentication(code: String, state: String): Mono<TodoistTokenResponse> {
+        val uri = "https://todoist.com/oauth/access_token"
+
         return webClient.post()
-            .uri("https://todoist.com/oauth/access_token")
+            .uri(uri)
             .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
             .body(
                 BodyInserters.fromFormData("client_id", clientId)
@@ -55,18 +72,22 @@ class TodoistService(
                     .with("redirect_uri", redirectUri)
             )
             .retrieve()
+            .let { baseService.handleError(uri, it) }
             .bodyToMono(TodoistTokenResponse::class.java)
             .flatMap { response ->
-                val userId = aesEncryption.decrypt(encryptedUserId)
+                val userId = aesEncryption.decrypt(state)
                 handleUser(userId, response)
             }
+            .let { baseService.handleUnexpectedError(uri, it) }
+            .onErrorResume(WebClientResponseException::class.java, baseService.handleNetworkError(uri))
+            .onErrorResume(DecoderException::class.java, baseService.handleParsingError(uri))
     }
 
     private fun handleUser(userId: String, response: TodoistTokenResponse): Mono<TodoistTokenResponse> {
         return userRepository.findById(userId)
             .switchIfEmpty(Mono.error(UserNotFoundException(userId)))
             .flatMap { user ->
-                user.todoistAccessToken = aesEncryption.encrypt(response.accessToken)
+                user.todoist.accessToken = aesEncryption.encrypt(response.accessToken)
 
                 userRepository.save(user)
                     .onErrorMap { throwable ->
@@ -80,26 +101,9 @@ class TodoistService(
         return userRepository.findById(userId)
             .switchIfEmpty(Mono.error(UserNotFoundException(userId)))
             .flatMap { user ->
-                val encryptedAccessToken = user.todoistAccessToken
-                    ?: return@flatMap Mono.error(NoAccessTokenException("Todoist", userId))
+                val encryptedAccessToken = user.todoist.accessToken
+                    ?: return@flatMap Mono.error(MissingCredentialsException("Todoist", "access token", userId))
                 Mono.just(aesEncryption.decrypt(encryptedAccessToken))
-            }
-    }
-
-    fun getTasks(accessToken: String): Mono<String> {
-        return webClientBuilder.build().get()
-            .uri("$todoistApiUrl/tasks")
-            .headers { it.setBearerAuth(accessToken) }
-            .retrieve()
-            .onStatus({ status -> status.is4xxClientError || status.is5xxServerError }, {
-                it.bodyToMono(String::class.java)
-                    .flatMap { errorMessage ->
-                        Mono.error(ThirdPartyAPIException(serviceName, errorMessage))
-                    }
-            })
-            .bodyToMono(String::class.java)
-            .onErrorResume { exception ->
-                Mono.error(UnexpectedErrorException("An unexpected error occurred during the Todoist getTasks method.", exception))
             }
     }
 }

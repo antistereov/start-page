@@ -17,7 +17,7 @@ import reactor.core.publisher.Mono
 import java.time.LocalDateTime
 
 @Service
-class InstagramAuthService(
+class InstagramTokenService(
     private val webClient: WebClient,
     private val userRepository: UserRepository,
     private val aesEncryption: AESEncryption,
@@ -62,14 +62,14 @@ class InstagramAuthService(
             return handleShortLivedToken(code, state).flatMap { user ->
                 val userId = user.id
                 val accessToken = user.instagram.accessToken
-                    ?: return@flatMap Mono.error(NoAccessTokenException(serviceName, userId))
+                    ?: return@flatMap Mono.error(MissingCredentialsException(serviceName, "access token", userId))
 
                 handleLongLivedToken(userId, accessToken)
             }
         }
 
         if (error != null && errorCode != null && errorReason != null) {
-            return Mono.error(ThirdPartyAuthorizationCanceledException(error, errorCode, errorReason))
+            return Mono.error(ThirdPartyAuthorizationCanceledException(serviceName, errorCode, errorReason))
         }
 
         return Mono.error(InvalidCallbackException(serviceName, "Invalid request parameters."))
@@ -81,7 +81,7 @@ class InstagramAuthService(
             if (accessToken != null) {
                 Mono.just(aesEncryption.decrypt(accessToken))
             } else {
-                Mono.error(NoAccessTokenException(serviceName, userId))
+                Mono.error(MissingCredentialsException(serviceName, "access token", userId))
             }
         }
     }
@@ -99,7 +99,7 @@ class InstagramAuthService(
                 }
 
                 val encryptedAccessToken = user.instagram.accessToken
-                    ?: return@flatMap Mono.error(NoAccessTokenException(serviceName, userId))
+                    ?: return@flatMap Mono.error(MissingCredentialsException(serviceName, "access token", userId))
                 val accessToken = aesEncryption.decrypt(encryptedAccessToken)
 
                 val uri = UriComponentsBuilder.fromHttpUrl("$apiBaseUrl/refresh_access_token")

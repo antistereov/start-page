@@ -5,5 +5,5 @@ class ThirdPartyAuthorizationCanceledException(
     error: String,
     message: String,
 ): RuntimeException(
-    "Authorization for service: $serviceName denied. Error: $error. Message: $message."
+    "Authorization denied for service: $serviceName, error: $error, message: $message"
 )

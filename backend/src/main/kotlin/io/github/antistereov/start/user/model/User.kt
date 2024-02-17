@@ -5,13 +5,9 @@ import org.springframework.data.mongodb.core.mapping.Document
 @Document(collection = "users")
 data class User(
     var id: String = "",
-    var spotifyAccessToken: String? = null,
-    var spotifyRefreshToken: String? = null,
-    var spotifyAccessTokenExpirationDate: java.time.LocalDateTime? = null,
-    var todoistAccessToken: String? = null,
-    var unsplashAccessToken: String? = null,
-    var instagram: InstagramAuthDetails = InstagramAuthDetails(),
-    var nextcloudHost: String? = null,
-    var nextcloudUsername: String? = null,
-    var nextcloudPassword: String? = null,
+    val spotify: SpotifyAuthDetails = SpotifyAuthDetails(),
+    val todoist: TodoistAuthDetails = TodoistAuthDetails(),
+    val unsplash: UnsplashAuthDetails = UnsplashAuthDetails(),
+    val instagram: InstagramAuthDetails = InstagramAuthDetails(),
+    val nextcloud: NextCloudAuthDetails = NextCloudAuthDetails(),
 )

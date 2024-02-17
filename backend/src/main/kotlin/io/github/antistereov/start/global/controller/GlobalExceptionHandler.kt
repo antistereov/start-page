@@ -1,41 +1,53 @@
 package io.github.antistereov.start.global.controller
 
 import io.github.antistereov.start.global.model.exception.*
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.ControllerAdvice
 import org.springframework.web.bind.annotation.ExceptionHandler
-import reactor.core.publisher.Mono
 
 @ControllerAdvice
 class GlobalExceptionHandler {
 
+    val logger: Logger = LoggerFactory.getLogger(GlobalExceptionHandler::class.java)
+
     private val exceptionToHttpStatus = mapOf(
-        CannotSaveUserException::class to HttpStatus.BAD_REQUEST,
-        ExpiredTokenException::class to HttpStatus.BAD_REQUEST,
-        InvalidCallbackException::class to HttpStatus.BAD_REQUEST,
-        InvalidNextcloudCredentialsException::class to HttpStatus.UNAUTHORIZED,
-        InvalidPrincipalException::class to HttpStatus.UNAUTHORIZED,
-        InvalidStateParameterException::class to HttpStatus.BAD_REQUEST,
+        CannotSaveUserException::class.java to HttpStatus.BAD_REQUEST,
+        ExpiredTokenException::class.java to HttpStatus.BAD_REQUEST,
+        InvalidCallbackException::class.java to HttpStatus.BAD_REQUEST,
+        InvalidNextcloudCredentialsException::class.java to HttpStatus.UNAUTHORIZED,
+        InvalidPrincipalException::class.java to HttpStatus.UNAUTHORIZED,
+        InvalidStateParameterException::class.java to HttpStatus.BAD_REQUEST,
         InvalidThirdPartyAPIResponseException::class.java to HttpStatus.BAD_REQUEST,
-        MissingClaimException::class to HttpStatus.BAD_REQUEST,
-        MissingCredentialsException::class to HttpStatus.BAD_REQUEST,
-        NoAccessTokenException::class to HttpStatus.BAD_REQUEST,
-        NoRefreshTokenException::class to HttpStatus.BAD_REQUEST,
-        ServiceException::class to HttpStatus.INTERNAL_SERVER_ERROR,
-        ThirdPartyAPIException::class to HttpStatus.INTERNAL_SERVER_ERROR,
-        ThirdPartyAuthorizationCanceledException::class to HttpStatus.UNAUTHORIZED,
-        UnexpectedErrorException::class to HttpStatus.INTERNAL_SERVER_ERROR,
-        UserNotFoundException::class to HttpStatus.NOT_FOUND
+        MissingClaimException::class.java to HttpStatus.BAD_REQUEST,
+        MissingCredentialsException::class.java to HttpStatus.BAD_REQUEST,
+        NetworkErrorException::class.java to HttpStatus.INTERNAL_SERVER_ERROR,
+        ServiceException::class.java to HttpStatus.INTERNAL_SERVER_ERROR,
+        ThirdPartyAPIException::class.java to HttpStatus.INTERNAL_SERVER_ERROR,
+        ThirdPartyAuthorizationCanceledException::class.java to HttpStatus.UNAUTHORIZED,
+        TimeoutException::class.java to HttpStatus.REQUEST_TIMEOUT,
+        UnexpectedErrorException::class.java to HttpStatus.INTERNAL_SERVER_ERROR,
+        UserNotFoundException::class.java to HttpStatus.NOT_FOUND,
+        ParsingErrorException::class.java to HttpStatus.BAD_REQUEST,
     )
 
     @ExceptionHandler
-    fun handleException(ex: Exception): Mono<ResponseEntity<String>> {
-        val status = exceptionToHttpStatus[ex::class] ?: HttpStatus.INTERNAL_SERVER_ERROR
-        return createResponse(ex, status)
-    }
+    fun handleException(ex: Exception): ResponseEntity<Map<String, Any?>> {
+        logger.error(ex.message)
 
-    private fun createResponse(ex: Exception, status: HttpStatus): Mono<ResponseEntity<String>> {
-        return Mono.just(ResponseEntity(ex.message, status))
+        if (ex::class.java !in exceptionToHttpStatus.keys) {
+            throw ex
+        }
+
+        val status = exceptionToHttpStatus[ex::class.java]
+            ?: HttpStatus.INTERNAL_SERVER_ERROR
+        val errorAttributes = mapOf(
+            "status" to status,
+            "message" to (ex.message ?: "An error occurred"),
+            "error" to ex::class.simpleName,
+        )
+        return ResponseEntity.status(status).body(errorAttributes)
     }
 }
