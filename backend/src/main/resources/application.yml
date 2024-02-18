@@ -2,11 +2,6 @@ server:
   port: 8000
 
 spring:
-  devtools:
-    restart:
-      enabled: 'false'
-      poll-interval: '2s'
-      quiet-period: '1s'
   data:
     mongodb:
       uri: mongodb://${MONGO_DB_USER}:${MONGO_DB_PASSWORD}@localhost:27017/start?authSource=admin

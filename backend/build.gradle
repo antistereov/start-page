@@ -50,9 +50,12 @@ dependencies {
 
     // CalDav
     implementation 'org.mnode.ical4j:ical4j:1.0.2'
+}
 
-    // Auto reload
-    developmentOnly 'org.springframework.boot:spring-boot-devtools'
+configurations {
+    configureEach {
+        exclude group: 'commons-logging', module: 'commons-logging'
+    }
 }
 
 tasks.named('compileKotlin', KotlinCompilationTask.class) {
