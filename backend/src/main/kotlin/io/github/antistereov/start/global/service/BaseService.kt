@@ -57,17 +57,6 @@ class BaseService(
         })
     }
 
-    fun <T> handleUnexpectedError(uri: String, mono: Mono<T>): Mono<T> {
-        return mono.onErrorResume { exception ->
-            Mono.error(
-                UnexpectedErrorException(
-                    "An unexpected error occurred calling uri: $uri.",
-                    exception
-                )
-            )
-        }
-    }
-
     fun <T> handleNetworkError(uri: String): (WebClientResponseException) -> Mono<T> = { e ->
         if (e.statusCode == HttpStatus.REQUEST_TIMEOUT) {
             Mono.error(TimeoutException("Request to $uri timed out"))
