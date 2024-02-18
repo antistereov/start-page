@@ -20,7 +20,6 @@ import net.fortuna.ical4j.model.DateTime
 import net.fortuna.ical4j.model.Period
 import net.fortuna.ical4j.model.component.VEvent
 import net.fortuna.ical4j.model.property.RRule
-import org.springframework.http.HttpMethod
 import org.springframework.web.reactive.function.client.WebClient
 import org.xml.sax.InputSource
 import reactor.core.publisher.Flux
