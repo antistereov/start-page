@@ -1,7 +1,7 @@
 package io.github.antistereov.start.widgets.nextcloud.controller
 
 import io.github.antistereov.start.security.AuthenticationPrincipalExtractor
-import io.github.antistereov.start.widgets.nextcloud.service.AuthService
+import io.github.antistereov.start.widgets.nextcloud.service.NextcloudAuthService
 import io.github.antistereov.start.widgets.nextcloud.service.NewsService
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -13,11 +13,11 @@ import org.springframework.web.bind.annotation.RestController
 import reactor.core.publisher.Mono
 
 @RestController
-@RequestMapping("/api/nextcloud/news")
+@RequestMapping("/widgets/nextcloud/news")
 class NewsController(
     private val newsService: NewsService,
     private val principalExtractor: AuthenticationPrincipalExtractor,
-    private val authService: AuthService,
+    private val nextcloudAuthService: NextcloudAuthService,
 ) {
 
     val logger: Logger = LoggerFactory.getLogger(NewsController::class.java)
@@ -31,7 +31,7 @@ class NewsController(
 
         return principalExtractor.getUserId(authentication)
             .flatMap { userId ->
-                authService.getCredentials(userId)
+                nextcloudAuthService.getCredentials(userId)
                     .flatMap { credentials ->
                         newsService.getLatestNews(credentials, batchSize)
                     }

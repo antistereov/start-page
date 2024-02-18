@@ -7,6 +7,7 @@ import io.github.antistereov.start.global.model.exception.UserNotFoundException
 import io.github.antistereov.start.security.AESEncryption
 import io.github.antistereov.start.user.repository.UserRepository
 import io.github.antistereov.start.util.UrlHandler
+import io.github.antistereov.start.widgets.nextcloud.NextcloudProperties
 import io.github.antistereov.start.widgets.nextcloud.model.NextcloudCredentials
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
@@ -14,14 +15,13 @@ import org.springframework.web.reactive.function.client.WebClient
 import reactor.core.publisher.Mono
 
 @Service
-class AuthService(
+class NextcloudAuthService(
     private val userRepository: UserRepository,
     private val aesEncryption: AESEncryption,
     private val urlHandler: UrlHandler,
-    private val webClientBuilder: WebClient.Builder
+    private val webClientBuilder: WebClient.Builder,
+    private val properties: NextcloudProperties,
 ) {
-
-    private val serviceName = "Nextcloud"
 
     fun getCredentials(userId: String): Mono<NextcloudCredentials> {
         return userRepository.findById(userId)
@@ -32,17 +32,17 @@ class AuthService(
                 val password = user.nextcloud.password
 
                 if (host == null) {
-                    sink.error(MissingCredentialsException(serviceName, "host URL", userId))
+                    sink.error(MissingCredentialsException(properties.serviceName, "host URL", userId))
                     return@handle
                 }
 
                 if (username == null) {
-                    sink.error(MissingCredentialsException(serviceName, "username", userId))
+                    sink.error(MissingCredentialsException(properties.serviceName, "username", userId))
                     return@handle
                 }
 
                 if (password == null) {
-                    sink.error(MissingCredentialsException(serviceName, "password", userId))
+                    sink.error(MissingCredentialsException(properties.serviceName, "password", userId))
                     return@handle
                 }
 

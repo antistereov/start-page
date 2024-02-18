@@ -2,7 +2,7 @@ package io.github.antistereov.start.widgets.nextcloud.controller
 
 import io.github.antistereov.start.security.AuthenticationPrincipalExtractor
 import io.github.antistereov.start.widgets.nextcloud.model.NextcloudCredentials
-import io.github.antistereov.start.widgets.nextcloud.service.AuthService
+import io.github.antistereov.start.widgets.nextcloud.service.NextcloudAuthService
 import jakarta.validation.Valid
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -14,13 +14,13 @@ import org.springframework.web.bind.annotation.RestController
 import reactor.core.publisher.Mono
 
 @RestController
-@RequestMapping("/api/nextcloud")
-class AuthController(
-    private val authService: AuthService,
+@RequestMapping("/widgets/nextcloud")
+class NextcloudAuthController(
+    private val nextcloudAuthService: NextcloudAuthService,
     private val principalExtractor: AuthenticationPrincipalExtractor,
 ) {
 
-    val logger: Logger = LoggerFactory.getLogger(AuthController::class.java)
+    val logger: Logger = LoggerFactory.getLogger(NextcloudAuthController::class.java)
 
     @PostMapping("/auth")
     fun auth(
@@ -31,7 +31,7 @@ class AuthController(
 
         return principalExtractor.getUserId(authentication)
             .flatMap { userId ->
-                authService.authentication(userId, credentials)
+                nextcloudAuthService.authentication(userId, credentials)
             }
     }
 }
