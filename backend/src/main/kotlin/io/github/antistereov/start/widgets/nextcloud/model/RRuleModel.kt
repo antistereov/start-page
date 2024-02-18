@@ -1,10 +1,10 @@
 package io.github.antistereov.start.widgets.nextcloud.model
 
-import java.time.ZonedDateTime
+import java.time.LocalDateTime
 
 data class RRuleModel(
     val freq: String?,
-    val until: ZonedDateTime?,
+    val until: LocalDateTime?,
     val count: Int?,
     val interval: Int?,
     val byDay: List<String>?,

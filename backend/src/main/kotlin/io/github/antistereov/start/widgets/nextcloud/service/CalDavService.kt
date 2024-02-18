@@ -9,7 +9,6 @@ import io.github.antistereov.start.widgets.nextcloud.model.Event
 import io.github.antistereov.start.widgets.nextcloud.model.NextcloudCalendar
 import io.github.antistereov.start.widgets.nextcloud.model.NextcloudCredentials
 import io.github.antistereov.start.widgets.nextcloud.model.RRuleModel
-import kotlinx.serialization.modules.EmptySerializersModule
 import okhttp3.Credentials
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -25,7 +24,7 @@ import org.xml.sax.InputSource
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import java.io.StringReader
-import java.time.Instant
+import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.*
@@ -48,7 +47,8 @@ class CalDavService(
             .switchIfEmpty(Mono.error(UserNotFoundException(userId)))
             .flatMapMany { user ->
                 val existingIcsLinks = user.nextcloud.calendars.map { it.icsLink }
-                val duplicates = calendars.find { it.icsLink in existingIcsLinks }
+                val decryptedIcsLinks = existingIcsLinks.map { aesEncryption.decrypt(it) }
+                val duplicates = calendars.find { it.icsLink in decryptedIcsLinks }
                 if (duplicates != null) {
                     throw IllegalArgumentException("Trying to add existing calendars: $duplicates")
                 }
@@ -59,7 +59,7 @@ class CalDavService(
                         color = calendar.color,
                         icsLink = aesEncryption.encrypt(calendar.icsLink),
                         description = calendar.description?.let { aesEncryption.encrypt(it) },
-                        events = decryptEvents(calendar.events)
+                        events = encryptEvents(calendar.events)
                     )
                 }
                 user.nextcloud.calendars.addAll(newCalendars)
@@ -73,13 +73,17 @@ class CalDavService(
             }
     }
 
-    fun deleteCalendars(userId: String, icsLinks: List<String>): Flux<NextcloudCalendar> {
+    fun deleteCalendars(userId: String, icsLinks: List<String>?): Flux<NextcloudCalendar> {
         return userRepository.findById(userId)
             .switchIfEmpty(Mono.error(UserNotFoundException(userId)))
             .flatMapMany { user ->
-                val updatedCalendars = user.nextcloud.calendars
-                    .filter { aesEncryption.decrypt(it.icsLink) !in icsLinks }
-                    .toMutableList()
+                val updatedCalendars = if (icsLinks != null) {
+                    user.nextcloud.calendars
+                        .filter { aesEncryption.decrypt(it.icsLink) !in icsLinks }
+                        .toMutableList()
+                } else {
+                    mutableListOf()
+                }
                 user.nextcloud.calendars = updatedCalendars
                 userRepository.save(user)
                     .onErrorMap { throwable ->
@@ -117,8 +121,10 @@ class CalDavService(
                         val decryptedIcsLink = aesEncryption.decrypt(calendar.icsLink)
                         getCalendarEvents(credentials, decryptedIcsLink)
                             .collectList()
-                            .map { encryptEvents(it) }
-                            .map { encryptedEvents -> calendar.copy(events = encryptedEvents) }
+                            .map { events ->
+                                calendar.events = events
+                                calendar
+                            }
                     }.collectList()
                 }.flatMap { updatedCalendars ->
                     refreshUserCalenders(userId, updatedCalendars)
@@ -132,11 +138,11 @@ class CalDavService(
             .flatMap { user ->
                 val updatedCalendars = calendars.map { calendar ->
                     NextcloudCalendar(
-                        name = aesEncryption.encrypt(calendar.name),
+                        name = calendar.name,
                         color = calendar.color,
-                        icsLink = aesEncryption.encrypt(calendar.icsLink),
-                        description = calendar.description?.let { aesEncryption.encrypt(it) },
-                        events = mutableListOf()
+                        icsLink = calendar.icsLink,
+                        description = calendar.description,
+                        events = encryptEvents(calendar.events)
                     )
                 }.toMutableList()
                 user.nextcloud.calendars = updatedCalendars
@@ -164,7 +170,7 @@ class CalDavService(
             val calendar = calendarBuilder.build(calendarData?.let { StringReader(it) })
 
             val now = ZonedDateTime.now()
-            val future = now.plusMonths(1)
+            val future = now.plusYears(1)
 
             val nowDate = Date.from(now.toInstant())
             val futureDate = Date.from(future.toInstant())
@@ -177,11 +183,9 @@ class CalDavService(
                     val rruleProperty = event.getProperty(RRule.RRULE) as RRule?
 
                     if (rruleProperty != null) {
-                        // If the event is recurring, check if it occurs within the period
                         val periods = event.calculateRecurrenceSet(period)
                         periods.isNotEmpty()
                     } else {
-                        // If the event is not recurring, check if it starts after the current time
                         event.startDate.date.toInstant().atZone(now.zone).toLocalDateTime()
                             .isAfter(now.toLocalDateTime())
                     }
@@ -191,8 +195,8 @@ class CalDavService(
                         summary = vEvent.summary.value,
                         description = vEvent.description?.value,
                         location = vEvent.location?.value,
-                        start = ZonedDateTime.ofInstant(vEvent.startDate.date.toInstant(), ZoneId.systemDefault()),
-                        end = ZonedDateTime.ofInstant(vEvent.endDate.date.toInstant(), ZoneId.systemDefault()),
+                        start = vEvent.startDate.date.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime(),
+                        end = vEvent.endDate.date.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime(),
                         allDay = vEvent.startDate.isUtc,
                         rrule = vEvent.getProperty(RRule.RRULE)?.value?.let { parseRRule(it) }
                     )
@@ -275,7 +279,7 @@ class CalDavService(
 
         return RRuleModel(
             freq = rruleParts["FREQ"],
-            until = rruleParts["UNTIL"]?.let { ZonedDateTime.parse(it, formatter) },
+            until = rruleParts["UNTIL"]?.let { LocalDateTime.parse(it, formatter) },
             count = rruleParts["COUNT"]?.toInt(),
             interval = rruleParts["INTERVAL"]?.toInt(),
             byDay = rruleParts["BYDAY"]?.split(","),

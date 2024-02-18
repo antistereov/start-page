@@ -6,5 +6,5 @@ data class NextcloudCalendar(
     val color: String,
     val icsLink: String,
     val description: String?,
-    val events: List<Event>,
+    var events: List<Event>,
 )
