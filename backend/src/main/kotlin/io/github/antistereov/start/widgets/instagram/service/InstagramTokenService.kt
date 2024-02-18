@@ -5,10 +5,10 @@ import io.github.antistereov.start.user.model.User
 import io.github.antistereov.start.user.repository.UserRepository
 import io.github.antistereov.start.global.component.StateValidation
 import io.github.antistereov.start.global.model.exception.*
+import io.github.antistereov.start.widgets.instagram.config.InstagramProperties
 import io.github.antistereov.start.widgets.instagram.model.InstagramLongLivedTokenResponse
 import io.github.antistereov.start.widgets.instagram.model.InstagramShortLivedTokenResponse
 import io.github.antistereov.start.widgets.instagram.model.InstagramUser
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.BodyInserters
 import org.springframework.web.reactive.function.client.WebClient
@@ -22,30 +22,16 @@ class InstagramTokenService(
     private val userRepository: UserRepository,
     private val aesEncryption: AESEncryption,
     private val stateValidation: StateValidation,
+    private val properties: InstagramProperties,
 ) {
-
-    @Value("\${instagram.clientId}")
-    private lateinit var clientId: String
-
-    @Value("\${instagram.clientSecret}")
-    private lateinit var clientSecret: String
-
-    @Value("\${instagram.redirectUri}")
-    private lateinit var redirectUri: String
-
-    @Value("\${instagram.apiBaseUrl}")
-    private lateinit var apiBaseUrl: String
-
-    private val scopes = "user_profile,user_media"
-    private val serviceName = "Instagram"
 
     fun getAuthorizationUrl(userId: String): Mono<String> {
         return stateValidation.createState(userId).map { state ->
             UriComponentsBuilder.fromHttpUrl("https://api.instagram.com/oauth/authorize")
                 .queryParam("response_type", "code")
-                .queryParam("client_id", clientId)
-                .queryParam("scope", scopes)
-                .queryParam("redirect_uri", redirectUri)
+                .queryParam("client_id", properties.clientId)
+                .queryParam("scope", properties.scopes)
+                .queryParam("redirect_uri", properties.redirectUri)
                 .queryParam("state", state)
                 .toUriString()
         }
@@ -62,17 +48,17 @@ class InstagramTokenService(
             return handleShortLivedToken(code, state).flatMap { user ->
                 val userId = user.id
                 val accessToken = user.instagram.accessToken
-                    ?: return@flatMap Mono.error(MissingCredentialsException(serviceName, "access token", userId))
+                    ?: return@flatMap Mono.error(MissingCredentialsException(properties.serviceName, "access token", userId))
 
                 handleLongLivedToken(userId, accessToken)
             }
         }
 
         if (error != null && errorCode != null && errorReason != null) {
-            return Mono.error(ThirdPartyAuthorizationCanceledException(serviceName, errorCode, errorReason))
+            return Mono.error(ThirdPartyAuthorizationCanceledException(properties.serviceName, errorCode, errorReason))
         }
 
-        return Mono.error(InvalidCallbackException(serviceName, "Invalid request parameters."))
+        return Mono.error(InvalidCallbackException(properties.serviceName, "Invalid request parameters."))
     }
 
     fun getAccessToken(userId: String): Mono<String> {
@@ -81,7 +67,7 @@ class InstagramTokenService(
             if (accessToken != null) {
                 Mono.just(aesEncryption.decrypt(accessToken))
             } else {
-                Mono.error(MissingCredentialsException(serviceName, "access token", userId))
+                Mono.error(MissingCredentialsException(properties.serviceName, "access token", userId))
             }
         }
     }
@@ -93,16 +79,16 @@ class InstagramTokenService(
             .switchIfEmpty(Mono.error(UserNotFoundException(userId)))
             .flatMap { user ->
                 val expirationDate = user.instagram.expirationDate
-                    ?: return@flatMap Mono.error(MissingCredentialsException(serviceName, "expirationDate", userId))
+                    ?: return@flatMap Mono.error(MissingCredentialsException(properties.serviceName, "expirationDate", userId))
                 if (currentTime.isAfter(expirationDate)) {
-                    return@flatMap Mono.error(ExpiredTokenException(serviceName, userId))
+                    return@flatMap Mono.error(ExpiredTokenException(properties.serviceName, userId))
                 }
 
                 val encryptedAccessToken = user.instagram.accessToken
-                    ?: return@flatMap Mono.error(MissingCredentialsException(serviceName, "access token", userId))
+                    ?: return@flatMap Mono.error(MissingCredentialsException(properties.serviceName, "access token", userId))
                 val accessToken = aesEncryption.decrypt(encryptedAccessToken)
 
-                val uri = UriComponentsBuilder.fromHttpUrl("$apiBaseUrl/refresh_access_token")
+                val uri = UriComponentsBuilder.fromHttpUrl("${properties.apiBaseUrl}/refresh_access_token")
                     .queryParam("grant_type", "ig_refresh_token")
                     .queryParam("access_token", accessToken)
                     .toUriString()
@@ -119,7 +105,7 @@ class InstagramTokenService(
 
     fun updateUserInfo(userId: String): Mono<User> {
         return getAccessToken(userId).flatMap { accessToken ->
-            val uri = UriComponentsBuilder.fromHttpUrl("$apiBaseUrl/me")
+            val uri = UriComponentsBuilder.fromHttpUrl("${properties.apiBaseUrl}/me")
                 .queryParam("access_token", accessToken)
                 .queryParam("fields", "username")
                 .toUriString()
@@ -130,7 +116,7 @@ class InstagramTokenService(
                 .onStatus({ status -> status.is4xxClientError || status.is5xxServerError }, {
                     it.bodyToMono(String::class.java)
                         .flatMap { errorMessage ->
-                            Mono.error(ThirdPartyAPIException(serviceName, errorMessage))
+                            Mono.error(ThirdPartyAPIException(properties.serviceName, errorMessage))
                         }
                 })
                 .bodyToMono(InstagramUser::class.java)
@@ -142,7 +128,7 @@ class InstagramTokenService(
                             instagramUsername = instagramUser.username
                         )
                     } else {
-                        Mono.error(InvalidThirdPartyAPIResponseException(serviceName, "No username in response found."))
+                        Mono.error(InvalidThirdPartyAPIResponseException(properties.serviceName, "No username in response found."))
                     }
                 }
         }
@@ -154,10 +140,10 @@ class InstagramTokenService(
             .uri("https://api.instagram.com/oauth/access_token")
             .body(
                 BodyInserters.fromFormData("grant_type", "authorization_code")
-                    .with("client_id", clientId)
-                    .with("client_secret", clientSecret)
+                    .with("client_id", properties.clientId)
+                    .with("client_secret", properties.clientSecret)
                     .with("code", code)
-                    .with("redirect_uri", redirectUri)
+                    .with("redirect_uri", properties.redirectUri)
             )
             .retrieve()
             .bodyToMono(InstagramShortLivedTokenResponse::class.java)
@@ -186,7 +172,7 @@ class InstagramTokenService(
             .uri("https://api.instagram.com/oauth/access_token")
             .body(
                 BodyInserters.fromFormData("grant_type", "ig_exchange_token")
-                    .with("client_secret", clientSecret)
+                    .with("client_secret", properties.clientSecret)
                     .with("access_token", accessToken)
             )
             .retrieve()

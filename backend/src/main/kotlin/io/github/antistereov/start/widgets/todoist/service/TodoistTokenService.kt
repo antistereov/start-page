@@ -6,8 +6,8 @@ import io.github.antistereov.start.global.service.BaseService
 import io.github.antistereov.start.security.AESEncryption
 import io.github.antistereov.start.widgets.todoist.model.TodoistTokenResponse
 import io.github.antistereov.start.user.repository.UserRepository
+import io.github.antistereov.start.widgets.todoist.config.TodoistProperties
 import io.netty.handler.codec.DecoderException
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
@@ -24,24 +24,14 @@ class TodoistTokenService(
     private val aesEncryption: AESEncryption,
     private val stateValidation: StateValidation,
     private val baseService: BaseService,
+    private val properties: TodoistProperties,
 ) {
-
-    private val serviceName = "Todoist"
-
-    @Value("\${todoist.clientId}")
-    private lateinit var clientId: String
-    @Value("\${todoist.clientSecret}")
-    private lateinit var clientSecret: String
-    @Value("\${todoist.redirectUri}")
-    private lateinit var redirectUri: String
-    @Value("\${todoist.scopes}")
-    private lateinit var scopes: String
 
     fun getAuthorizationUrl(userId: String): Mono<String> {
         return stateValidation.createState(userId).map { state ->
             UriComponentsBuilder.fromHttpUrl("https://todoist.com/oauth/authorize")
-                .queryParam("client_id", clientId)
-                .queryParam("scope", scopes)
+                .queryParam("client_id", properties.clientId)
+                .queryParam("scope", properties.scopes)
                 .queryParam("state", state)
                 .toUriString()
         }
@@ -53,10 +43,10 @@ class TodoistTokenService(
         }
 
         if (error != null) {
-            return Mono.error(ThirdPartyAuthorizationCanceledException(serviceName, error, error))
+            return Mono.error(ThirdPartyAuthorizationCanceledException(properties.serviceName, error, error))
         }
 
-        return Mono.error(InvalidCallbackException(serviceName, "Invalid request parameters."))
+        return Mono.error(InvalidCallbackException(properties.serviceName, "Invalid request parameters."))
     }
 
     private fun handleAuthentication(code: String, state: String): Mono<TodoistTokenResponse> {
@@ -66,10 +56,10 @@ class TodoistTokenService(
             .uri(uri)
             .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
             .body(
-                BodyInserters.fromFormData("client_id", clientId)
-                    .with("client_secret", clientSecret)
+                BodyInserters.fromFormData("client_id", properties.clientId)
+                    .with("client_secret", properties.clientSecret)
                     .with("code", code)
-                    .with("redirect_uri", redirectUri)
+                    .with("redirect_uri", properties.redirectUri)
             )
             .retrieve()
             .let { baseService.handleError(uri, it) }

@@ -1,7 +1,7 @@
 package io.github.antistereov.start.widgets.instagram.service
 
 import io.github.antistereov.start.global.service.BaseService
-import org.springframework.beans.factory.annotation.Value
+import io.github.antistereov.start.widgets.instagram.config.InstagramProperties
 import org.springframework.stereotype.Service
 import org.springframework.web.util.UriComponentsBuilder
 import reactor.core.publisher.Mono
@@ -10,14 +10,11 @@ import reactor.core.publisher.Mono
 class InstagramApiService(
     private val tokenService: InstagramTokenService,
     private val baseService: BaseService,
+    private val properties: InstagramProperties,
 ) {
 
-    @Value("\${instagram.apiBaseUrl}")
-    private lateinit var apiBaseUrl: String
-
-
     fun getUsername(userId: String, instagramUserId: String): Mono<String> {
-        val uri = "$apiBaseUrl/$instagramUserId?fields=id,username"
+        val uri = "${properties.apiBaseUrl}/$instagramUserId?fields=id,username"
         return tokenService.getAccessToken(userId).flatMap { accessToken ->
             baseService.makeAuthorizedGetRequest(uri, accessToken)
         }
@@ -31,7 +28,7 @@ class InstagramApiService(
         after: String? = null,
     ): Mono<String> {
         val uri = UriComponentsBuilder
-            .fromHttpUrl("$apiBaseUrl/$instagramUserId/media")
+            .fromHttpUrl("${properties.apiBaseUrl}/$instagramUserId/media")
             .queryParam("limit", limit)
             .queryParam("before", before)
             .queryParam("after", after)
@@ -42,7 +39,7 @@ class InstagramApiService(
     }
 
     fun getMedia(userId: String, mediaId: String): Mono<String> {
-        val uri = "$apiBaseUrl/$mediaId?fields=id,media_type,media_url,username,timestamp,caption,permalink"
+        val uri = "${properties.apiBaseUrl}/$mediaId?fields=id,media_type,media_url,username,timestamp,caption,permalink"
 
         return tokenService.getAccessToken(userId).flatMap { accessToken ->
             baseService.makeAuthorizedGetRequest(uri, accessToken)

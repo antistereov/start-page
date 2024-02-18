@@ -5,9 +5,9 @@ import io.github.antistereov.start.global.model.exception.*
 import io.github.antistereov.start.global.service.BaseService
 import io.github.antistereov.start.security.AESEncryption
 import io.github.antistereov.start.user.repository.UserRepository
+import io.github.antistereov.start.widgets.unsplash.config.UnsplashProperties
 import io.github.antistereov.start.widgets.unsplash.model.UnsplashTokenResponse
 import io.netty.handler.codec.DecoderException
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
@@ -24,26 +24,15 @@ class UnsplashTokenService(
     private val aesEncryption: AESEncryption,
     private val stateValidation: StateValidation,
     private val baseService: BaseService,
+    private val properties: UnsplashProperties,
 ) {
-
-    val serviceName = "Unsplash"
-
-    @Value("\${unsplash.clientId}")
-    private lateinit var clientId: String
-    @Value("\${unsplash.clientSecret}")
-    private lateinit var clientSecret: String
-    @Value("\${unsplash.redirectUri}")
-    private lateinit var redirectUri: String
-    @Value("\${unsplash.scopes}")
-    private lateinit var scopes: String
 
     fun getAuthorizationUrl(userId: String): Mono<String> {
         return stateValidation.createState(userId).map { state ->
             UriComponentsBuilder.fromHttpUrl("https://unsplash.com/oauth/authorize")
-                .queryParam("client_id", clientId)
-                .queryParam("redirect_uri", redirectUri)
+                .queryParam("redirect_uri", properties.redirectUri)
                 .queryParam("response_type", "code")
-                .queryParam("scope", scopes)
+                .queryParam("scope", properties.scopes)
                 .queryParam("state", state)
                 .toUriString()
         }
@@ -60,10 +49,10 @@ class UnsplashTokenService(
         }
 
         if (error != null && errorDescription != null) {
-            return Mono.error(ThirdPartyAuthorizationCanceledException(serviceName, error, errorDescription))
+            return Mono.error(ThirdPartyAuthorizationCanceledException(properties.serviceName, error, errorDescription))
         }
 
-        return Mono.error(InvalidCallbackException(serviceName, "Invalid request parameters."))
+        return Mono.error(InvalidCallbackException(properties.serviceName, "Invalid request parameters."))
     }
 
     private fun handleAuthentication(code: String, state: String): Mono<UnsplashTokenResponse> {
@@ -74,10 +63,10 @@ class UnsplashTokenService(
             .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
             .body(
                 BodyInserters.fromFormData("grant_type", "authorization_code")
-                    .with("client_id", clientId)
-                    .with("client_secret", clientSecret)
+                    .with("client_id", properties.clientId)
+                    .with("client_secret", properties.clientSecret)
                     .with("code", code)
-                    .with("redirect_uri", redirectUri)
+                    .with("redirect_uri", properties.redirectUri)
             )
             .retrieve()
             .let { baseService.handleError(uri, it) }
@@ -111,7 +100,7 @@ class UnsplashTokenService(
             .switchIfEmpty(Mono.error(UserNotFoundException(userId)))
             .flatMap { user ->
                 val encryptedAccessToken = user.unsplash.accessToken
-                    ?: return@flatMap Mono.error(MissingCredentialsException(serviceName, "access token", userId))
+                    ?: return@flatMap Mono.error(MissingCredentialsException(properties.serviceName, "access token", userId))
                 Mono.just(aesEncryption.decrypt(encryptedAccessToken))
             }
     }

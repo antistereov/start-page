@@ -44,9 +44,12 @@ dependencies {
 
     // Tests
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'io.projectreactor:reactor-test:3.6.2'
 
     // Parsing JSON
     implementation 'com.fasterxml.jackson.module:jackson-module-kotlin:2.16.0'
+
+    testImplementation 'io.github.cdimascio:java-dotenv:5.2.2'
 }
 
 tasks.named('compileKotlin', KotlinCompilationTask.class) {
