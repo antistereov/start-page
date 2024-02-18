@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
 @RestController
@@ -28,8 +29,8 @@ class LocationController(
     fun getNearbyPublicTransport(
         @RequestParam(required = true) lat: Double,
         @RequestParam(required = true) lon: Double,
-        @RequestParam(required = false, defaultValue = "500") radius: String,
-    ): Mono<List<NearbyStop>> {
+        @RequestParam(required = false, defaultValue = "500") radius: Long,
+    ): Flux<NearbyStop> {
         return locationService.getNearbyPublicTransport(lat, lon, radius)
     }
 }
