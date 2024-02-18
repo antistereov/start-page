@@ -59,4 +59,13 @@ class SpotifyTokenController(
                 }
             }
     }
+
+    @DeleteMapping
+    fun logout(authentication: Authentication): Mono<String> {
+        logger.info("Executing Spotify logout method.")
+
+        return principalExtractor.getUserId(authentication).flatMap { userId ->
+            tokenService.logout(userId).then(Mono.fromCallable { "Spotify user information deleted for user: $userId." })
+        }
+    }
 }

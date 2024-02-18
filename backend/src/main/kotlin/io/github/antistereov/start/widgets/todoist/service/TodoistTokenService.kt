@@ -4,6 +4,7 @@ import io.github.antistereov.start.global.component.StateValidation
 import io.github.antistereov.start.global.model.exception.*
 import io.github.antistereov.start.global.service.BaseService
 import io.github.antistereov.start.security.AESEncryption
+import io.github.antistereov.start.user.model.TodoistAuthDetails
 import io.github.antistereov.start.widgets.todoist.model.TodoistTokenResponse
 import io.github.antistereov.start.user.repository.UserRepository
 import io.github.antistereov.start.widgets.todoist.config.TodoistProperties
@@ -47,6 +48,20 @@ class TodoistTokenService(
         }
 
         return Mono.error(InvalidCallbackException(properties.serviceName, "Invalid request parameters."))
+    }
+
+    fun logout(userId: String): Mono<Void> {
+        return userRepository.findById(userId)
+            .switchIfEmpty(Mono.error(UserNotFoundException(userId)))
+            .flatMap { user ->
+                user.todoist = TodoistAuthDetails()
+
+                userRepository.save(user)
+                    .onErrorMap { throwable ->
+                        CannotSaveUserException(throwable)
+                    }
+                    .then()
+            }
     }
 
     private fun handleAuthentication(code: String, state: String): Mono<TodoistTokenResponse> {

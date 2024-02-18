@@ -5,10 +5,7 @@ import io.github.antistereov.start.widgets.todoist.service.TodoistTokenService
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.security.core.Authentication
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 import reactor.core.publisher.Mono
 
 @RestController
@@ -47,5 +44,14 @@ class TodoistTokenController(
 
                 "Todoist authentication successful."
             }
+    }
+
+    @DeleteMapping
+    fun logout(authentication: Authentication): Mono<String> {
+        logger.info("Executing Todoist logout method.")
+
+        return principalExtractor.getUserId(authentication).flatMap { userId ->
+            tokenService.logout(userId).then(Mono.fromCallable { "Todoist user information deleted for user: $userId." })
+        }
     }
 }

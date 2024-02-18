@@ -5,6 +5,7 @@ import io.github.antistereov.start.global.model.exception.InvalidNextcloudCreden
 import io.github.antistereov.start.global.model.exception.MissingCredentialsException
 import io.github.antistereov.start.global.model.exception.UserNotFoundException
 import io.github.antistereov.start.security.AESEncryption
+import io.github.antistereov.start.user.model.NextcloudAuthDetails
 import io.github.antistereov.start.user.repository.UserRepository
 import io.github.antistereov.start.util.UrlHandler
 import io.github.antistereov.start.widgets.nextcloud.NextcloudProperties
@@ -91,5 +92,19 @@ class NextcloudAuthService(
             .onStatus({ it != HttpStatus.OK }, { Mono.just(InvalidNextcloudCredentialsException()) })
             .bodyToMono(String::class.java)
             .flatMap { Mono.just("Nextcloud credentials are valid.") }
+    }
+
+    fun logout(userId: String): Mono<Void> {
+        return userRepository.findById(userId)
+            .switchIfEmpty(Mono.error(UserNotFoundException(userId)))
+            .flatMap { user ->
+                user.nextcloud = NextcloudAuthDetails()
+
+                userRepository.save(user)
+                    .onErrorMap { throwable ->
+                        CannotSaveUserException(throwable)
+                    }
+                    .then()
+            }
     }
 }

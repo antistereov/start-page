@@ -5,6 +5,7 @@ import io.github.antistereov.start.user.model.User
 import io.github.antistereov.start.user.repository.UserRepository
 import io.github.antistereov.start.global.component.StateValidation
 import io.github.antistereov.start.global.model.exception.*
+import io.github.antistereov.start.user.model.InstagramAuthDetails
 import io.github.antistereov.start.widgets.instagram.config.InstagramProperties
 import io.github.antistereov.start.widgets.instagram.model.InstagramLongLivedTokenResponse
 import io.github.antistereov.start.widgets.instagram.model.InstagramShortLivedTokenResponse
@@ -132,6 +133,19 @@ class InstagramTokenService(
                     }
                 }
         }
+    }
+
+    fun logout(userId: String): Mono<Void> {
+        return userRepository.findById(userId)
+            .switchIfEmpty(Mono.error(UserNotFoundException(userId)))
+            .flatMap { user ->
+                user.instagram = InstagramAuthDetails()
+                userRepository.save(user)
+                    .onErrorMap { throwable ->
+                        CannotSaveUserException(throwable)
+                    }
+                    .then()
+            }
     }
 
     private fun getShortLivedToken(code: String): Mono<InstagramShortLivedTokenResponse> {

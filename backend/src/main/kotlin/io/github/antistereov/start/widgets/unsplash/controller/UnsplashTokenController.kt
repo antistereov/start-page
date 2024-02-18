@@ -46,4 +46,13 @@ class UnsplashTokenController(
                 "Unsplash authentication successful."
             }
     }
+
+    @DeleteMapping
+    fun logout(authentication: Authentication): Mono<String> {
+        logger.info("Executing Unsplash logout method.")
+
+        return principalExtractor.getUserId(authentication).flatMap { userId ->
+            tokenService.logout(userId).then(Mono.fromCallable { "Unsplash user information deleted for user: $userId." })
+        }
+    }
 }
