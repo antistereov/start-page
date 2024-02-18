@@ -2,7 +2,6 @@ package io.github.antistereov.start.widgets.unsplash.service
 
 import io.github.antistereov.start.global.service.BaseService
 import io.github.antistereov.start.widgets.unsplash.config.UnsplashProperties
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.web.util.UriComponentsBuilder
 import reactor.core.publisher.Mono
