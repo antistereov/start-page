@@ -1,4 +1,4 @@
-package io.github.antistereov.start.widgets.nextcloud
+package io.github.antistereov.start.widgets.nextcloud.config
 
 import org.springframework.boot.context.properties.ConfigurationProperties
 
