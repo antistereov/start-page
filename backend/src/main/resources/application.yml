@@ -17,37 +17,44 @@ spring:
           issuer-uri: https://${auth0.domain}/
 
 spotify:
-  clientId: ${SPOTIFY_CLIENT_ID}
-  clientSecret: ${SPOTIFY_CLIENT_SECRET}
-  redirectUri: http://localhost:8000/widgets/spotify/auth/callback
-  apiBaseUrl: https://api.spotify.com/v1
+  service-name: Spotify
+  client-id: ${SPOTIFY_CLIENT_ID}
+  client-secret: ${SPOTIFY_CLIENT_SECRET}
+  redirect-uri: http://localhost:8000/widgets/spotify/auth/callback
+  apiBase-url: https://api.spotify.com/v1
   scopes: user-read-currently-playing
 
 todoist:
-  clientId: ${TODOIST_CLIENT_ID}
-  clientSecret: ${TODOIST_CLIENT_SECRET}
-  redirectUri: http://localhost:8000/widgets/todoist/auth/callback
-  apiBaseUrl: https://api.todoist.com/rest/v2
+  service-name: Todoist
+  client-id: ${TODOIST_CLIENT_ID}
+  client-secret: ${TODOIST_CLIENT_SECRET}
+  redirect-uri: http://localhost:8000/widgets/todoist/auth/callback
+  api-base-url: https://api.todoist.com/rest/v2
   scopes: data:read
 
 unsplash:
-  clientId: ${UNSPLASH_CLIENT_ID}
-  clientSecret: ${UNSPLASH_CLIENT_SECRET}
-  redirectUri: http://localhost:8000/widgets/unsplash/auth/callback
-  apiBaseUrl: https://api.unsplash.com
+  service-name: Unsplash
+  client-id: ${UNSPLASH_CLIENT_ID}
+  client-secret: ${UNSPLASH_CLIENT_SECRET}
+  redirect-uri: http://localhost:8000/widgets/unsplash/auth/callback
+  api-base-url: https://api.unsplash.com
   scopes: write_likes+public
 
 instagram:
-  clientId: ${INSTAGRAM_CLIENT_ID}
-  clientSecret: ${INSTAGRAM_CLIENT_SECRET}
-  redirectUri: http://localhost:8000/widgets/instagram/auth/callback
-  apiBaseUrl: https://graph.instagram.com/v19.0
+  service-name: Instagram
+  client-id: ${INSTAGRAM_CLIENT_ID}
+  client-secret: ${INSTAGRAM_CLIENT_SECRET}
+  redirect-uri: http://localhost:8000/widgets/instagram/auth/callback
+  api-base-url: https://graph.instagram.com/v19.0
+  scopes: user_profile,user_media
+
+nextcloud:
+  service-name: Nextcloud
 
 encryption:
-  secretKey: ${SECRET_KEY}
-
+  secret-key: ${SECRET_KEY}
 auth0:
   domain: ${AUTH0_DOMAIN}
-  clientId: ${AUTH0_CLIENT_ID}
-  clientSecret: ${AUTH0_CLIENT_SECRET}
+  client-id: ${AUTH0_CLIENT_ID}
+  client-secret: ${AUTH0_CLIENT_SECRET}
   audience: ${AUTH0_AUDIENCE}
