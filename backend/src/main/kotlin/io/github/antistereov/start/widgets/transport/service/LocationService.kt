@@ -2,12 +2,16 @@ package io.github.antistereov.start.widgets.transport.service
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.github.antistereov.start.widgets.transport.model.LocationAddress
+import io.github.antistereov.start.widgets.transport.model.NearbyStop
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
 import reactor.core.publisher.Mono
 import reactor.core.scheduler.Schedulers
 import java.net.URLEncoder
-import javax.xml.stream.Location
+import kotlin.math.atan2
+import kotlin.math.cos
+import kotlin.math.sin
+import kotlin.math.sqrt
 
 @Service
 class LocationService(
@@ -47,45 +51,79 @@ class LocationService(
                 locationAddress.country
     }
 
-    fun getNearbyPublicTransport(latitude: Double, longitude: Double, radius: String): Mono<List<String>> {
+    fun getNearbyPublicTransport(lat: Double, lon: Double, radius: String): Mono<List<NearbyStop>> {
         val query = """
             [out:json];
             (
-              node["highway"="bus_stop"](around:${radius},${latitude},${longitude});
-              node["railway"="tram_stop"](around:${radius},${latitude},${longitude});
+              node["highway"="bus_stop"](around:${radius},${lat},${lon});
+              node["railway"="tram_stop"](around:${radius},${lat},${lon});
+              node["railway"="station"](around:${radius},${lat},${lon});
+              node["railway"="subway_entrance"](around:${radius},${lat},${lon});
             );
             out body;
         """.trimIndent()
 
         val url = "https://overpass-api.de/api/interpreter"
 
-        return getLocationAddress(latitude, longitude)
-            .flatMap { location ->
-                WebClient.create(url)
-                    .post()
-                    .bodyValue(query)
-                    .retrieve()
-                    .bodyToMono(String::class.java)
-                    .flatMap { parsePublicTransportResponse(it, location) }
-            }
+        return WebClient.create(url)
+            .post()
+            .bodyValue(query)
+            .retrieve()
+            .bodyToMono(String::class.java)
+            .flatMap { parsePublicTransportResponse(it, lat, lon) }
     }
 
-    private fun parsePublicTransportResponse(response: String, location: LocationAddress): Mono<List<String>> {
-        return Mono.fromCallable {
+
+    private fun parsePublicTransportResponse(
+        response: String,
+        lat: Double,
+        lon: Double
+    ): Mono<List<NearbyStop>> {
+        return getLocationAddress(lat, lon).map { location ->
             val mapper = ObjectMapper()
             val json = mapper.readTree(response)
             val elements = json.get("elements")
 
-            val names = mutableListOf<String>()
+            val stops = mutableListOf<NearbyStop>()
             for (element in elements) {
                 val name = element.get("tags").get("name")?.asText()
+                val stopLat = element.get("lat").asDouble()
+                val stopLon = element.get("lon").asDouble()
+                val distance = calculateDistance(lat, lon, stopLat, stopLon)
+                val mot = listOfNotNull(
+                    element.get("tags").get("highway")?.asText()?.replace("_stop", ""),
+                    element.get("tags").get("railway")?.asText()?.replace("_stop", "")
+                )
+
                 if (name != null) {
-                    names.add("$name, ${location.city}, ${location.country}")
+                    stops.add(NearbyStop("$name, ${location.city}, ${location.country}", distance, mot))
                 }
             }
 
-            names.distinct()
+            processStops(stops)
         }
+    }
+
+    fun processStops(stops: List<NearbyStop>): List<NearbyStop> {
+        return stops.groupBy { it.name }
+            .map { (name, group) ->
+                val minDistance = group.minOf { it.distance }
+                val mot = group.flatMap { it.mot }
+                    .map { it.replace("_stop", "") }
+                    .distinct()
+                NearbyStop(name, minDistance, mot)
+            }
+    }
+
+    private fun calculateDistance(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Double {
+        val earthRadius = 6371.0 // radius in kilometers
+        val dLat = Math.toRadians(lat2 - lat1)
+        val dLon = Math.toRadians(lon2 - lon1)
+        val a = sin(dLat / 2) * sin(dLat / 2) +
+                cos(Math.toRadians(lat1)) * cos(Math.toRadians(lat2)) *
+                sin(dLon / 2) * sin(dLon / 2)
+        val c = 2 * atan2(sqrt(a), sqrt(1 - a))
+        return earthRadius * c
     }
 
     private fun encode(value: String): Mono<String> {
