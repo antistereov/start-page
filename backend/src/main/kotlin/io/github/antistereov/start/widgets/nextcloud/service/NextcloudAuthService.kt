@@ -8,7 +8,7 @@ import io.github.antistereov.start.security.AESEncryption
 import io.github.antistereov.start.user.model.NextcloudAuthDetails
 import io.github.antistereov.start.user.repository.UserRepository
 import io.github.antistereov.start.util.UrlHandler
-import io.github.antistereov.start.widgets.nextcloud.NextcloudProperties
+import io.github.antistereov.start.widgets.nextcloud.config.NextcloudProperties
 import io.github.antistereov.start.widgets.nextcloud.model.NextcloudCredentials
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
