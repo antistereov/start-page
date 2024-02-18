@@ -25,6 +25,8 @@ class ChatService(
     private val aesEncryption: AESEncryption,
 ) {
 
+    //TODO: Add @ annotation like Copilot, e.g. @Summarize
+
     fun chat(userId: String, content: String): Mono<ChatResponse> {
         return fetchAndValidateUser(userId).flatMap { user ->
             createChatRequest(user, content).flatMap { chatRequest ->
