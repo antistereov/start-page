@@ -1,10 +1,13 @@
 package io.github.antistereov.start.widgets.transport.service
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import io.github.antistereov.start.global.service.BaseService
 import io.github.antistereov.start.widgets.transport.model.LocationAddress
 import io.github.antistereov.start.widgets.transport.model.NearbyStop
+import io.netty.handler.codec.DecoderException
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
+import org.springframework.web.reactive.function.client.WebClientResponseException
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.core.scheduler.Schedulers
@@ -17,6 +20,7 @@ import kotlin.math.sqrt
 @Service
 class LocationService(
     private val webClient: WebClient,
+    private val baseService: BaseService,
 ) {
 
     fun getLocationAddress(latitude: Double, longitude: Double): Mono<LocationAddress> {
@@ -31,7 +35,10 @@ class LocationService(
                 webClient.get()
                     .uri(url)
                     .retrieve()
+                    .let { baseService.handleError(url, it) }
                     .bodyToMono(String::class.java)
+                    .onErrorResume(WebClientResponseException::class.java, baseService.handleNetworkError(url))
+                    .onErrorResume(DecoderException::class.java, baseService.handleParsingError(url))
             }
             .map { response ->
                 val mapper = ObjectMapper()
@@ -70,8 +77,11 @@ class LocationService(
             .post()
             .bodyValue(query)
             .retrieve()
+            .let { baseService.handleError(url, it) }
             .bodyToMono(String::class.java)
             .flatMapMany { parsePublicTransportResponse(it, lat, lon) }
+            .onErrorResume(WebClientResponseException::class.java, baseService.handleNetworkError(url))
+            .onErrorResume(DecoderException::class.java, baseService.handleParsingError(url))
     }
 
 
