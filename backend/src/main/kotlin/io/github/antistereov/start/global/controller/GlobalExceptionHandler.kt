@@ -36,6 +36,7 @@ class GlobalExceptionHandler {
 
         // Spring exceptions
         IndexOutOfBoundsException::class.java to HttpStatus.BAD_REQUEST,
+        IllegalArgumentException::class.java to HttpStatus.BAD_REQUEST,
     )
 
     @ExceptionHandler
