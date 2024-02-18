@@ -1,7 +1,10 @@
 package io.github.antistereov.start.widgets.nextcloud.controller
 
+import io.github.antistereov.start.widgets.nextcloud.model.NextcloudCalendar
 import io.github.antistereov.start.widgets.nextcloud.service.NextcloudAuthService
 import io.github.antistereov.start.widgets.nextcloud.service.CalDavService
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.Authentication
@@ -22,7 +25,7 @@ class CalDavController(
 
         return try {
             val nextcloudCredentials = nextcloudAuthService.getCredentials(userId).block()!!
-             ResponseEntity.ok(calDavService.getEvents(nextcloudCredentials, calendarName))
+             ResponseEntity.ok(calDavService.getFutureEvents(nextcloudCredentials, calendarName))
 
         } catch (e: RuntimeException) {
             ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Failed to claim credentials: $e")
@@ -36,7 +39,7 @@ class CalDavController(
 
         return try {
             val nextcloudCredentials = nextcloudAuthService.getCredentials(userId).block()!!
-            ResponseEntity.ok(calDavService.getCalendars(nextcloudCredentials))
+            ResponseEntity.ok(Json.encodeToString(calDavService.getCalendars(nextcloudCredentials)))
         } catch (e: RuntimeException) {
             ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Failed to claim credentials: $e")
         }
