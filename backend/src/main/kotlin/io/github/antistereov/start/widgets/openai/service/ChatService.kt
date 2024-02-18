@@ -2,8 +2,10 @@ package io.github.antistereov.start.widgets.openai.service
 
 import io.github.antistereov.start.global.model.exception.CannotSaveUserException
 import io.github.antistereov.start.global.model.exception.MessageLimitExceededException
+import io.github.antistereov.start.global.model.exception.MissingCredentialsException
 import io.github.antistereov.start.global.service.BaseService
-import io.github.antistereov.start.user.model.OpenAIDetails
+import io.github.antistereov.start.security.AESEncryption
+import io.github.antistereov.start.user.model.ChatDetails
 import io.github.antistereov.start.user.repository.UserRepository
 import io.github.antistereov.start.widgets.openai.config.OpenAIProperties
 import io.github.antistereov.start.widgets.openai.model.ChatRequest
@@ -21,13 +23,18 @@ class ChatService(
     private val baseService: BaseService,
     private val properties: OpenAIProperties,
     private val userRepository: UserRepository,
+    private val aesEncryption: AESEncryption,
 ) {
 
     fun chat(userId: String, content: String): Mono<ChatResponse> {
         val uri = "${properties.apiBaseUrl}/chat/completions"
 
         return userRepository.findById(userId).flatMap { user ->
-            val chatHistory = user.openAi.history.values
+            val encryptedApiKey = user.openAi.apiKey
+                ?: return@flatMap Mono.error(MissingCredentialsException(properties.serviceName, "API key", userId))
+            val apiKey = aesEncryption.decrypt(encryptedApiKey)
+            val chatHistory = decryptMessages(user.openAi.chatDetails.history)
+
             if (chatHistory.size >= properties.messageLimit) {
                 return@flatMap Mono.error(MessageLimitExceededException())
             }
@@ -42,7 +49,7 @@ class ChatService(
             val chatRequest = ChatRequest(
                 mutableListOf(systemMessage)
                     .apply {
-                        addAll(chatHistory)
+                        addAll(chatHistory.values)
                         add(newMessage)
                     },
                 user = userId,
@@ -51,16 +58,17 @@ class ChatService(
             webClient
                 .post()
                 .uri(uri)
-                .header("Authorization", "Bearer ${properties.apiKey}")
+                .header("Authorization", "Bearer $apiKey")
                 .bodyValue(chatRequest)
                 .retrieve()
                 .let { baseService.handleError(uri, it) }
                 .bodyToMono(ChatResponse::class.java)
                 .flatMap { response ->
-                    val entryNumber = user.openAi.history.size
-                    user.openAi.history[entryNumber] = newMessage
-                    user.openAi.history[entryNumber + 1] = response.choices.first().message
-                    user.openAi.totalTokens = response.usage.totalTokens
+                    val entryNumber = chatHistory.size
+                    chatHistory[entryNumber] = newMessage
+                    chatHistory[entryNumber + 1] = response.choices.first().message
+                    user.openAi.chatDetails.history = encryptMessages(chatHistory)
+                    user.openAi.chatDetails.totalTokens = response.usage.totalTokens
                     userRepository.save(user)
                         .onErrorMap { throwable ->
                             CannotSaveUserException(throwable)
@@ -74,7 +82,7 @@ class ChatService(
 
     fun deleteHistoryEntry(userId: String, entryNumber: Int): Mono<Message> {
         return userRepository.findById(userId).flatMap { user ->
-            val history = user.openAi.history
+            val history = user.openAi.chatDetails.history
             if (history.size <= entryNumber) {
                 return@flatMap Mono.error(IndexOutOfBoundsException("No history entry at index $entryNumber"))
             }
@@ -88,7 +96,7 @@ class ChatService(
                     updatedHistory[key] = value
                 }
             }
-            user.openAi.history = updatedHistory
+            user.openAi.chatDetails.history = updatedHistory
             userRepository.save(user)
                 .onErrorMap { throwable ->
                     CannotSaveUserException(throwable)
@@ -97,32 +105,52 @@ class ChatService(
         }
     }
 
-    fun clearChatHistory(userId: String): Mono<OpenAIDetails> {
+    fun clearChatHistory(userId: String): Mono<ChatDetails> {
         return userRepository.findById(userId).flatMap { user ->
-            user.openAi.history.clear()
-            user.openAi.totalTokens = 0
+            user.openAi.chatDetails.history.clear()
+            user.openAi.chatDetails.totalTokens = 0
             userRepository.save(user)
                 .onErrorMap { throwable ->
                     CannotSaveUserException(throwable)
                 }
-                .thenReturn(user.openAi)
+                .thenReturn(user.openAi.chatDetails)
         }
     }
 
-    fun getHistoryEntry(userId: String, entryNumber: Int): Mono<MutableMap.MutableEntry<Int, Message>> {
+    fun getHistoryEntry(userId: String, entryNumber: Int): Mono<Message> {
         return userRepository.findById(userId).handle { user, sink ->
-            val history = user.openAi.history
+            val history = user.openAi.chatDetails.history
             if (history.size <= entryNumber) {
                 sink.error(IndexOutOfBoundsException("No history entry at index $entryNumber"))
                 return@handle
             }
-            sink.next(history.entries.elementAt(entryNumber))
+            val originalMessage = history.values.elementAt(entryNumber)
+            val decryptedContent = aesEncryption.decrypt(originalMessage.content)
+            val decryptedMessage = originalMessage.copy(content = decryptedContent)
+            sink.next(decryptedMessage)
         }
     }
 
-    fun getChatHistory(userId: String): Mono<OpenAIDetails> {
+    fun getChatHistory(userId: String): Mono<ChatDetails> {
         return userRepository.findById(userId).map { user ->
-            user.openAi
+            ChatDetails(
+                decryptMessages(user.openAi.chatDetails.history),
+                user.openAi.chatDetails.totalTokens
+            )
         }
+    }
+
+    private fun encryptMessages(history: MutableMap<Int, Message>): MutableMap<Int, Message> {
+        return history.mapValues { (_, message) ->
+            val encryptedContent = aesEncryption.encrypt(message.content)
+            message.copy(content = encryptedContent)
+        }.toMutableMap()
+    }
+
+    private fun decryptMessages(history: MutableMap<Int, Message>): MutableMap<Int, Message> {
+        return history.mapValues { (_, message) ->
+            val decryptedContent = aesEncryption.decrypt(message.content)
+            message.copy(content = decryptedContent)
+        }.toMutableMap()
     }
 }

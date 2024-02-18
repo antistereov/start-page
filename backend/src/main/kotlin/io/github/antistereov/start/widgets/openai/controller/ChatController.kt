@@ -1,7 +1,7 @@
 package io.github.antistereov.start.widgets.openai.controller
 
 import io.github.antistereov.start.security.AuthenticationPrincipalExtractor
-import io.github.antistereov.start.user.model.OpenAIDetails
+import io.github.antistereov.start.user.model.ChatDetails
 import io.github.antistereov.start.widgets.openai.model.ChatResponse
 import io.github.antistereov.start.widgets.openai.model.Message
 import io.github.antistereov.start.widgets.openai.service.ChatService
@@ -35,7 +35,7 @@ class ChatController(
     fun getHistoryEntry(
         authentication: Authentication,
         @PathVariable id: Int,
-    ): Mono<MutableMap.MutableEntry<Int, Message>> {
+    ): Mono<Message> {
         logger.info("Executing ChatController getHistoryEntry method.")
 
         return principalExtractor.getUserId(authentication)
@@ -45,7 +45,7 @@ class ChatController(
     @GetMapping("/history")
     fun getHistory(
         authentication: Authentication
-    ): Mono<OpenAIDetails> {
+    ): Mono<ChatDetails> {
         logger.info("Executing ChatController getHistory method.")
 
         return principalExtractor.getUserId(authentication)
@@ -66,7 +66,7 @@ class ChatController(
     @DeleteMapping("/history")
     fun deleteHistory(
         authentication: Authentication,
-    ): Mono<OpenAIDetails> {
+    ): Mono<ChatDetails> {
         logger.info("Executing ChatController deleteHistory method.")
 
         return principalExtractor.getUserId(authentication)
