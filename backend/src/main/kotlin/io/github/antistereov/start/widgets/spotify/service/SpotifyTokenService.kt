@@ -5,7 +5,6 @@ import io.github.antistereov.start.global.model.exception.*
 import io.github.antistereov.start.global.service.BaseService
 import io.github.antistereov.start.security.AESEncryption
 import io.github.antistereov.start.user.model.SpotifyAuthDetails
-import io.github.antistereov.start.user.model.UnsplashAuthDetails
 import io.github.antistereov.start.widgets.spotify.model.SpotifyTokenResponse
 import io.github.antistereov.start.user.repository.UserRepository
 import io.github.antistereov.start.widgets.spotify.config.SpotifyProperties
