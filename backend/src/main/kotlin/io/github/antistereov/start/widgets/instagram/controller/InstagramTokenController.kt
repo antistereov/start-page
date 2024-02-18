@@ -77,6 +77,23 @@ class InstagramTokenController(
         }
     }
 
+    @PostMapping
+    fun saveAccessToken(
+        authentication: Authentication,
+        @RequestBody accessToken: String
+    ): Mono<String> {
+        logger.info("Executing Instagram saveAccessToken method.")
+
+        return principalExtractor.getUserId(authentication).flatMap { userId ->
+            tokenService.saveAccessToken(userId, accessToken)
+                .map {
+                    logger.info("Successfully saved Instagram access token for user: $userId")
+
+                    "Successfully saved Instagram access token for user: $userId"
+                }
+        }
+    }
+
     @DeleteMapping
     fun logout(authentication: Authentication): Mono<String> {
         logger.info("Executing Instagram logout method.")

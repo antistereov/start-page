@@ -104,6 +104,10 @@ class InstagramTokenService(
             }
     }
 
+    fun saveAccessToken(userId: String, accessToken: String): Mono<User> {
+        return updateAuthDetails(userId, accessToken = accessToken, expiresIn = 90*24*60*60)
+    }
+
     fun updateUserInfo(userId: String): Mono<User> {
         return getAccessToken(userId).flatMap { accessToken ->
             val uri = UriComponentsBuilder.fromHttpUrl("${properties.apiBaseUrl}/me")
