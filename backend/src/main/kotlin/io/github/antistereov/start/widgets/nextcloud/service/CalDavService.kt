@@ -20,9 +20,12 @@ import net.fortuna.ical4j.model.DateTime
 import net.fortuna.ical4j.model.Period
 import net.fortuna.ical4j.model.component.VEvent
 import net.fortuna.ical4j.model.property.RRule
+import org.springframework.http.HttpMethod
+import org.springframework.web.reactive.function.client.WebClient
 import org.xml.sax.InputSource
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import reactor.core.scheduler.Schedulers
 import java.io.StringReader
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -37,9 +40,10 @@ class CalDavService(
     private val aesEncryption: AESEncryption,
 ) {
 
-    fun getRemoteCalendars(credentials: NextcloudCredentials): List<NextcloudCalendar> {
-        val calendarData = fetchCalendarData(credentials)
-        return parseCalendarData(calendarData, credentials)
+    fun getRemoteCalendars(credentials: NextcloudCredentials): Flux<NextcloudCalendar> {
+        return fetchCalendarData(credentials).flatMapMany { calendarData ->
+            parseCalendarData(calendarData, credentials)
+        }
     }
 
     fun addCalendars(userId: String, calendars: List<NextcloudCalendar>): Flux<NextcloudCalendar> {
@@ -132,7 +136,10 @@ class CalDavService(
             }
     }
 
-    private fun refreshUserCalenders(userId: String, calendars: MutableList<NextcloudCalendar>): Flux<NextcloudCalendar> {
+    private fun refreshUserCalenders(
+        userId: String,
+        calendars: MutableList<NextcloudCalendar>
+    ): Flux<NextcloudCalendar> {
         return userRepository.findById(userId)
             .switchIfEmpty(Mono.error(UserNotFoundException(userId)))
             .flatMap { user ->
@@ -156,86 +163,89 @@ class CalDavService(
     }
 
     private fun getCalendarEvents(credentials: NextcloudCredentials, icsLink: String): Flux<Event> {
+        val client = WebClient.builder()
+            .baseUrl(icsLink)
+            .defaultHeader("Authorization", Credentials.basic(credentials.username, credentials.password))
+            .build()
+        return client.get()
+            .retrieve()
+            .bodyToMono(String::class.java)
+            .flatMapMany { calendarData ->
+
+                val calendarBuilder = CalendarBuilder()
+                val calendar = calendarBuilder.build(calendarData?.let { StringReader(it) })
+
+                val now = ZonedDateTime.now()
+                val future = now.plusYears(1)
+
+                val nowDate = Date.from(now.toInstant())
+                val futureDate = Date.from(future.toInstant())
+
+                val period = Period(DateTime(nowDate), DateTime(futureDate))
+
+                val events = calendar.components
+                    .filterIsInstance<VEvent>()
+                    .filter { event ->
+                        val rruleProperty = event.getProperty(RRule.RRULE) as RRule?
+
+                        if (rruleProperty != null) {
+                            val periods = event.calculateRecurrenceSet(period)
+                            periods.isNotEmpty()
+                        } else {
+                            event.startDate.date.toInstant().atZone(now.zone).toLocalDateTime()
+                                .isAfter(now.toLocalDateTime())
+                        }
+                    }
+                    .map { vEvent ->
+                        Event(
+                            summary = vEvent.summary.value,
+                            description = vEvent.description?.value,
+                            location = vEvent.location?.value,
+                            start = vEvent.startDate.date.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime(),
+                            end = vEvent.endDate.date.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime(),
+                            allDay = vEvent.startDate.isUtc,
+                            rrule = vEvent.getProperty(RRule.RRULE)?.value?.let { parseRRule(it) }
+                        )
+                    }
+                Flux.fromIterable(events)
+            }
+    }
+
+    private fun fetchCalendarData(credentials: NextcloudCredentials): Mono<String> {
         return Mono.fromCallable {
+            val calendarUrl = "${credentials.url}/remote.php/dav/calendars/${credentials.username}/"
             val client = OkHttpClient()
             val request = Request.Builder()
-                .url(icsLink)
+                .url(calendarUrl)
                 .header("Authorization", Credentials.basic(credentials.username, credentials.password))
+                .method("PROPFIND", null)
                 .build()
 
             val response = client.newCall(request).execute()
-            val calendarData = response.body?.string()
-
-            val calendarBuilder = CalendarBuilder()
-            val calendar = calendarBuilder.build(calendarData?.let { StringReader(it) })
-
-            val now = ZonedDateTime.now()
-            val future = now.plusYears(1)
-
-            val nowDate = Date.from(now.toInstant())
-            val futureDate = Date.from(future.toInstant())
-
-            val period = Period(DateTime(nowDate), DateTime(futureDate))
-
-            val events = calendar.components
-                .filterIsInstance<VEvent>()
-                .filter { event ->
-                    val rruleProperty = event.getProperty(RRule.RRULE) as RRule?
-
-                    if (rruleProperty != null) {
-                        val periods = event.calculateRecurrenceSet(period)
-                        periods.isNotEmpty()
-                    } else {
-                        event.startDate.date.toInstant().atZone(now.zone).toLocalDateTime()
-                            .isAfter(now.toLocalDateTime())
-                    }
-                }
-                .map { vEvent ->
-                    Event(
-                        summary = vEvent.summary.value,
-                        description = vEvent.description?.value,
-                        location = vEvent.location?.value,
-                        start = vEvent.startDate.date.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime(),
-                        end = vEvent.endDate.date.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime(),
-                        allDay = vEvent.startDate.isUtc,
-                        rrule = vEvent.getProperty(RRule.RRULE)?.value?.let { parseRRule(it) }
-                    )
-                }
-
-            events
-        }.flatMapMany { events -> Flux.fromIterable(events) }
+            response.body?.string() ?: ""
+        }.subscribeOn(Schedulers.boundedElastic())
     }
 
-    private fun fetchCalendarData(credentials: NextcloudCredentials): String {
-        val calendarUrl = "${credentials.url}/remote.php/dav/calendars/${credentials.username}/"
-        val client = OkHttpClient()
-        val request = Request.Builder()
-            .url(calendarUrl)
-            .header("Authorization", Credentials.basic(credentials.username, credentials.password))
-            .method("PROPFIND", null)
-            .build()
+    private fun parseCalendarData(calendarData: String, credentials: NextcloudCredentials): Flux<NextcloudCalendar> {
+        return Mono.fromCallable {
+            val document = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(InputSource(StringReader(calendarData)))
+            val calendarElements = document.getElementsByTagName("d:response")
 
-        val response = client.newCall(request).execute()
-        return response.body?.string() ?: ""
-    }
+            val calendars = mutableListOf<NextcloudCalendar>()
 
-    private fun parseCalendarData(calendarData: String, credentials: NextcloudCredentials): List<NextcloudCalendar> {
-        val document = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(InputSource(StringReader(calendarData)))
-        val calendarElements = document.getElementsByTagName("d:response")
+            for (i in 0 until calendarElements.length) {
+                val calendarElement = calendarElements.item(i) as Element
+                val isCalendar = checkIsCalendar(calendarElement)
 
-        val calendars = mutableListOf<NextcloudCalendar>()
-
-        for (i in 0 until calendarElements.length) {
-            val calendarElement = calendarElements.item(i) as Element
-            val isCalendar = checkIsCalendar(calendarElement)
-
-            if (isCalendar) {
-                val calendar = createCalendar(calendarElement, credentials)
-                if (calendar != null) calendars.add(calendar)
+                if (isCalendar) {
+                    val calendar = createCalendar(calendarElement, credentials)
+                    if (calendar != null) calendars.add(calendar)
+                }
             }
-        }
 
-        return calendars
+            calendars
+        }.subscribeOn(Schedulers.boundedElastic())
+            .flatMapMany { calendars -> Flux.fromIterable(calendars) }
     }
 
     private fun checkIsCalendar(calendarElement: Element): Boolean {
