@@ -5,6 +5,7 @@ import io.github.antistereov.start.widgets.transport.model.LocationAddress
 import io.github.antistereov.start.widgets.transport.model.NearbyStop
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
+import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.core.scheduler.Schedulers
 import java.net.URLEncoder
@@ -51,7 +52,7 @@ class LocationService(
                 locationAddress.country
     }
 
-    fun getNearbyPublicTransport(lat: Double, lon: Double, radius: String): Mono<List<NearbyStop>> {
+    fun getNearbyPublicTransport(lat: Double, lon: Double, radius: Long): Flux<NearbyStop> {
         val query = """
             [out:json];
             (
@@ -70,7 +71,7 @@ class LocationService(
             .bodyValue(query)
             .retrieve()
             .bodyToMono(String::class.java)
-            .flatMap { parsePublicTransportResponse(it, lat, lon) }
+            .flatMapMany { parsePublicTransportResponse(it, lat, lon) }
     }
 
 
@@ -78,14 +79,13 @@ class LocationService(
         response: String,
         lat: Double,
         lon: Double
-    ): Mono<List<NearbyStop>> {
-        return getLocationAddress(lat, lon).map { location ->
+    ): Flux<NearbyStop> {
+        return getLocationAddress(lat, lon).flatMapMany { location ->
             val mapper = ObjectMapper()
             val json = mapper.readTree(response)
             val elements = json.get("elements")
 
-            val stops = mutableListOf<NearbyStop>()
-            for (element in elements) {
+            Flux.fromIterable(elements).flatMap { element ->
                 val name = element.get("tags").get("name")?.asText()
                 val stopLat = element.get("lat").asDouble()
                 val stopLon = element.get("lon").asDouble()
@@ -96,22 +96,25 @@ class LocationService(
                 )
 
                 if (name != null) {
-                    stops.add(NearbyStop("$name, ${location.city}, ${location.country}", distance, mot))
+                    Flux.just(NearbyStop("$name, ${location.city}, ${location.country}", distance, mot))
+                } else {
+                    Flux.empty()
                 }
-            }
-
-            processStops(stops)
+            }.transform(this::processStops)
         }
     }
 
-    fun processStops(stops: List<NearbyStop>): List<NearbyStop> {
+    fun processStops(stops: Flux<NearbyStop>): Flux<NearbyStop> {
         return stops.groupBy { it.name }
-            .map { (name, group) ->
-                val minDistance = group.minOf { it.distance }
-                val mot = group.flatMap { it.mot }
-                    .map { it.replace("_stop", "") }
-                    .distinct()
-                NearbyStop(name, minDistance, mot)
+            .flatMap { group ->
+                group.collectList().map { stopsList ->
+                    val name = group.key()
+                    val minDistance = stopsList.minOf { it.distance }
+                    val mot = stopsList.flatMap { it.mot }
+                        .map { it.replace("_stop", "") }
+                        .distinct()
+                    NearbyStop(name, minDistance, mot)
+                }
             }
     }
 
