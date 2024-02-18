@@ -20,7 +20,6 @@ class BaseService(
             .retrieve()
             .let { handleError(uri, it) }
             .bodyToMono(String::class.java)
-            .let { handleUnexpectedError(uri, it) }
             .onErrorResume(WebClientResponseException::class.java, handleNetworkError(uri))
             .onErrorResume(DecoderException::class.java, handleParsingError(uri))
     }
@@ -33,7 +32,6 @@ class BaseService(
             .retrieve()
             .let { handleError(uri, it) }
             .bodyToMono(String::class.java)
-            .let { handleUnexpectedError(uri, it) }
             .onErrorResume(WebClientResponseException::class.java, handleNetworkError(uri))
             .onErrorResume(DecoderException::class.java, handleParsingError(uri))
     }
@@ -46,7 +44,6 @@ class BaseService(
             .retrieve()
             .let { handleError(uri, it) }
             .bodyToMono(String::class.java)
-            .let { handleUnexpectedError(uri, it) }
             .onErrorResume(WebClientResponseException::class.java, handleNetworkError(uri))
             .onErrorResume(DecoderException::class.java, handleParsingError(uri))
     }

@@ -68,7 +68,6 @@ class TodoistTokenService(
                 val userId = aesEncryption.decrypt(state)
                 handleUser(userId, response)
             }
-            .let { baseService.handleUnexpectedError(uri, it) }
             .onErrorResume(WebClientResponseException::class.java, baseService.handleNetworkError(uri))
             .onErrorResume(DecoderException::class.java, baseService.handleParsingError(uri))
     }
