@@ -14,6 +14,7 @@ class GlobalExceptionHandler {
     val logger: Logger = LoggerFactory.getLogger(GlobalExceptionHandler::class.java)
 
     private val exceptionToHttpStatus = mapOf(
+        // Custom exceptions
         CannotSaveUserException::class.java to HttpStatus.BAD_REQUEST,
         ExpiredTokenException::class.java to HttpStatus.BAD_REQUEST,
         InvalidCallbackException::class.java to HttpStatus.BAD_REQUEST,
@@ -21,16 +22,20 @@ class GlobalExceptionHandler {
         InvalidPrincipalException::class.java to HttpStatus.UNAUTHORIZED,
         InvalidStateParameterException::class.java to HttpStatus.BAD_REQUEST,
         InvalidThirdPartyAPIResponseException::class.java to HttpStatus.BAD_REQUEST,
+        MessageLimitExceededException::class.java to HttpStatus.BAD_REQUEST,
         MissingClaimException::class.java to HttpStatus.BAD_REQUEST,
         MissingCredentialsException::class.java to HttpStatus.BAD_REQUEST,
         NetworkErrorException::class.java to HttpStatus.INTERNAL_SERVER_ERROR,
+        ParsingErrorException::class.java to HttpStatus.BAD_REQUEST,
         ServiceException::class.java to HttpStatus.INTERNAL_SERVER_ERROR,
         ThirdPartyAPIException::class.java to HttpStatus.INTERNAL_SERVER_ERROR,
         ThirdPartyAuthorizationCanceledException::class.java to HttpStatus.UNAUTHORIZED,
         TimeoutException::class.java to HttpStatus.REQUEST_TIMEOUT,
         UnexpectedErrorException::class.java to HttpStatus.INTERNAL_SERVER_ERROR,
         UserNotFoundException::class.java to HttpStatus.NOT_FOUND,
-        ParsingErrorException::class.java to HttpStatus.BAD_REQUEST,
+
+        // Spring exceptions
+        IndexOutOfBoundsException::class.java to HttpStatus.BAD_REQUEST,
     )
 
     @ExceptionHandler

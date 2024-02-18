@@ -48,6 +48,12 @@ instagram:
   api-base-url: https://graph.instagram.com/v19.0
   scopes: user_profile,user_media
 
+open-ai:
+  service-name: OpenAI
+  api-key: ${OPENAI_API_KEY}
+  api-base-url: https://api.openai.com/v1
+  message-limit: 20
+
 nextcloud:
   service-name: Nextcloud
 

@@ -10,4 +10,5 @@ data class User(
     val unsplash: UnsplashAuthDetails = UnsplashAuthDetails(),
     val instagram: InstagramAuthDetails = InstagramAuthDetails(),
     val nextcloud: NextCloudAuthDetails = NextCloudAuthDetails(),
+    val openAi: OpenAIDetails = OpenAIDetails(),
 )
