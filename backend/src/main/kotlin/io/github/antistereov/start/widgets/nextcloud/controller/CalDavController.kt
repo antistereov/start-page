@@ -1,6 +1,5 @@
 package io.github.antistereov.start.widgets.nextcloud.controller
 
-import io.github.antistereov.start.widgets.nextcloud.model.NextcloudCalendar
 import io.github.antistereov.start.widgets.nextcloud.service.NextcloudAuthService
 import io.github.antistereov.start.widgets.nextcloud.service.CalDavService
 import kotlinx.serialization.encodeToString

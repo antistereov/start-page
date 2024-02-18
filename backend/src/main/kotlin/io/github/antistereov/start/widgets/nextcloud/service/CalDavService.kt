@@ -12,12 +12,10 @@ import org.springframework.stereotype.Service
 import org.w3c.dom.Element
 import java.time.ZonedDateTime
 import net.fortuna.ical4j.data.CalendarBuilder
-import net.fortuna.ical4j.data.UnfoldingReader
 import net.fortuna.ical4j.model.DateTime
 import net.fortuna.ical4j.model.Period
 import net.fortuna.ical4j.model.component.VEvent
 import net.fortuna.ical4j.model.property.RRule
-import org.springframework.data.mongodb.core.aggregation.ComparisonOperators.Ne
 import org.xml.sax.InputSource
 import java.io.StringReader
 import java.util.*
