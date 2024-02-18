@@ -50,6 +50,9 @@ dependencies {
 
     // CalDav
     implementation 'org.mnode.ical4j:ical4j:1.0.2'
+
+    // Auto reload
+    developmentOnly 'org.springframework.boot:spring-boot-devtools'
 }
 
 tasks.named('compileKotlin', KotlinCompilationTask.class) {
