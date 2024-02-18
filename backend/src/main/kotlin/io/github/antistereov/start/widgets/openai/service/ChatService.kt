@@ -6,15 +6,14 @@ import io.github.antistereov.start.global.model.exception.MissingCredentialsExce
 import io.github.antistereov.start.global.service.BaseService
 import io.github.antistereov.start.security.AESEncryption
 import io.github.antistereov.start.user.model.ChatDetails
+import io.github.antistereov.start.user.model.User
 import io.github.antistereov.start.user.repository.UserRepository
 import io.github.antistereov.start.widgets.openai.config.OpenAIProperties
 import io.github.antistereov.start.widgets.openai.model.ChatRequest
 import io.github.antistereov.start.widgets.openai.model.ChatResponse
 import io.github.antistereov.start.widgets.openai.model.Message
-import io.netty.handler.codec.DecoderException
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
-import org.springframework.web.reactive.function.client.WebClientResponseException
 import reactor.core.publisher.Mono
 
 @Service
@@ -27,57 +26,76 @@ class ChatService(
 ) {
 
     fun chat(userId: String, content: String): Mono<ChatResponse> {
-        val uri = "${properties.apiBaseUrl}/chat/completions"
+        return fetchAndValidateUser(userId).flatMap { user ->
+            createChatRequest(user, content).flatMap { chatRequest ->
+                sendChatRequestAndHandleResponse(user, chatRequest).flatMap { response ->
+                    updateChatHistory(user, response, chatRequest.messages.last())
+                }
+            }
+        }
+    }
 
+    private fun fetchAndValidateUser(userId: String): Mono<User> {
         return userRepository.findById(userId).flatMap { user ->
-            val encryptedApiKey = user.openAi.apiKey
-                ?: return@flatMap Mono.error(MissingCredentialsException(properties.serviceName, "API key", userId))
-            val apiKey = aesEncryption.decrypt(encryptedApiKey)
             val chatHistory = decryptMessages(user.openAi.chatDetails.history)
 
             if (chatHistory.size >= properties.messageLimit) {
                 return@flatMap Mono.error(MessageLimitExceededException())
             }
 
-            val newMessage = Message("user", content)
-            val systemMessage = Message(
-                "system",
-                "You are ChatGPT, a large language model trained by OpenAI.\n" +
+            Mono.just(user)
+        }
+    }
+
+    private fun createChatRequest(user: User, content: String): Mono<ChatRequest> {
+        val newMessage = Message("user", content)
+        val systemMessage = Message(
+            "system",
+            "You are ChatGPT, a large language model trained by OpenAI.\n" +
                     "Carefully heed the user's instructions. \n" +
                     "Please respond using Markdown."
-            )
-            val chatRequest = ChatRequest(
-                mutableListOf(systemMessage)
-                    .apply {
-                        addAll(chatHistory.values)
-                        add(newMessage)
-                    },
-                user = userId,
-           )
+        )
+        val chatRequest = ChatRequest(
+            mutableListOf(systemMessage)
+                .apply {
+                    addAll(decryptMessages(user.openAi.chatDetails.history).values)
+                    add(newMessage)
+                },
+            user = user.id,
+        )
 
-            webClient
-                .post()
-                .uri(uri)
-                .header("Authorization", "Bearer $apiKey")
-                .bodyValue(chatRequest)
-                .retrieve()
-                .let { baseService.handleError(uri, it) }
-                .bodyToMono(ChatResponse::class.java)
-                .flatMap { response ->
-                    val entryNumber = chatHistory.size
-                    chatHistory[entryNumber] = newMessage
-                    chatHistory[entryNumber + 1] = response.choices.first().message
-                    user.openAi.chatDetails.history = encryptMessages(chatHistory)
-                    user.openAi.chatDetails.totalTokens = response.usage.totalTokens
-                    userRepository.save(user)
-                        .onErrorMap { throwable ->
-                            CannotSaveUserException(throwable)
-                        }
-                        .thenReturn(response)
-                }
-                .onErrorResume(WebClientResponseException::class.java, baseService.handleNetworkError(uri))
-                .onErrorResume(DecoderException::class.java, baseService.handleParsingError(uri))
-        }
+        return Mono.just(chatRequest)
+    }
+
+    private fun sendChatRequestAndHandleResponse(user: User, chatRequest: ChatRequest): Mono<ChatResponse> {
+        val encryptedApiKey = user.openAi.apiKey
+            ?: return Mono.error(MissingCredentialsException(properties.serviceName, "API key", user.id))
+        val uri = "${properties.apiBaseUrl}/chat/completions"
+        val apiKey = aesEncryption.decrypt(encryptedApiKey)
+
+        return webClient
+            .post()
+            .uri(uri)
+            .header("Authorization", "Bearer $apiKey")
+            .bodyValue(chatRequest)
+            .retrieve()
+            .let { baseService.handleError(uri, it) }
+            .bodyToMono(ChatResponse::class.java)
+    }
+
+    private fun updateChatHistory(user: User, response: ChatResponse, newMessage: Message): Mono<ChatResponse> {
+        val chatHistory = decryptMessages(user.openAi.chatDetails.history)
+        val entryNumber = chatHistory.size
+        chatHistory[entryNumber] = newMessage
+        chatHistory[entryNumber + 1] = response.choices.first().message
+        user.openAi.chatDetails.history = encryptMessages(chatHistory)
+        user.openAi.chatDetails.totalTokens = response.usage.totalTokens
+
+        return userRepository.save(user)
+            .onErrorMap { throwable ->
+                CannotSaveUserException(throwable)
+            }
+            .thenReturn(response)
     }
 
     fun deleteHistoryEntry(userId: String, entryNumber: Int): Mono<Message> {
