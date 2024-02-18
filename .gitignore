@@ -82,4 +82,3 @@ Thumbs.db
 /mongodb/.env
 /backend/.env
 /mongodb/data/
-application.yml
