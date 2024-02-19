@@ -1,7 +1,8 @@
-package io.github.antistereov.start.widgets.instagram.service
+package io.github.antistereov.start.widgets.widget.instagram.service
 
 import io.github.antistereov.start.global.service.BaseService
-import io.github.antistereov.start.widgets.instagram.config.InstagramProperties
+import io.github.antistereov.start.widgets.auth.instagram.config.InstagramProperties
+import io.github.antistereov.start.widgets.auth.instagram.service.InstagramAuthService
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.web.util.UriComponentsBuilder
@@ -9,7 +10,7 @@ import reactor.core.publisher.Mono
 
 @Service
 class InstagramApiService(
-    private val tokenService: InstagramTokenService,
+    private val tokenService: InstagramAuthService,
     private val baseService: BaseService,
     private val properties: InstagramProperties,
 ) {

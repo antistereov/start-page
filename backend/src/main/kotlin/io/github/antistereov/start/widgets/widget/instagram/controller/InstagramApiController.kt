@@ -1,7 +1,7 @@
-package io.github.antistereov.start.widgets.instagram.controller
+package io.github.antistereov.start.widgets.widget.instagram.controller
 
 import io.github.antistereov.start.security.AuthenticationPrincipalExtractor
-import io.github.antistereov.start.widgets.instagram.service.InstagramApiService
+import io.github.antistereov.start.widgets.widget.instagram.service.InstagramApiService
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.security.core.Authentication
