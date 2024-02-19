@@ -2,7 +2,7 @@ package io.github.antistereov.start.widgets.transport.controller
 
 import io.github.antistereov.start.widgets.transport.model.DepartureMonitor
 import io.github.antistereov.start.widgets.transport.model.PointFinder
-import io.github.antistereov.start.widgets.transport.service.DVBService
+import io.github.antistereov.start.widgets.transport.service.DVBDepartureService
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.web.bind.annotation.*
@@ -12,7 +12,7 @@ import reactor.core.publisher.Mono
 @RestController
 @RequestMapping("/widgets/transport/dvb")
 class DVBController(
-    private val dvbService: DVBService
+    private val dvbDepartureService: DVBDepartureService
 ) {
 
     val logger: Logger = LoggerFactory.getLogger(DVBController::class.java)
@@ -26,7 +26,7 @@ class DVBController(
     ): Flux<DepartureMonitor> {
         logger.info("Getting nearby departures for lat: $lat, lon: $lon, radius: $radius, limit: $limit")
 
-        return dvbService.getNearbyDepartures(lat, lon, radius, limit)
+        return dvbDepartureService.getNearbyDepartures(lat, lon, radius, limit)
     }
 
     @GetMapping("/departures/stopName")
@@ -36,7 +36,7 @@ class DVBController(
     ): Flux<DepartureMonitor> {
         logger.info("Getting departures for stop name: $name, limit: $limit")
 
-        return dvbService.getDeparturesByStopName(name, limit)
+        return dvbDepartureService.getDeparturesByStopName(name, limit)
     }
 
     @GetMapping("/departures/{stopId}")
@@ -46,7 +46,7 @@ class DVBController(
     ): Flux<DepartureMonitor> {
         logger.info("Getting departures for stop id: $stopId, limit: $limit")
 
-        return dvbService.getDeparturesByStopId(stopId, limit)
+        return dvbDepartureService.getDeparturesByStopId(stopId, limit)
     }
 
     @GetMapping("/pointFinder")
@@ -56,6 +56,6 @@ class DVBController(
     ): Mono<PointFinder> {
         logger.info("Getting point finder for query: $query, stopsOnly: $stopsOnly")
 
-        return dvbService.pointFinder(query, stopsOnly)
+        return dvbDepartureService.pointFinder(query, stopsOnly)
     }
 }
