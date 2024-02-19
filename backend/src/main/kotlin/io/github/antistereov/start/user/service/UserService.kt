@@ -36,7 +36,7 @@ class UserService(
     }
 
     fun save(user: User): Mono<User> {
-        logger.debug("Saving user: {}", user)
+        logger.debug("Saving user: {}", user.id)
 
         return userRepository.save(user)
             .onErrorMap(DataAccessException::class.java) { ex ->
