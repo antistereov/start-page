@@ -1,15 +1,10 @@
 package io.github.antistereov.start.widgets.transport.model
 
 import com.fasterxml.jackson.annotation.JsonProperty
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize
-import io.github.antistereov.start.util.CustomLocalDateTimeDeserializer
-import java.time.LocalDateTime
 
 data class RegularStop(
-    @JsonDeserialize(using = CustomLocalDateTimeDeserializer::class)
-    @JsonProperty("ArrivalTime") val arrivalTime: LocalDateTime,
-    @JsonDeserialize(using = CustomLocalDateTimeDeserializer::class)
-    @JsonProperty("DepartureTime") val departureTime: LocalDateTime,
+    @JsonProperty("ArrivalTime") val arrivalTime: String,
+    @JsonProperty("DepartureTime") val departureTime: String,
     @JsonProperty("Place") val place: String,
     @JsonProperty("Name") val name: String,
     @JsonProperty("Type") val type: String,
