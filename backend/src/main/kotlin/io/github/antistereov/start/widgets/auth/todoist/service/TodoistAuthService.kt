@@ -80,13 +80,15 @@ class TodoistAuthService(
             .retrieve()
             .bodyToMono(TodoistTokenResponse::class.java)
             .flatMap { response ->
-                val userId = aesEncryption.decrypt(state)
-                handleUser(userId, response)
+                stateValidation.getUserId(state).flatMap { userId ->
+                    handleUser(userId, response)
+                }
+
             }
     }
 
     private fun handleUser(userId: String, response: TodoistTokenResponse): Mono<TodoistTokenResponse> {
-        logger.debug("Handling Todoist user {} with response: {}.", userId, response)
+        logger.debug("Handling Todoist user {}.", userId)
 
         return userService.findById(userId).flatMap { user ->
             user.auth.todoist.accessToken = aesEncryption.encrypt(response.accessToken)
