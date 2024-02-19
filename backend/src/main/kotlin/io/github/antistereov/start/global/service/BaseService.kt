@@ -55,7 +55,7 @@ class BaseService(
         for (field in fields) {
             json = json.get(field) ?: throw IllegalArgumentException("Field $field not found in the JSON response")
         }
-        return json.toString()
+        return json.asText()
     }
 
     fun handleError(uri: String, responseSpec: WebClient.ResponseSpec): WebClient.ResponseSpec {
