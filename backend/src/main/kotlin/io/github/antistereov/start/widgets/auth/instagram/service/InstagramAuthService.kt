@@ -9,7 +9,6 @@ import io.github.antistereov.start.widgets.auth.instagram.model.InstagramAuthDet
 import io.github.antistereov.start.widgets.auth.instagram.config.InstagramProperties
 import io.github.antistereov.start.widgets.auth.instagram.model.InstagramLongLivedTokenResponse
 import io.github.antistereov.start.widgets.auth.instagram.model.InstagramShortLivedTokenResponse
-import io.github.antistereov.start.widgets.auth.instagram.model.InstagramUser
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.BodyInserters
