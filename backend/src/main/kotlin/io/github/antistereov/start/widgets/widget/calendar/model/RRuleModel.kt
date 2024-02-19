@@ -1,4 +1,4 @@
-package io.github.antistereov.start.widgets.nextcloud.model
+package io.github.antistereov.start.widgets.widget.calendar.model
 
 import java.time.LocalDateTime
 

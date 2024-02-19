@@ -1,13 +1,13 @@
-package io.github.antistereov.start.widgets.nextcloud.service
+package io.github.antistereov.start.widgets.widget.calendar.service
 
 import io.github.antistereov.start.global.model.exception.CannotSaveUserException
 import io.github.antistereov.start.global.model.exception.UserNotFoundException
 import io.github.antistereov.start.security.AESEncryption
 import io.github.antistereov.start.user.repository.UserRepository
-import io.github.antistereov.start.widgets.nextcloud.model.Event
-import io.github.antistereov.start.widgets.nextcloud.model.NextcloudCalendar
-import io.github.antistereov.start.widgets.nextcloud.model.NextcloudCredentials
-import io.github.antistereov.start.widgets.nextcloud.model.RRuleModel
+import io.github.antistereov.start.widgets.widget.calendar.model.CalendarEvent
+import io.github.antistereov.start.widgets.widget.calendar.model.OnlineCalendar
+import io.github.antistereov.start.widgets.auth.nextcloud.model.NextcloudCredentials
+import io.github.antistereov.start.widgets.auth.nextcloud.service.NextcloudAuthService
 import net.fortuna.ical4j.data.CalendarBuilder
 import net.fortuna.ical4j.model.DateTime
 import net.fortuna.ical4j.model.Period
@@ -20,22 +20,21 @@ import org.springframework.web.reactive.function.client.WebClient
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import java.io.StringReader
-import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
-import java.time.format.DateTimeFormatter
 import java.util.*
 
 @Service
-class CalDavEventService(
+class NextcloudEventService(
     private val nextcloudAuthService: NextcloudAuthService,
     private val userRepository: UserRepository,
     private val aesEncryption: AESEncryption,
+    private val calDavEventService: CalDavEventService,
 ) {
 
-    private val logger = LoggerFactory.getLogger(CalDavEventService::class.java)
+    private val logger = LoggerFactory.getLogger(NextcloudEventService::class.java)
 
-    fun refreshCalendarEvents(userId: String): Flux<NextcloudCalendar> {
+    fun refreshCalendarEvents(userId: String): Flux<OnlineCalendar> {
         logger.debug("Refreshing calendar events for user: $userId.")
 
         return userRepository.findById(userId)
@@ -48,7 +47,7 @@ class CalDavEventService(
                         getCalendarEvents(credentials, decryptedIcsLink)
                             .collectList()
                             .map { events ->
-                                calendar.events = events
+                                calendar.calendarEvents = events
                                 calendar
                             }
                     }.collectList()
@@ -60,20 +59,20 @@ class CalDavEventService(
 
     private fun refreshUserCalenders(
         userId: String,
-        calendars: MutableList<NextcloudCalendar>
-    ): Flux<NextcloudCalendar> {
+        calendars: MutableList<OnlineCalendar>
+    ): Flux<OnlineCalendar> {
         logger.debug("Refreshing user calendars.")
 
         return userRepository.findById(userId)
             .switchIfEmpty(Mono.error(UserNotFoundException(userId)))
             .flatMap { user ->
                 val updatedCalendars = calendars.map { calendar ->
-                    NextcloudCalendar(
+                    OnlineCalendar(
                         name = calendar.name,
                         color = calendar.color,
                         icsLink = calendar.icsLink,
                         description = calendar.description,
-                        events = encryptEvents(calendar.events)
+                        calendarEvents = calDavEventService.encryptEvents(calendar.calendarEvents)
                     )
                 }.toMutableList()
                 user.nextcloud.calendars = updatedCalendars
@@ -86,7 +85,7 @@ class CalDavEventService(
             }
     }
 
-    private fun getCalendarEvents(credentials: NextcloudCredentials, icsLink: String): Flux<Event> {
+    private fun getCalendarEvents(credentials: NextcloudCredentials, icsLink: String): Flux<CalendarEvent> {
         logger.debug("Getting calendar events.")
 
         val client = WebClient.builder()
@@ -109,7 +108,7 @@ class CalDavEventService(
 
                 val period = Period(DateTime(nowDate), DateTime(futureDate))
 
-                val events = calendar.components
+                val calendarEvents = calendar.components
                     .filterIsInstance<VEvent>()
                     .filter { event ->
                         val rruleProperty = event.getProperty(RRule.RRULE) as RRule?
@@ -123,75 +122,20 @@ class CalDavEventService(
                         }
                     }
                     .map { vEvent ->
-                        Event(
+                        CalendarEvent(
                             summary = vEvent.summary.value,
                             description = vEvent.description?.value,
                             location = vEvent.location?.value,
                             start = vEvent.startDate.date.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime(),
                             end = vEvent.endDate.date.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime(),
                             allDay = vEvent.startDate.isUtc,
-                            rrule = vEvent.getProperty(RRule.RRULE)?.value?.let { parseRRule(it) }
+                            rrule = vEvent.getProperty(RRule.RRULE)?.value?.let { calDavEventService.parseRRule(it) }
                         )
                     }
-                Flux.fromIterable(events)
+                Flux.fromIterable(calendarEvents)
             }
     }
 
 
-    fun encryptEvents(events: List<Event>): List<Event> {
-        logger.debug("Encrypting events.")
 
-        return events.map { event ->
-            Event(
-                summary = aesEncryption.encrypt(event.summary),
-                description = event.description?.let { aesEncryption.encrypt(it) },
-                location = event.location?.let { aesEncryption.encrypt(it) },
-                start = event.start,
-                end = event.end,
-                allDay = event.allDay,
-                rrule = event.rrule
-            )
-        }
-    }
-
-    fun decryptEvents(events: List<Event>): List<Event> {
-        logger.debug("Decrypting events.")
-
-        return events.map { event ->
-            Event(
-                summary = aesEncryption.decrypt(event.summary),
-                description = event.description?.let { aesEncryption.decrypt(it) },
-                location = event.location?.let { aesEncryption.decrypt(it) },
-                start = event.start,
-                end = event.end,
-                allDay = event.allDay,
-                rrule = event.rrule
-            )
-        }
-    }
-
-    private fun parseRRule(rruleString: String): RRuleModel {
-        logger.debug("Parsing RRule.")
-
-        val rruleParts = rruleString.split(";").associate {
-            val (key, value) = it.split("=")
-            key to value
-        }
-
-        val formatter = DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmmssX")
-
-        return RRuleModel(
-            freq = rruleParts["FREQ"],
-            until = rruleParts["UNTIL"]?.let { LocalDateTime.parse(it, formatter) },
-            count = rruleParts["COUNT"]?.toInt(),
-            interval = rruleParts["INTERVAL"]?.toInt(),
-            byDay = rruleParts["BYDAY"]?.split(","),
-            byMonthDay = rruleParts["BYMONTHDAY"]?.split(",")?.map { it.toInt() },
-            byYearDay = rruleParts["BYYEARDAY"]?.split(",")?.map { it.toInt() },
-            byWeekNo = rruleParts["BYWEEKNO"]?.split(",")?.map { it.toInt() },
-            byMonth = rruleParts["BYMONTH"]?.split(",")?.map { it.toInt() },
-            bySetPos = rruleParts["BYSETPOS"]?.split(",")?.map { it.toInt() },
-            wkst = rruleParts["WKST"]
-        )
-    }
 }

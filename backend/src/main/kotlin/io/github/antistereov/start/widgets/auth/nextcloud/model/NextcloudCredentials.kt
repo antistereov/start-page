@@ -1,4 +1,4 @@
-package io.github.antistereov.start.widgets.nextcloud.model
+package io.github.antistereov.start.widgets.auth.nextcloud.model
 
 import jakarta.validation.constraints.NotBlank
 import org.hibernate.validator.constraints.URL

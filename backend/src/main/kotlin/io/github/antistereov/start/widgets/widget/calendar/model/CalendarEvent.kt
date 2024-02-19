@@ -1,8 +1,8 @@
-package io.github.antistereov.start.widgets.nextcloud.model
+package io.github.antistereov.start.widgets.widget.calendar.model
 
 import java.time.LocalDateTime
 
-data class Event(
+data class CalendarEvent(
     val summary: String,
     val description: String?,
     val location: String?,

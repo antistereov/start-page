@@ -1,15 +1,15 @@
-package io.github.antistereov.start.widgets.nextcloud.service
+package io.github.antistereov.start.widgets.auth.nextcloud.service
 
 import io.github.antistereov.start.global.model.exception.CannotSaveUserException
 import io.github.antistereov.start.global.model.exception.InvalidNextcloudCredentialsException
 import io.github.antistereov.start.global.model.exception.MissingCredentialsException
 import io.github.antistereov.start.global.model.exception.UserNotFoundException
 import io.github.antistereov.start.security.AESEncryption
-import io.github.antistereov.start.user.model.NextcloudAuthDetails
+import io.github.antistereov.start.widgets.auth.nextcloud.model.NextcloudAuthDetails
 import io.github.antistereov.start.user.repository.UserRepository
 import io.github.antistereov.start.util.UrlHandler
-import io.github.antistereov.start.widgets.nextcloud.config.NextcloudProperties
-import io.github.antistereov.start.widgets.nextcloud.model.NextcloudCredentials
+import io.github.antistereov.start.widgets.auth.nextcloud.config.NextcloudProperties
+import io.github.antistereov.start.widgets.auth.nextcloud.model.NextcloudCredentials
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service

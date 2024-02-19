@@ -1,8 +1,8 @@
-package io.github.antistereov.start.widgets.nextcloud.service
+package io.github.antistereov.start.widgets.widget.calendar.service
 
 
-import io.github.antistereov.start.widgets.nextcloud.model.NextcloudCalendar
-import io.github.antistereov.start.widgets.nextcloud.model.NextcloudCredentials
+import io.github.antistereov.start.widgets.widget.calendar.model.OnlineCalendar
+import io.github.antistereov.start.widgets.auth.nextcloud.model.NextcloudCredentials
 import okhttp3.Credentials
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -17,11 +17,13 @@ import java.io.StringReader
 import javax.xml.parsers.DocumentBuilderFactory
 
 @Service
-class CalDavRemoteService {
+class NextcloudCalendarService(
+    private val calendarService: CalDavCalenderService,
+) {
 
-    private val logger = LoggerFactory.getLogger(CalDavRemoteService::class.java)
+    private val logger = LoggerFactory.getLogger(NextcloudCalendarService::class.java)
 
-    fun getRemoteCalendars(credentials: NextcloudCredentials): Flux<NextcloudCalendar> {
+    fun getRemoteCalendars(credentials: NextcloudCredentials): Flux<OnlineCalendar> {
         logger.debug("Getting remote calendars for user: ${credentials.username}.")
 
         return fetchCalendarData(credentials).flatMapMany { calendarData ->
@@ -46,18 +48,18 @@ class CalDavRemoteService {
         }.subscribeOn(Schedulers.boundedElastic())
     }
 
-    private fun parseCalendarData(calendarData: String, credentials: NextcloudCredentials): Flux<NextcloudCalendar> {
+    private fun parseCalendarData(calendarData: String, credentials: NextcloudCredentials): Flux<OnlineCalendar> {
         logger.debug("Parsing calendar data.")
 
         return Mono.fromCallable {
             val document = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(InputSource(StringReader(calendarData)))
             val calendarElements = document.getElementsByTagName("d:response")
 
-            val calendars = mutableListOf<NextcloudCalendar>()
+            val calendars = mutableListOf<OnlineCalendar>()
 
             for (i in 0 until calendarElements.length) {
                 val calendarElement = calendarElements.item(i) as Element
-                val isCalendar = checkIsCalendar(calendarElement)
+                val isCalendar = calendarService.checkIsCalendar(calendarElement)
 
                 if (isCalendar) {
                     val calendar = createCalendar(calendarElement, credentials)
@@ -70,14 +72,7 @@ class CalDavRemoteService {
             .flatMapMany { calendars -> Flux.fromIterable(calendars) }
     }
 
-    private fun checkIsCalendar(calendarElement: Element): Boolean {
-        logger.debug("Checking if element is calendar.")
-
-        val resourceTypeElement = calendarElement.getElementsByTagName("d:resourcetype").item(0) as Element
-        return resourceTypeElement.getElementsByTagName("cal:calendar").length > 0
-    }
-
-    private fun createCalendar(calendarElement: Element, credentials: NextcloudCredentials): NextcloudCalendar? {
+    private fun createCalendar(calendarElement: Element, credentials: NextcloudCredentials): OnlineCalendar? {
         logger.debug("Creating calendar entity.")
 
         val hrefElement = calendarElement.getElementsByTagName("d:href").item(0)
@@ -93,7 +88,7 @@ class CalDavRemoteService {
         val description = descriptionElement?.textContent
 
         return if (name != null && color != null && name != "DEFAULT_TASK_CALENDAR_NAME") {
-            NextcloudCalendar(
+            OnlineCalendar(
                 name,
                 color,
                 icsLink,
