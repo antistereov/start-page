@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController
 import reactor.core.publisher.Mono
 
 @RestController
-@RequestMapping("/widgets/instagram")
+@RequestMapping("/instagram")
 class InstagramApiController(
     private val apiService: InstagramApiService,
     private val principalExtractor: AuthenticationPrincipalExtractor,
