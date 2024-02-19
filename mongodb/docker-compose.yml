@@ -3,7 +3,7 @@ services:
   mongodb:
     image: mongo:latest
     container_name: mongo
-#    restart: always
+    restart: always
     ports:
       - "27017:27017"
     environment:
