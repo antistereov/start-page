@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*
 import reactor.core.publisher.Mono
 
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping
 class UserController(
     private val userService: UserService,
     private val principalExtractor: AuthenticationPrincipalExtractor,
@@ -20,7 +20,7 @@ class UserController(
             .flatMap { userService.findOrCreateUser(it) }
     }
 
-    @GetMapping("/profile")
+    @GetMapping("/me")
     fun getUserProfile(authentication: Authentication): Mono<Map<String, Any>> {
         return principalExtractor.getJwt(authentication)
             .map { it.claims }
