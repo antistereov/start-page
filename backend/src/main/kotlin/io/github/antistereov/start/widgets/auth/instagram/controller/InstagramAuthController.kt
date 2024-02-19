@@ -63,20 +63,6 @@ class InstagramAuthController(
             }
     }
 
-    @GetMapping("/user/update")
-    fun updateUserInfo(authentication: Authentication): Mono<String> {
-        logger.info("Executing updateUserInfo method.")
-
-        return principalExtractor.getUserId(authentication).flatMap { userId ->
-            tokenService.updateUserInfo(userId)
-                .map {
-                    logger.info("Successfully updated Instagram user information for user: $userId")
-
-                    "Successfully updated Instagram user information for user: $userId"
-                }
-        }
-    }
-
     @PostMapping
     fun saveAccessToken(
         authentication: Authentication,

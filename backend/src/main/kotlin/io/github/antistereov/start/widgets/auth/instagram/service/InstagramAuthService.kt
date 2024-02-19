@@ -119,32 +119,6 @@ class InstagramAuthService(
         return updateAuthDetails(userId, accessToken = accessToken, expiresIn = 90*24*60*60)
     }
 
-    fun updateUserInfo(userId: String): Mono<User> {
-        logger.debug("Updating user info for user $userId")
-
-        return getAccessToken(userId).flatMap { accessToken ->
-            val uri = UriComponentsBuilder.fromHttpUrl("${properties.apiBaseUrl}/me")
-                .queryParam("access_token", accessToken)
-                .queryParam("fields", "username")
-                .toUriString()
-
-            webClient.get()
-                .uri(uri)
-                .retrieve()
-                .bodyToMono(InstagramUser::class.java)
-                .flatMap { instagramUser ->
-                    if (instagramUser.username != null && instagramUser.id != null) {
-                        updateAuthDetails(
-                            userId,
-                            instagramUserId = instagramUser.id,
-                        )
-                    } else {
-                        Mono.error(InvalidThirdPartyAPIResponseException(properties.serviceName, "No username in response found."))
-                    }
-                }
-        }
-    }
-
     fun logout(userId: String): Mono<Void> {
         logger.debug("Logging out user $userId")
 

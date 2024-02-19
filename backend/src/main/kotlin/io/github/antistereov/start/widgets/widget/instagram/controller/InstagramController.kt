@@ -14,12 +14,12 @@ import reactor.core.publisher.Mono
 
 @RestController
 @RequestMapping("/instagram")
-class InstagramApiController(
-    private val apiService: InstagramService,
+class InstagramController(
+    private val service: InstagramService,
     private val principalExtractor: AuthenticationPrincipalExtractor,
 ) {
 
-    private val logger: Logger = LoggerFactory.getLogger(InstagramApiController::class.java)
+    private val logger: Logger = LoggerFactory.getLogger(InstagramController::class.java)
 
     @GetMapping("/{instagramUserId}")
     fun getUsername(
@@ -30,7 +30,7 @@ class InstagramApiController(
 
         return principalExtractor.getUserId(authentication)
             .flatMap { userId ->
-                apiService.getUsername(userId, instagramUserId)
+                service.getUsername(userId, instagramUserId)
             }
     }
 
@@ -46,7 +46,7 @@ class InstagramApiController(
 
         return principalExtractor.getUserId(authentication)
             .flatMap { userId ->
-                apiService.getUserMedia(userId, instagramUserId, limit, before, after)
+                service.getUserMedia(userId, instagramUserId, limit, before, after)
             }
     }
 
@@ -59,7 +59,7 @@ class InstagramApiController(
 
         return principalExtractor.getUserId(authentication)
             .flatMap { userId ->
-                apiService.getMedia(userId, mediaId)
+                service.getMedia(userId, mediaId)
             }
     }
 }
