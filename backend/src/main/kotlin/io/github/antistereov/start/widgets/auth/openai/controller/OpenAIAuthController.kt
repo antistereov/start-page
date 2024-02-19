@@ -19,7 +19,7 @@ class OpenAIAuthController(
     private val logger: Logger = LoggerFactory.getLogger(OpenAIAuthService::class.java)
 
     @PostMapping
-    fun auth(
+    fun login(
         authentication: Authentication,
         @Valid @RequestBody apiKey: String
     ): Mono<String> {
