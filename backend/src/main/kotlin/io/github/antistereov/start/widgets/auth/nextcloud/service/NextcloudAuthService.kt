@@ -7,7 +7,7 @@ import io.github.antistereov.start.global.model.exception.UserNotFoundException
 import io.github.antistereov.start.security.AESEncryption
 import io.github.antistereov.start.widgets.auth.nextcloud.model.NextcloudAuthDetails
 import io.github.antistereov.start.user.repository.UserRepository
-import io.github.antistereov.start.util.UrlHandler
+import io.github.antistereov.start.global.component.UrlHandler
 import io.github.antistereov.start.widgets.auth.nextcloud.config.NextcloudProperties
 import io.github.antistereov.start.widgets.auth.nextcloud.model.NextcloudCredentials
 import org.slf4j.LoggerFactory
