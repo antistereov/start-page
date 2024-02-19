@@ -1,4 +1,4 @@
-package io.github.antistereov.start.widgets.widget.news.service
+package io.github.antistereov.start.widgets.widget.news.nextcloud.service
 
 import io.github.antistereov.start.widgets.auth.nextcloud.model.NextcloudCredentials
 import org.slf4j.LoggerFactory

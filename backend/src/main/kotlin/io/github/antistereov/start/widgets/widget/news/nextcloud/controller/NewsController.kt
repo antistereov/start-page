@@ -1,8 +1,8 @@
-package io.github.antistereov.start.widgets.widget.news.controller
+package io.github.antistereov.start.widgets.widget.news.nextcloud.controller
 
 import io.github.antistereov.start.security.AuthenticationPrincipalExtractor
 import io.github.antistereov.start.widgets.auth.nextcloud.service.NextcloudAuthService
-import io.github.antistereov.start.widgets.widget.news.service.NewsService
+import io.github.antistereov.start.widgets.widget.news.nextcloud.service.NewsService
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.security.core.Authentication

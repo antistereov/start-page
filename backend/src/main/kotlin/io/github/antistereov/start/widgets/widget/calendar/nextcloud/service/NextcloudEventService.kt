@@ -1,4 +1,4 @@
-package io.github.antistereov.start.widgets.widget.calendar.service
+package io.github.antistereov.start.widgets.widget.calendar.nextcloud.service
 
 import io.github.antistereov.start.global.model.exception.CannotSaveUserException
 import io.github.antistereov.start.global.model.exception.UserNotFoundException
@@ -8,6 +8,7 @@ import io.github.antistereov.start.widgets.widget.calendar.model.CalendarEvent
 import io.github.antistereov.start.widgets.widget.calendar.model.OnlineCalendar
 import io.github.antistereov.start.widgets.auth.nextcloud.model.NextcloudCredentials
 import io.github.antistereov.start.widgets.auth.nextcloud.service.NextcloudAuthService
+import io.github.antistereov.start.widgets.widget.calendar.caldav.service.CalDavEventService
 import net.fortuna.ical4j.data.CalendarBuilder
 import net.fortuna.ical4j.model.DateTime
 import net.fortuna.ical4j.model.Period

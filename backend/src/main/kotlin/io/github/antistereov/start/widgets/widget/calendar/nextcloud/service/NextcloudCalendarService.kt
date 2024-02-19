@@ -1,8 +1,9 @@
-package io.github.antistereov.start.widgets.widget.calendar.service
+package io.github.antistereov.start.widgets.widget.calendar.nextcloud.service
 
 
 import io.github.antistereov.start.widgets.widget.calendar.model.OnlineCalendar
 import io.github.antistereov.start.widgets.auth.nextcloud.model.NextcloudCredentials
+import io.github.antistereov.start.widgets.widget.calendar.caldav.service.CalDavCalenderService
 import okhttp3.Credentials
 import okhttp3.OkHttpClient
 import okhttp3.Request

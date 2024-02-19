@@ -1,4 +1,4 @@
-package io.github.antistereov.start.widgets.widget.calendar.service
+package io.github.antistereov.start.widgets.widget.calendar.caldav.service
 
 import io.github.antistereov.start.global.model.exception.CannotSaveUserException
 import io.github.antistereov.start.global.model.exception.UserNotFoundException

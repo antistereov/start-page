@@ -1,4 +1,4 @@
-package io.github.antistereov.start.widgets.widget.calendar.service
+package io.github.antistereov.start.widgets.widget.calendar.caldav.service
 
 import io.github.antistereov.start.security.AESEncryption
 import io.github.antistereov.start.widgets.widget.calendar.model.CalendarEvent
