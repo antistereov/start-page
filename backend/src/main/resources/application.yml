@@ -16,6 +16,10 @@ spring:
         jwt:
           issuer-uri: https://${auth0.domain}/
 
+logging:
+  level:
+    io.github.antistereov.start: DEBUG
+
 spotify:
   service-name: Spotify
   client-id: ${SPOTIFY_CLIENT_ID}
