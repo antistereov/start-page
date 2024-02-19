@@ -1,5 +1,6 @@
 package io.github.antistereov.start.user.service
 
+import io.github.antistereov.start.global.model.exception.CannotSaveUserException
 import io.github.antistereov.start.global.model.exception.ServiceException
 import io.github.antistereov.start.user.model.User
 import io.github.antistereov.start.user.repository.UserRepository
@@ -25,5 +26,21 @@ class UserService(
                         ServiceException("Error creating user: $userId", ex)
                     }
             )
+    }
+
+    fun findById(userId: String): Mono<User> {
+        logger.debug("Finding user by ID: $userId")
+
+        return userRepository.findById(userId)
+            .switchIfEmpty(Mono.error(IllegalArgumentException("User not found: $userId")))
+    }
+
+    fun save(user: User): Mono<User> {
+        logger.debug("Saving user: {}", user)
+
+        return userRepository.save(user)
+            .onErrorMap(DataAccessException::class.java) { ex ->
+                CannotSaveUserException(ex)
+            }
     }
 }
