@@ -1,15 +1,15 @@
-package io.github.antistereov.start.widgets.instagram.service
+package io.github.antistereov.start.widgets.auth.instagram.service
 
 import io.github.antistereov.start.security.AESEncryption
 import io.github.antistereov.start.user.model.User
 import io.github.antistereov.start.user.repository.UserRepository
 import io.github.antistereov.start.global.component.StateValidation
 import io.github.antistereov.start.global.model.exception.*
-import io.github.antistereov.start.user.model.InstagramAuthDetails
-import io.github.antistereov.start.widgets.instagram.config.InstagramProperties
-import io.github.antistereov.start.widgets.instagram.model.InstagramLongLivedTokenResponse
-import io.github.antistereov.start.widgets.instagram.model.InstagramShortLivedTokenResponse
-import io.github.antistereov.start.widgets.instagram.model.InstagramUser
+import io.github.antistereov.start.widgets.auth.instagram.model.InstagramAuthDetails
+import io.github.antistereov.start.widgets.auth.instagram.config.InstagramProperties
+import io.github.antistereov.start.widgets.auth.instagram.model.InstagramLongLivedTokenResponse
+import io.github.antistereov.start.widgets.auth.instagram.model.InstagramShortLivedTokenResponse
+import io.github.antistereov.start.widgets.auth.instagram.model.InstagramUser
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.BodyInserters
@@ -19,7 +19,7 @@ import reactor.core.publisher.Mono
 import java.time.LocalDateTime
 
 @Service
-class InstagramTokenService(
+class InstagramAuthService(
     private val webClient: WebClient,
     private val userRepository: UserRepository,
     private val aesEncryption: AESEncryption,
@@ -27,7 +27,7 @@ class InstagramTokenService(
     private val properties: InstagramProperties,
 ) {
 
-    private val logger = LoggerFactory.getLogger(InstagramTokenService::class.java)
+    private val logger = LoggerFactory.getLogger(InstagramAuthService::class.java)
 
     fun getAuthorizationUrl(userId: String): Mono<String> {
         logger.debug("Getting authorization URL for user $userId")

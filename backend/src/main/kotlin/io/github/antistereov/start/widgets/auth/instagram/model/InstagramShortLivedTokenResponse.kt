@@ -1,4 +1,4 @@
-package io.github.antistereov.start.widgets.instagram.model
+package io.github.antistereov.start.widgets.auth.instagram.model
 
 import com.fasterxml.jackson.annotation.JsonProperty
 

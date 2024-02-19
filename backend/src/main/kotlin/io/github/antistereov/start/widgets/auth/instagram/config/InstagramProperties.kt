@@ -1,4 +1,4 @@
-package io.github.antistereov.start.widgets.instagram.config
+package io.github.antistereov.start.widgets.auth.instagram.config
 
 import org.springframework.boot.context.properties.ConfigurationProperties
 

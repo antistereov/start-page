@@ -1,4 +1,4 @@
-package io.github.antistereov.start.user.model
+package io.github.antistereov.start.widgets.auth.instagram.model
 
 data class InstagramAuthDetails(
     var userId: String? = null,

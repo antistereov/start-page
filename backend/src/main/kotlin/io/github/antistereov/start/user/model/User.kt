@@ -1,5 +1,6 @@
 package io.github.antistereov.start.user.model
 
+import io.github.antistereov.start.widgets.auth.instagram.model.InstagramAuthDetails
 import org.springframework.data.mongodb.core.mapping.Document
 
 @Document(collection = "users")

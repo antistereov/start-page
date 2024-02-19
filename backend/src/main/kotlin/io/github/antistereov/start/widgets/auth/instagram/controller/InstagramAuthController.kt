@@ -1,7 +1,7 @@
-package io.github.antistereov.start.widgets.instagram.controller
+package io.github.antistereov.start.widgets.auth.instagram.controller
 
 import io.github.antistereov.start.security.AuthenticationPrincipalExtractor
-import io.github.antistereov.start.widgets.instagram.service.InstagramTokenService
+import io.github.antistereov.start.widgets.auth.instagram.service.InstagramAuthService
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.security.core.Authentication
@@ -10,12 +10,12 @@ import reactor.core.publisher.Mono
 
 @RestController
 @RequestMapping("/widgets/instagram/auth")
-class InstagramTokenController(
-    private val tokenService: InstagramTokenService,
+class InstagramAuthController(
+    private val tokenService: InstagramAuthService,
     private val principalExtractor: AuthenticationPrincipalExtractor,
 ) {
 
-    private val logger: Logger = LoggerFactory.getLogger(InstagramTokenController::class.java)
+    private val logger: Logger = LoggerFactory.getLogger(InstagramAuthController::class.java)
 
     @GetMapping
     fun login(authentication: Authentication): Mono<String> {
