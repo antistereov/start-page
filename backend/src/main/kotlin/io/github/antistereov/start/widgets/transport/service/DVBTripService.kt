@@ -1,7 +1,5 @@
 package io.github.antistereov.start.widgets.transport.service
 
-import io.github.antistereov.start.global.service.BaseService
-import io.netty.handler.codec.DecoderException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
@@ -15,7 +13,6 @@ class DVBTripService(
     private val webClient: WebClient,
     private val departureService: DVBDepartureService,
     private val locationService: LocationService,
-    private val baseService: BaseService,
 ) {
 
     private val logger: Logger = LoggerFactory.getLogger(DVBTripService::class.java)
