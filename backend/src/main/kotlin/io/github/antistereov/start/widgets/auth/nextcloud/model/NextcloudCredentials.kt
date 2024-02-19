@@ -5,11 +5,11 @@ import org.hibernate.validator.constraints.URL
 
 data class NextcloudCredentials(
     @field:URL(message = "Invalid URL format")
-    val url: String,
+    var host: String? = null,
 
     @field:NotBlank(message = "Username must not be empty")
-    val username: String,
+    var username: String? = null,
 
     @field:NotBlank(message = "Password must not be empty")
-    val password: String,
+    var password: String? = null,
 )

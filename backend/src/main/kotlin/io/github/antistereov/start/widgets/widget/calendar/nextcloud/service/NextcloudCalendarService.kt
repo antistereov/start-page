@@ -4,6 +4,7 @@ package io.github.antistereov.start.widgets.widget.calendar.nextcloud.service
 import io.github.antistereov.start.widgets.widget.calendar.model.OnlineCalendar
 import io.github.antistereov.start.widgets.auth.nextcloud.model.NextcloudCredentials
 import io.github.antistereov.start.widgets.widget.calendar.caldav.service.CalDavCalenderService
+import io.github.antistereov.start.widgets.widget.calendar.model.CalendarAuth
 import okhttp3.Credentials
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -36,11 +37,11 @@ class NextcloudCalendarService(
         logger.debug("Fetching calendar data.")
 
         return Mono.fromCallable {
-            val calendarUrl = "${credentials.url}/remote.php/dav/calendars/${credentials.username}/"
+            val calendarUrl = "${credentials.host}/remote.php/dav/calendars/${credentials.username}/"
             val client = OkHttpClient()
             val request = Request.Builder()
                 .url(calendarUrl)
-                .header("Authorization", Credentials.basic(credentials.username, credentials.password))
+                .header("Authorization", Credentials.basic(credentials.username!!, credentials.password!!))
                 .method("PROPFIND", null)
                 .build()
 
@@ -78,7 +79,7 @@ class NextcloudCalendarService(
 
         val hrefElement = calendarElement.getElementsByTagName("d:href").item(0)
         val icsPath = hrefElement.textContent!!
-        val icsLink = "${credentials.url}$icsPath?export"
+        val icsLink = "${credentials.host}$icsPath?export"
 
         val nameElement = calendarElement.getElementsByTagName("d:displayname").item(0)
         val colorElement = calendarElement.getElementsByTagName("x1:calendar-color").item(0)
@@ -93,6 +94,7 @@ class NextcloudCalendarService(
                 name,
                 color,
                 icsLink,
+                CalendarAuth.Nextcloud,
                 description,
                 mutableListOf()
             )

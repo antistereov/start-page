@@ -62,7 +62,7 @@ class SpotifyAuthService(
         return userRepository.findById(userId)
             .switchIfEmpty(Mono.error(UserNotFoundException(userId)))
             .flatMap { user ->
-                user.spotify = SpotifyAuthDetails()
+                user.auth.spotify = SpotifyAuthDetails()
 
                 userRepository.save(user)
                     .onErrorMap { throwable ->
@@ -113,9 +113,9 @@ class SpotifyAuthService(
                     ?: return@flatMap Mono.error(MissingCredentialsException(properties.serviceName, "refresh token", userId))
                 val expirationDate = LocalDateTime.now().plusSeconds(response.expiresIn)
 
-                user.spotify.accessToken = aesEncryption.encrypt(response.accessToken)
-                user.spotify.refreshToken = aesEncryption.encrypt(refreshToken)
-                user.spotify.expirationDate = expirationDate
+                user.auth.spotify.accessToken = aesEncryption.encrypt(response.accessToken)
+                user.auth.spotify.refreshToken = aesEncryption.encrypt(refreshToken)
+                user.auth.spotify.expirationDate = expirationDate
 
                 userRepository.save(user)
                     .onErrorMap { throwable ->
@@ -133,7 +133,7 @@ class SpotifyAuthService(
         return userRepository.findById(userId)
             .switchIfEmpty(Mono.error(UserNotFoundException(userId)))
             .flatMap { user ->
-                val encryptedRefreshToken = user.spotify.refreshToken
+                val encryptedRefreshToken = user.auth.spotify.refreshToken
                     ?: return@flatMap Mono.error(MissingCredentialsException(properties.serviceName, "refresh token", userId))
                 val refreshToken = aesEncryption.decrypt(encryptedRefreshToken)
 
@@ -152,8 +152,8 @@ class SpotifyAuthService(
                     .retrieve()
                     .bodyToMono(SpotifyTokenResponse::class.java)
                     .flatMap { response ->
-                        user.spotify.accessToken = aesEncryption.encrypt(response.accessToken)
-                        user.spotify.expirationDate = LocalDateTime.now().plusSeconds(response.expiresIn)
+                        user.auth.spotify.accessToken = aesEncryption.encrypt(response.accessToken)
+                        user.auth.spotify.expirationDate = LocalDateTime.now().plusSeconds(response.expiresIn)
 
                         userRepository.save(user)
                             .onErrorMap { throwable ->
@@ -172,13 +172,13 @@ class SpotifyAuthService(
         return userRepository.findById(userId)
             .switchIfEmpty(Mono.error(UserNotFoundException(userId)))
             .flatMap { user ->
-                val expirationDate = user.spotify.expirationDate
+                val expirationDate = user.auth.spotify.expirationDate
                     ?: return@flatMap Mono.error(MissingCredentialsException(properties.serviceName, "expiration date", userId))
 
                 if (currentTime.isAfter(expirationDate)) {
                     this.refreshToken(userId).map { it.accessToken }
                 } else {
-                    val encryptedSpotifyAccessToken = user.spotify.accessToken
+                    val encryptedSpotifyAccessToken = user.auth.spotify.accessToken
                         ?: return@flatMap Mono.error(MissingCredentialsException(properties.serviceName, "access token", userId))
                     Mono.just(aesEncryption.decrypt(encryptedSpotifyAccessToken))
                 }

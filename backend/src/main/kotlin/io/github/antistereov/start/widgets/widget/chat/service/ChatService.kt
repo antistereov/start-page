@@ -44,7 +44,7 @@ class ChatService(
         logger.debug("Fetching and validating user: $userId.")
 
         return userRepository.findById(userId).flatMap { user ->
-            val chatHistory = decryptMessages(user.openAi.chatHistory.history)
+            val chatHistory = decryptMessages(user.widgets.chat.chatHistory.history)
 
             if (chatHistory.size >= properties.messageLimit) {
                 return@flatMap Mono.error(MessageLimitExceededException())
@@ -67,7 +67,7 @@ class ChatService(
         val chatRequest = ChatRequest(
             mutableListOf(systemMessage)
                 .apply {
-                    addAll(decryptMessages(user.openAi.chatHistory.history).values)
+                    addAll(decryptMessages(user.widgets.chat.chatHistory.history).values)
                     add(newMessage)
                 },
             user = user.id,
@@ -79,7 +79,7 @@ class ChatService(
     private fun sendChatRequestAndHandleResponse(user: User, chatRequest: ChatRequest): Mono<ChatResponse> {
         logger.debug("Sending chat request and handling response.")
 
-        val encryptedApiKey = user.openAi.apiKey
+        val encryptedApiKey = user.auth.openAi.apiKey
             ?: return Mono.error(MissingCredentialsException(properties.serviceName, "API key", user.id))
         val uri = "${properties.apiBaseUrl}/chat/completions"
         val apiKey = aesEncryption.decrypt(encryptedApiKey)
@@ -96,12 +96,12 @@ class ChatService(
     private fun updateChatHistory(user: User, response: ChatResponse, newMessage: Message): Mono<ChatResponse> {
         logger.debug("Updating chat history.")
 
-        val chatHistory = decryptMessages(user.openAi.chatHistory.history)
+        val chatHistory = decryptMessages(user.widgets.chat.chatHistory.history)
         val entryNumber = chatHistory.size
         chatHistory[entryNumber] = newMessage
         chatHistory[entryNumber + 1] = response.choices.first().message
-        user.openAi.chatHistory.history = encryptMessages(chatHistory)
-        user.openAi.chatHistory.totalTokens = response.usage.totalTokens
+        user.widgets.chat.chatHistory.history = encryptMessages(chatHistory)
+        user.widgets.chat.chatHistory.totalTokens = response.usage.totalTokens
 
         return userRepository.save(user)
             .onErrorMap { throwable ->
@@ -114,7 +114,7 @@ class ChatService(
         logger.debug("Deleting history entry.")
 
         return userRepository.findById(userId).flatMap { user ->
-            val history = user.openAi.chatHistory.history
+            val history = user.widgets.chat.chatHistory.history
             if (history.size <= entryNumber) {
                 return@flatMap Mono.error(IndexOutOfBoundsException("No history entry at index $entryNumber"))
             }
@@ -128,7 +128,7 @@ class ChatService(
                     updatedHistory[key] = value
                 }
             }
-            user.openAi.chatHistory.history = updatedHistory
+            user.widgets.chat.chatHistory.history = updatedHistory
             userRepository.save(user)
                 .onErrorMap { throwable ->
                     CannotSaveUserException(throwable)
@@ -141,13 +141,13 @@ class ChatService(
         logger.debug("Clearing chat history.")
 
         return userRepository.findById(userId).flatMap { user ->
-            user.openAi.chatHistory.history.clear()
-            user.openAi.chatHistory.totalTokens = 0
+            user.widgets.chat.chatHistory.history.clear()
+            user.widgets.chat.chatHistory.totalTokens = 0
             userRepository.save(user)
                 .onErrorMap { throwable ->
                     CannotSaveUserException(throwable)
                 }
-                .thenReturn(user.openAi.chatHistory)
+                .thenReturn(user.widgets.chat.chatHistory)
         }
     }
 
@@ -155,7 +155,7 @@ class ChatService(
         logger.debug("Getting history entry.")
 
         return userRepository.findById(userId).handle { user, sink ->
-            val history = user.openAi.chatHistory.history
+            val history = user.widgets.chat.chatHistory.history
             if (history.size <= entryNumber) {
                 sink.error(IndexOutOfBoundsException("No history entry at index $entryNumber"))
                 return@handle
@@ -172,8 +172,8 @@ class ChatService(
 
         return userRepository.findById(userId).map { user ->
             ChatHistory(
-                decryptMessages(user.openAi.chatHistory.history),
-                user.openAi.chatHistory.totalTokens
+                decryptMessages(user.widgets.chat.chatHistory.history),
+                user.widgets.chat.chatHistory.totalTokens
             )
         }
     }

@@ -5,11 +5,10 @@ import io.github.antistereov.start.global.model.exception.InvalidNextcloudCreden
 import io.github.antistereov.start.global.model.exception.MissingCredentialsException
 import io.github.antistereov.start.global.model.exception.UserNotFoundException
 import io.github.antistereov.start.security.AESEncryption
-import io.github.antistereov.start.widgets.auth.nextcloud.model.NextcloudAuthDetails
+import io.github.antistereov.start.widgets.auth.nextcloud.model.NextcloudCredentials
 import io.github.antistereov.start.user.repository.UserRepository
 import io.github.antistereov.start.global.component.UrlHandler
 import io.github.antistereov.start.widgets.auth.nextcloud.config.NextcloudProperties
-import io.github.antistereov.start.widgets.auth.nextcloud.model.NextcloudCredentials
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
@@ -33,9 +32,9 @@ class NextcloudAuthService(
         return userRepository.findById(userId)
             .switchIfEmpty(Mono.error(UserNotFoundException(userId)))
             .handle { user, sink ->
-                val host = user.nextcloud.host
-                val username = user.nextcloud.username
-                val password = user.nextcloud.password
+                val host = user.auth.nextcloud.host
+                val username = user.auth.nextcloud.username
+                val password = user.auth.nextcloud.password
 
                 if (host == null) {
                     sink.error(MissingCredentialsException(properties.serviceName, "host URL", userId))
@@ -68,9 +67,9 @@ class NextcloudAuthService(
         return userRepository.findById(userId)
             .switchIfEmpty(Mono.error(UserNotFoundException(userId)))
             .map { user ->
-                user.nextcloud.host = aesEncryption.encrypt(urlHandler.normalizeBaseUrl(credentials.url))
-                user.nextcloud.username = aesEncryption.encrypt(credentials.username)
-                user.nextcloud.password = aesEncryption.encrypt(credentials.password)
+                user.auth.nextcloud.host = aesEncryption.encrypt(urlHandler.normalizeBaseUrl(credentials.host!!))
+                user.auth.nextcloud.username = aesEncryption.encrypt(credentials.username!!)
+                user.auth.nextcloud.password = aesEncryption.encrypt(credentials.password!!)
 
                 user
             }
@@ -90,9 +89,9 @@ class NextcloudAuthService(
         logger.debug("Verifying credentials.")
 
         val webClient = webClientBuilder
-            .baseUrl("${credentials.url}/remote.php/dav/files/${credentials.username}")
+            .baseUrl("${credentials.host}/remote.php/dav/files/${credentials.username}")
             .defaultHeaders { headers ->
-                headers.setBasicAuth(credentials.username, credentials.password)
+                headers.setBasicAuth(credentials.username!!, credentials.password!!)
             }
             .build()
 
@@ -109,7 +108,7 @@ class NextcloudAuthService(
         return userRepository.findById(userId)
             .switchIfEmpty(Mono.error(UserNotFoundException(userId)))
             .flatMap { user ->
-                user.nextcloud = NextcloudAuthDetails()
+                user.auth.nextcloud = NextcloudCredentials()
 
                 userRepository.save(user)
                     .onErrorMap { throwable ->

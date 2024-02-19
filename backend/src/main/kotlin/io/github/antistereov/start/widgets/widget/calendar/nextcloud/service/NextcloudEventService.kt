@@ -42,7 +42,7 @@ class NextcloudEventService(
             .switchIfEmpty(Mono.error(UserNotFoundException(userId)))
             .flatMapMany { user ->
                 nextcloudAuthService.getCredentials(userId).flatMapMany { credentials ->
-                    val calendars = user.nextcloud.calendars
+                    val calendars = user.widgets.calendar.calendars
                     Flux.fromIterable(calendars).flatMap { calendar ->
                         val decryptedIcsLink = aesEncryption.decrypt(calendar.icsLink)
                         getCalendarEvents(credentials, decryptedIcsLink)
@@ -72,17 +72,18 @@ class NextcloudEventService(
                         name = calendar.name,
                         color = calendar.color,
                         icsLink = calendar.icsLink,
+                        auth = calendar.auth,
                         description = calendar.description,
                         calendarEvents = calDavEventService.encryptEvents(calendar.calendarEvents)
                     )
                 }.toMutableList()
-                user.nextcloud.calendars = updatedCalendars
+                user.widgets.calendar.calendars = updatedCalendars
                 userRepository.save(user)
                     .onErrorMap { throwable ->
                         CannotSaveUserException(throwable)
                     }
             }.flatMapMany { updatedUser ->
-                Flux.fromIterable(updatedUser.nextcloud.calendars)
+                Flux.fromIterable(updatedUser.widgets.calendar.calendars)
             }
     }
 
@@ -91,7 +92,7 @@ class NextcloudEventService(
 
         val client = WebClient.builder()
             .baseUrl(icsLink)
-            .defaultHeader("Authorization", Credentials.basic(credentials.username, credentials.password))
+            .defaultHeader("Authorization", Credentials.basic(credentials.username!!, credentials.password!!))
             .build()
         return client.get()
             .retrieve()

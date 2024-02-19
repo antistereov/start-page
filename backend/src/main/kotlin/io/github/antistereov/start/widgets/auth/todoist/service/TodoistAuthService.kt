@@ -59,7 +59,7 @@ class TodoistAuthService(
         return userRepository.findById(userId)
             .switchIfEmpty(Mono.error(UserNotFoundException(userId)))
             .flatMap { user ->
-                user.todoist = TodoistAuthDetails()
+                user.auth.todoist = TodoistAuthDetails()
 
                 userRepository.save(user)
                     .onErrorMap { throwable ->
@@ -97,7 +97,7 @@ class TodoistAuthService(
         return userRepository.findById(userId)
             .switchIfEmpty(Mono.error(UserNotFoundException(userId)))
             .flatMap { user ->
-                user.todoist.accessToken = aesEncryption.encrypt(response.accessToken)
+                user.auth.todoist.accessToken = aesEncryption.encrypt(response.accessToken)
 
                 userRepository.save(user)
                     .onErrorMap { throwable ->
@@ -113,7 +113,7 @@ class TodoistAuthService(
         return userRepository.findById(userId)
             .switchIfEmpty(Mono.error(UserNotFoundException(userId)))
             .flatMap { user ->
-                val encryptedAccessToken = user.todoist.accessToken
+                val encryptedAccessToken = user.auth.todoist.accessToken
                     ?: return@flatMap Mono.error(MissingCredentialsException("Todoist", "access token", userId))
                 Mono.just(aesEncryption.decrypt(encryptedAccessToken))
             }

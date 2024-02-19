@@ -55,7 +55,7 @@ class InstagramAuthService(
         if (code != null && state != null) {
             return handleShortLivedToken(code, state).flatMap { user ->
                 val userId = user.id
-                val accessToken = user.instagram.accessToken
+                val accessToken = user.auth.instagram.accessToken
                     ?: return@flatMap Mono.error(MissingCredentialsException(properties.serviceName, "access token", userId))
 
                 handleLongLivedToken(userId, accessToken)
@@ -75,7 +75,7 @@ class InstagramAuthService(
         return userRepository.findById(userId)
             .switchIfEmpty(Mono.error(UserNotFoundException(userId)))
             .flatMap { user ->
-                val accessToken = user.instagram.accessToken
+                val accessToken = user.auth.instagram.accessToken
                 if (accessToken != null) {
                     Mono.just(aesEncryption.decrypt(accessToken))
                 } else {
@@ -92,13 +92,13 @@ class InstagramAuthService(
         return userRepository.findById(userId)
             .switchIfEmpty(Mono.error(UserNotFoundException(userId)))
             .flatMap { user ->
-                val expirationDate = user.instagram.expirationDate
+                val expirationDate = user.auth.instagram.expirationDate
                     ?: return@flatMap Mono.error(MissingCredentialsException(properties.serviceName, "expirationDate", userId))
                 if (currentTime.isAfter(expirationDate)) {
                     return@flatMap Mono.error(ExpiredTokenException(properties.serviceName, userId))
                 }
 
-                val encryptedAccessToken = user.instagram.accessToken
+                val encryptedAccessToken = user.auth.instagram.accessToken
                     ?: return@flatMap Mono.error(MissingCredentialsException(properties.serviceName, "access token", userId))
                 val accessToken = aesEncryption.decrypt(encryptedAccessToken)
 
@@ -156,7 +156,7 @@ class InstagramAuthService(
         return userRepository.findById(userId)
             .switchIfEmpty(Mono.error(UserNotFoundException(userId)))
             .flatMap { user ->
-                user.instagram = InstagramAuthDetails()
+                user.auth.instagram = InstagramAuthDetails()
                 userRepository.save(user)
                     .onErrorMap { throwable ->
                         CannotSaveUserException(throwable)
@@ -241,10 +241,10 @@ class InstagramAuthService(
         return userRepository.findById(userId)
             .switchIfEmpty(Mono.error(UserNotFoundException(userId)))
             .flatMap { user ->
-                instagramUserId?.let { user.instagram.userId = aesEncryption.encrypt(it) }
-                instagramUsername?.let {user.instagram.username = aesEncryption.encrypt(it)}
-                accessToken?.let { user.instagram.accessToken = aesEncryption.encrypt(it) }
-                expiresIn?.let { user.instagram.expirationDate = LocalDateTime.now().plusSeconds(it) }
+                instagramUserId?.let { user.auth.instagram.userId = aesEncryption.encrypt(it) }
+                instagramUsername?.let {user.auth.instagram.username = aesEncryption.encrypt(it)}
+                accessToken?.let { user.auth.instagram.accessToken = aesEncryption.encrypt(it) }
+                expiresIn?.let { user.auth.instagram.expirationDate = LocalDateTime.now().plusSeconds(it) }
 
                 userRepository.save(user)
                     .onErrorMap { throwable ->

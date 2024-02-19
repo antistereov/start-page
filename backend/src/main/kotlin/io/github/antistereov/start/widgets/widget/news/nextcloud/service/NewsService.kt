@@ -21,7 +21,7 @@ class NewsService(
     ): Mono<String> {
         logger.debug("Getting latest news.")
 
-        val uri = UriComponentsBuilder.fromHttpUrl("${credentials.url}/index.php/apps/news/api/v1-3/items")
+        val uri = UriComponentsBuilder.fromHttpUrl("${credentials.host}/index.php/apps/news/api/v1-3/items")
             .queryParam("batchSize", batchSize)
             .toUriString()
 

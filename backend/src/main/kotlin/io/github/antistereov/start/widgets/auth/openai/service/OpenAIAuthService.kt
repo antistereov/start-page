@@ -30,7 +30,7 @@ class OpenAIAuthService(
         return userRepository.findById(userId)
             .switchIfEmpty(Mono.error(UserNotFoundException(userId)))
             .map { user ->
-                user.openAi.apiKey = aesEncryption.encrypt(apiKey)
+                user.auth.openAi.apiKey = aesEncryption.encrypt(apiKey)
                 user
             }
             .flatMap { user ->
@@ -66,7 +66,7 @@ class OpenAIAuthService(
         return userRepository.findById(userId)
             .switchIfEmpty(Mono.error(UserNotFoundException(userId)))
             .flatMap { user ->
-                user.openAi = OpenAIAuthDetails()
+                user.auth.openAi = OpenAIAuthDetails()
 
                 userRepository.save(user)
                     .onErrorMap { throwable ->

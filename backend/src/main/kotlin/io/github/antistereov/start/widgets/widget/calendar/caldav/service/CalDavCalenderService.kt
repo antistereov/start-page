@@ -39,19 +39,19 @@ class CalDavCalenderService(
             .switchIfEmpty(Mono.error(UserNotFoundException(userId)))
             .flatMapMany { user ->
                 val updatedCalendars = if (icsLinks != null) {
-                    user.nextcloud.calendars
+                    user.widgets.calendar.calendars
                         .filter { aesEncryption.decrypt(it.icsLink) !in icsLinks }
                         .toMutableList()
                 } else {
                     mutableListOf()
                 }
-                user.nextcloud.calendars = updatedCalendars
+                user.widgets.calendar.calendars = updatedCalendars
                 userRepository.save(user)
                     .onErrorMap { throwable ->
                         CannotSaveUserException(throwable)
                     }
                     .flatMapMany { updatedUser ->
-                        Flux.fromIterable(updatedUser.nextcloud.calendars)
+                        Flux.fromIterable(updatedUser.widgets.calendar.calendars)
                     }
             }
     }
@@ -62,11 +62,12 @@ class CalDavCalenderService(
         return userRepository.findById(userId)
             .switchIfEmpty(Mono.error(UserNotFoundException(userId)))
             .map { user ->
-                user.nextcloud.calendars.map { calendar ->
+                user.widgets.calendar.calendars.map { calendar ->
                     OnlineCalendar(
                         name = aesEncryption.decrypt(calendar.name),
                         color = calendar.color,
                         icsLink = aesEncryption.decrypt(calendar.icsLink),
+                        auth = calendar.auth,
                         description = calendar.description?.let { aesEncryption.decrypt(it) },
                         calendarEvents = eventService.decryptEvents(calendar.calendarEvents)
                     )
@@ -90,7 +91,7 @@ class CalDavCalenderService(
     private fun checkForDuplicates(user: User, calendars: List<OnlineCalendar>) {
         logger.debug("Checking for duplicates.")
 
-        val existingIcsLinks = user.nextcloud.calendars.map { it.icsLink }
+        val existingIcsLinks = user.widgets.calendar.calendars.map { it.icsLink }
         val decryptedIcsLinks = existingIcsLinks.map { aesEncryption.decrypt(it) }
         val duplicates = calendars.find { it.icsLink in decryptedIcsLinks }
         if (duplicates != null) {
@@ -106,6 +107,7 @@ class CalDavCalenderService(
                 name = aesEncryption.encrypt(calendar.name),
                 color = calendar.color,
                 icsLink = aesEncryption.encrypt(calendar.icsLink),
+                auth = calendar.auth,
                 description = calendar.description?.let { aesEncryption.encrypt(it) },
                 calendarEvents = eventService.encryptEvents(calendar.calendarEvents)
             )
@@ -115,13 +117,13 @@ class CalDavCalenderService(
     private fun addNewCalendars(user: User, newCalendars: List<OnlineCalendar>): Flux<OnlineCalendar> {
         logger.debug("Adding new calendars.")
 
-        user.nextcloud.calendars.addAll(newCalendars)
+        user.widgets.calendar.calendars.addAll(newCalendars)
         return userRepository.save(user)
             .onErrorMap { throwable ->
                 CannotSaveUserException(throwable)
             }
             .flatMapMany { updatedUser ->
-                Flux.fromIterable(updatedUser.nextcloud.calendars)
+                Flux.fromIterable(updatedUser.widgets.calendar.calendars)
             }
     }
 }

@@ -65,7 +65,7 @@ class UnsplashAuthService(
         return userRepository.findById(userId)
             .switchIfEmpty(Mono.error(UserNotFoundException(userId)))
             .flatMap { user ->
-                user.unsplash = UnsplashAuthDetails()
+                user.auth.unsplash = UnsplashAuthDetails()
 
                 userRepository.save(user)
                     .onErrorMap { throwable ->
@@ -105,7 +105,7 @@ class UnsplashAuthService(
         return userRepository.findById(userId)
             .switchIfEmpty(Mono.error(UserNotFoundException(userId)))
             .flatMap { user ->
-                user.unsplash.accessToken = aesEncryption.encrypt(response.accessToken)
+                user.auth.unsplash.accessToken = aesEncryption.encrypt(response.accessToken)
 
                 userRepository.save(user)
                     .onErrorMap { throwable ->
@@ -121,7 +121,7 @@ class UnsplashAuthService(
         return userRepository.findById(userId)
             .switchIfEmpty(Mono.error(UserNotFoundException(userId)))
             .flatMap { user ->
-                val encryptedAccessToken = user.unsplash.accessToken
+                val encryptedAccessToken = user.auth.unsplash.accessToken
                     ?: return@flatMap Mono.error(MissingCredentialsException(properties.serviceName, "access token", userId))
                 Mono.just(aesEncryption.decrypt(encryptedAccessToken))
             }

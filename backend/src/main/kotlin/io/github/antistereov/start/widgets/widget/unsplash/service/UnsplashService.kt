@@ -72,7 +72,7 @@ class UnsplashService(
         return userRepository.findById(userId)
             .switchIfEmpty(Mono.error(UserNotFoundException(userId)))
             .flatMapMany { user ->
-            Flux.fromIterable(user.unsplash.recentPhotos)
+            Flux.fromIterable(user.widgets.unsplash.recentPhotos)
         }
     }
 
@@ -102,7 +102,7 @@ class UnsplashService(
         return userRepository.findById(userId)
             .switchIfEmpty(Mono.error(UserNotFoundException(userId)))
             .map { user ->
-                val photo = user.unsplash.recentPhotos.getOrElse(index) {
+                val photo = user.widgets.unsplash.recentPhotos.getOrElse(index) {
                     throw IllegalArgumentException("No recent pictures found for user $userId at index $index")
                 }
                 val width = calculateMinimumPictureWidth(photo.width, photo.height, screenWidth, screenHeight)
@@ -125,10 +125,10 @@ class UnsplashService(
                     baseService.extractField(response, "width").toInt(),
                     baseService.extractField(response, "height").toInt()
                 )
-                if (user.unsplash.recentPhotos.size >= 30) {
-                    user.unsplash.recentPhotos.removeAt(user.unsplash.recentPhotos.size - 1)
+                if (user.widgets.unsplash.recentPhotos.size >= 30) {
+                    user.widgets.unsplash.recentPhotos.removeAt(user.widgets.unsplash.recentPhotos.size - 1)
                 }
-                user.unsplash.recentPhotos.add(0, photo)
+                user.widgets.unsplash.recentPhotos.add(0, photo)
                 userRepository.save(user)
                     .onErrorMap { throwable ->
                         CannotSaveUserException(throwable)
