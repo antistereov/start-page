@@ -19,7 +19,7 @@ class TodoistTaskController(
 
     private val logger: Logger = LoggerFactory.getLogger(TodoistTaskController::class.java)
 
-    @GetMapping("/tasks")
+    @GetMapping
     fun getTasks(authentication: Authentication): Mono<String> {
         logger.info("Executing Todoist getTasks method.")
 
