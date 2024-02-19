@@ -1,10 +1,10 @@
-package io.github.antistereov.start.widgets.openai.controller
+package io.github.antistereov.start.widgets.widget.chat.controller
 
 import io.github.antistereov.start.security.AuthenticationPrincipalExtractor
 import io.github.antistereov.start.user.model.ChatDetails
-import io.github.antistereov.start.widgets.openai.model.ChatResponse
-import io.github.antistereov.start.widgets.openai.model.Message
-import io.github.antistereov.start.widgets.openai.service.ChatService
+import io.github.antistereov.start.widgets.widget.chat.model.ChatResponse
+import io.github.antistereov.start.widgets.widget.chat.model.Message
+import io.github.antistereov.start.widgets.widget.chat.service.ChatService
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.security.core.Authentication

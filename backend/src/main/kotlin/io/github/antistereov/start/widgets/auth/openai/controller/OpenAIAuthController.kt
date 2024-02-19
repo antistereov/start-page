@@ -1,7 +1,7 @@
-package io.github.antistereov.start.widgets.openai.controller
+package io.github.antistereov.start.widgets.auth.openai.controller
 
 import io.github.antistereov.start.security.AuthenticationPrincipalExtractor
-import io.github.antistereov.start.widgets.openai.service.OpenAIAuthService
+import io.github.antistereov.start.widgets.auth.openai.service.OpenAIAuthService
 import jakarta.validation.Valid
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*
 import reactor.core.publisher.Mono
 
 @RestController
-@RequestMapping("/openai/auth")
+@RequestMapping("/auth/openai")
 class OpenAIAuthController(
     private val authService: OpenAIAuthService,
     private val principalExtractor: AuthenticationPrincipalExtractor,

@@ -1,14 +1,14 @@
-package io.github.antistereov.start.widgets.openai.service
+package io.github.antistereov.start.widgets.auth.openai.service
 
 import io.github.antistereov.start.global.model.exception.CannotSaveUserException
 import io.github.antistereov.start.global.model.exception.UserNotFoundException
 import io.github.antistereov.start.security.AESEncryption
-import io.github.antistereov.start.user.model.OpenAIAuthDetails
+import io.github.antistereov.start.widgets.auth.openai.model.OpenAIAuthDetails
 import io.github.antistereov.start.user.repository.UserRepository
-import io.github.antistereov.start.widgets.openai.config.OpenAIProperties
-import io.github.antistereov.start.widgets.openai.model.ChatRequest
-import io.github.antistereov.start.widgets.openai.model.ChatResponse
-import io.github.antistereov.start.widgets.openai.model.Message
+import io.github.antistereov.start.widgets.auth.openai.config.OpenAIProperties
+import io.github.antistereov.start.widgets.widget.chat.model.ChatRequest
+import io.github.antistereov.start.widgets.widget.chat.model.ChatResponse
+import io.github.antistereov.start.widgets.widget.chat.model.Message
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient

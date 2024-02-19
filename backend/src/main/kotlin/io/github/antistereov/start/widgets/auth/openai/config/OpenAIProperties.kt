@@ -1,4 +1,4 @@
-package io.github.antistereov.start.widgets.openai.config
+package io.github.antistereov.start.widgets.auth.openai.config
 
 import org.springframework.boot.context.properties.ConfigurationProperties
 

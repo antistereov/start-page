@@ -1,4 +1,4 @@
-package io.github.antistereov.start.widgets.openai.model
+package io.github.antistereov.start.widgets.widget.chat.model
 
 import com.fasterxml.jackson.annotation.JsonProperty
 

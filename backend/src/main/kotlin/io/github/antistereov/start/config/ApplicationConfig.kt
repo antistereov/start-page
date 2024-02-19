@@ -4,7 +4,7 @@ import io.github.antistereov.start.config.properties.Auth0Properties
 import io.github.antistereov.start.config.properties.EncryptionProperties
 import io.github.antistereov.start.widgets.auth.instagram.config.InstagramProperties
 import io.github.antistereov.start.widgets.auth.nextcloud.config.NextcloudProperties
-import io.github.antistereov.start.widgets.openai.config.OpenAIProperties
+import io.github.antistereov.start.widgets.auth.openai.config.OpenAIProperties
 import io.github.antistereov.start.widgets.spotify.config.SpotifyProperties
 import io.github.antistereov.start.widgets.todoist.config.TodoistProperties
 import io.github.antistereov.start.widgets.unsplash.config.UnsplashProperties
