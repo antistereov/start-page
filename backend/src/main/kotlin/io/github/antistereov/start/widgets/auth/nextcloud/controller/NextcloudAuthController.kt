@@ -24,7 +24,7 @@ class NextcloudAuthController(
     private val logger: Logger = LoggerFactory.getLogger(NextcloudAuthController::class.java)
 
     @PostMapping
-    fun auth(
+    fun login(
         authentication: Authentication,
         @Valid @RequestBody credentials: NextcloudCredentials
     ): Mono<String> {
