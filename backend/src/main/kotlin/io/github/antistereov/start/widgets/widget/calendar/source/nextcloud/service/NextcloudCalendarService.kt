@@ -3,17 +3,13 @@ package io.github.antistereov.start.widgets.widget.calendar.source.nextcloud.ser
 
 import io.github.antistereov.start.widgets.widget.calendar.model.OnlineCalendar
 import io.github.antistereov.start.widgets.auth.nextcloud.model.NextcloudCredentials
-import io.github.antistereov.start.widgets.auth.nextcloud.service.NextcloudAuthService
-import io.github.antistereov.start.widgets.widget.calendar.dto.CalendarDTO
 import io.github.antistereov.start.widgets.widget.calendar.model.CalendarAuth
 import io.github.antistereov.start.widgets.widget.calendar.model.CalendarType
-import io.github.antistereov.start.widgets.widget.calendar.service.EventService
 import okhttp3.Credentials
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
-import org.springframework.web.reactive.function.client.WebClient
 import org.w3c.dom.Element
 import org.xml.sax.InputSource
 import reactor.core.publisher.Flux
