@@ -1,10 +1,9 @@
-package io.github.antistereov.start.widgets.widget.calendar.source.nextcloud.controller
+package io.github.antistereov.start.widgets.widget.calendar.controller
 
 import io.github.antistereov.start.security.AuthenticationPrincipalExtractor
 import io.github.antistereov.start.widgets.auth.nextcloud.service.NextcloudAuthService
-import io.github.antistereov.start.widgets.widget.calendar.controller.CalendarController
 import io.github.antistereov.start.widgets.widget.calendar.model.OnlineCalendar
-import io.github.antistereov.start.widgets.widget.calendar.source.nextcloud.service.NextcloudCalendarService
+import io.github.antistereov.start.widgets.widget.calendar.service.NextcloudCalendarService
 import org.slf4j.LoggerFactory
 import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.GetMapping

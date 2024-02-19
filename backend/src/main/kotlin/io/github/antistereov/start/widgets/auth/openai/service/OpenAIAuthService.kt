@@ -1,10 +1,8 @@
 package io.github.antistereov.start.widgets.auth.openai.service
 
-import io.github.antistereov.start.global.model.exception.CannotSaveUserException
-import io.github.antistereov.start.global.model.exception.UserNotFoundException
 import io.github.antistereov.start.security.AESEncryption
 import io.github.antistereov.start.widgets.auth.openai.model.OpenAIAuthDetails
-import io.github.antistereov.start.user.repository.UserRepository
+import io.github.antistereov.start.user.service.UserService
 import io.github.antistereov.start.widgets.auth.openai.config.OpenAIProperties
 import io.github.antistereov.start.widgets.widget.chat.model.ChatRequest
 import io.github.antistereov.start.widgets.widget.chat.model.ChatResponse
@@ -16,7 +14,7 @@ import reactor.core.publisher.Mono
 
 @Service
 class OpenAIAuthService(
-    private val userRepository: UserRepository,
+    private val userService: UserService,
     private val webClient: WebClient,
     private val properties: OpenAIProperties,
     private val aesEncryption: AESEncryption,
@@ -27,22 +25,15 @@ class OpenAIAuthService(
     fun authentication(userId: String, apiKey: String): Mono<String> {
         logger.debug("Authenticating user: $userId.")
 
-        return userRepository.findById(userId)
-            .switchIfEmpty(Mono.error(UserNotFoundException(userId)))
-            .map { user ->
-                user.auth.openAi.apiKey = aesEncryption.encrypt(apiKey)
-                user
-            }
-            .flatMap { user ->
-                verifyCredentials(apiKey)
-                    .then(
-                        userRepository.save(user)
-                        .onErrorMap { throwable ->
-                            CannotSaveUserException(throwable)
-                        }
-                    )
-                    .map { "Credentials are correct, verified and have been saved." }
-            }
+        return userService.findById(userId).map { user ->
+            user.auth.openAi.apiKey = aesEncryption.encrypt(apiKey)
+            user
+        }
+        .flatMap { user ->
+            verifyCredentials(apiKey)
+                .then(userService.save(user))
+                .map { "Credentials are correct, verified and have been saved." }
+        }
     }
 
     fun verifyCredentials(apiKey: String): Mono<String> {
@@ -63,16 +54,10 @@ class OpenAIAuthService(
     fun logout(userId: String): Mono<Void> {
         logger.debug("Logging out user: $userId.")
 
-        return userRepository.findById(userId)
-            .switchIfEmpty(Mono.error(UserNotFoundException(userId)))
-            .flatMap { user ->
-                user.auth.openAi = OpenAIAuthDetails()
+        return userService.findById(userId).flatMap { user ->
+            user.auth.openAi = OpenAIAuthDetails()
 
-                userRepository.save(user)
-                    .onErrorMap { throwable ->
-                        CannotSaveUserException(throwable)
-                    }
-                    .then()
-            }
+            userService.save(user).then()
+        }
     }
 }

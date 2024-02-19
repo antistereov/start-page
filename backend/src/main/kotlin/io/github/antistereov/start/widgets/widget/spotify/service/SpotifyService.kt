@@ -8,13 +8,13 @@ import org.springframework.stereotype.Service
 import reactor.core.publisher.Mono
 
 @Service
-class SpotifyApiService(
+class SpotifyService(
     private val tokenService: SpotifyAuthService,
     private val baseService: BaseService,
     private val properties: SpotifyProperties,
 ) {
 
-    private val logger = LoggerFactory.getLogger(SpotifyApiService::class.java)
+    private val logger = LoggerFactory.getLogger(SpotifyService::class.java)
 
     fun getCurrentlyPlaying(userId: String): Mono<String> {
         logger.debug("Getting currently playing song for user: $userId.")

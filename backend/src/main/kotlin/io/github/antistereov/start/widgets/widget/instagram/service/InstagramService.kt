@@ -9,13 +9,13 @@ import org.springframework.web.util.UriComponentsBuilder
 import reactor.core.publisher.Mono
 
 @Service
-class InstagramApiService(
+class InstagramService(
     private val tokenService: InstagramAuthService,
     private val baseService: BaseService,
     private val properties: InstagramProperties,
 ) {
 
-    private val logger = LoggerFactory.getLogger(InstagramApiService::class.java)
+    private val logger = LoggerFactory.getLogger(InstagramService::class.java)
 
     fun getUsername(userId: String, instagramUserId: String): Mono<String> {
         logger.debug("Getting username for Instagram user: $instagramUserId.")

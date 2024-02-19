@@ -2,9 +2,9 @@ package io.github.antistereov.start.widgets.auth.instagram.service
 
 import io.github.antistereov.start.security.AESEncryption
 import io.github.antistereov.start.user.model.User
-import io.github.antistereov.start.user.repository.UserRepository
 import io.github.antistereov.start.global.component.StateValidation
 import io.github.antistereov.start.global.model.exception.*
+import io.github.antistereov.start.user.service.UserService
 import io.github.antistereov.start.widgets.auth.instagram.model.InstagramAuthDetails
 import io.github.antistereov.start.widgets.auth.instagram.config.InstagramProperties
 import io.github.antistereov.start.widgets.auth.instagram.model.InstagramLongLivedTokenResponse
@@ -21,7 +21,7 @@ import java.time.LocalDateTime
 @Service
 class InstagramAuthService(
     private val webClient: WebClient,
-    private val userRepository: UserRepository,
+    private val userService: UserService,
     private val aesEncryption: AESEncryption,
     private val stateValidation: StateValidation,
     private val properties: InstagramProperties,
@@ -72,14 +72,12 @@ class InstagramAuthService(
     fun getAccessToken(userId: String): Mono<String> {
         logger.debug("Getting access token for user $userId")
 
-        return userRepository.findById(userId)
-            .switchIfEmpty(Mono.error(UserNotFoundException(userId)))
-            .flatMap { user ->
-                val accessToken = user.auth.instagram.accessToken
-                if (accessToken != null) {
-                    Mono.just(aesEncryption.decrypt(accessToken))
-                } else {
-                    Mono.error(MissingCredentialsException(properties.serviceName, "access token", userId))
+        return userService.findById(userId).flatMap { user ->
+            val accessToken = user.auth.instagram.accessToken
+            if (accessToken != null) {
+                Mono.just(aesEncryption.decrypt(accessToken))
+            } else {
+                Mono.error(MissingCredentialsException(properties.serviceName, "access token", userId))
             }
         }
     }
@@ -89,31 +87,29 @@ class InstagramAuthService(
 
         val currentTime = LocalDateTime.now()
 
-        return userRepository.findById(userId)
-            .switchIfEmpty(Mono.error(UserNotFoundException(userId)))
-            .flatMap { user ->
-                val expirationDate = user.auth.instagram.expirationDate
-                    ?: return@flatMap Mono.error(MissingCredentialsException(properties.serviceName, "expirationDate", userId))
-                if (currentTime.isAfter(expirationDate)) {
-                    return@flatMap Mono.error(ExpiredTokenException(properties.serviceName, userId))
+        return userService.findById(userId).flatMap { user ->
+            val expirationDate = user.auth.instagram.expirationDate
+                ?: return@flatMap Mono.error(MissingCredentialsException(properties.serviceName, "expirationDate", userId))
+            if (currentTime.isAfter(expirationDate)) {
+                return@flatMap Mono.error(ExpiredTokenException(properties.serviceName, userId))
+            }
+
+            val encryptedAccessToken = user.auth.instagram.accessToken
+                ?: return@flatMap Mono.error(MissingCredentialsException(properties.serviceName, "access token", userId))
+            val accessToken = aesEncryption.decrypt(encryptedAccessToken)
+
+            val uri = UriComponentsBuilder.fromHttpUrl("${properties.apiBaseUrl}/refresh_access_token")
+                .queryParam("grant_type", "ig_refresh_token")
+                .queryParam("access_token", accessToken)
+                .toUriString()
+
+            webClient.get()
+                .uri(uri)
+                .retrieve()
+                .bodyToMono(InstagramLongLivedTokenResponse::class.java)
+                .flatMap { token ->
+                    updateAuthDetails(userId, accessToken = token.accessToken, expiresIn = token.expiresIn)
                 }
-
-                val encryptedAccessToken = user.auth.instagram.accessToken
-                    ?: return@flatMap Mono.error(MissingCredentialsException(properties.serviceName, "access token", userId))
-                val accessToken = aesEncryption.decrypt(encryptedAccessToken)
-
-                val uri = UriComponentsBuilder.fromHttpUrl("${properties.apiBaseUrl}/refresh_access_token")
-                    .queryParam("grant_type", "ig_refresh_token")
-                    .queryParam("access_token", accessToken)
-                    .toUriString()
-
-                webClient.get()
-                    .uri(uri)
-                    .retrieve()
-                    .bodyToMono(InstagramLongLivedTokenResponse::class.java)
-                    .flatMap { token ->
-                        updateAuthDetails(userId, accessToken = token.accessToken, expiresIn = token.expiresIn)
-                    }
             }
     }
 
@@ -152,16 +148,10 @@ class InstagramAuthService(
     fun logout(userId: String): Mono<Void> {
         logger.debug("Logging out user $userId")
 
-        return userRepository.findById(userId)
-            .switchIfEmpty(Mono.error(UserNotFoundException(userId)))
-            .flatMap { user ->
-                user.auth.instagram = InstagramAuthDetails()
-                userRepository.save(user)
-                    .onErrorMap { throwable ->
-                        CannotSaveUserException(throwable)
-                    }
-                    .then()
-            }
+        return userService.findById(userId).flatMap { user ->
+            user.auth.instagram = InstagramAuthDetails()
+            userService.save(user).then()
+        }
     }
 
     private fun getShortLivedToken(code: String): Mono<InstagramShortLivedTokenResponse> {
@@ -236,18 +226,12 @@ class InstagramAuthService(
     ): Mono<User> {
         logger.debug("Updating auth details for user $userId")
 
-        return userRepository.findById(userId)
-            .switchIfEmpty(Mono.error(UserNotFoundException(userId)))
-            .flatMap { user ->
-                instagramUserId?.let { user.auth.instagram.userId = aesEncryption.encrypt(it) }
-                accessToken?.let { user.auth.instagram.accessToken = aesEncryption.encrypt(it) }
-                expiresIn?.let { user.auth.instagram.expirationDate = LocalDateTime.now().plusSeconds(it) }
+        return userService.findById(userId).flatMap { user ->
+            instagramUserId?.let { user.auth.instagram.userId = aesEncryption.encrypt(it) }
+            accessToken?.let { user.auth.instagram.accessToken = aesEncryption.encrypt(it) }
+            expiresIn?.let { user.auth.instagram.expirationDate = LocalDateTime.now().plusSeconds(it) }
 
-                userRepository.save(user)
-                    .onErrorMap { throwable ->
-                        CannotSaveUserException(throwable)
-                    }
-                    .thenReturn(user)
-            }
+            userService.save(user).thenReturn(user)
+        }
     }
 }

@@ -1,4 +1,4 @@
-package io.github.antistereov.start.widgets.widget.calendar.source.nextcloud.service
+package io.github.antistereov.start.widgets.widget.calendar.service
 
 
 import io.github.antistereov.start.widgets.widget.calendar.model.OnlineCalendar

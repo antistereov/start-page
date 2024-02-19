@@ -1,7 +1,7 @@
 package io.github.antistereov.start.widgets.widget.instagram.controller
 
 import io.github.antistereov.start.security.AuthenticationPrincipalExtractor
-import io.github.antistereov.start.widgets.widget.instagram.service.InstagramApiService
+import io.github.antistereov.start.widgets.widget.instagram.service.InstagramService
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.security.core.Authentication
@@ -15,7 +15,7 @@ import reactor.core.publisher.Mono
 @RestController
 @RequestMapping("/instagram")
 class InstagramApiController(
-    private val apiService: InstagramApiService,
+    private val apiService: InstagramService,
     private val principalExtractor: AuthenticationPrincipalExtractor,
 ) {
 

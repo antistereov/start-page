@@ -13,7 +13,7 @@ import reactor.core.publisher.Mono
 @RestController
 @RequestMapping("/unsplash")
 class UnsplashController(
-    private val apiService: UnsplashService,
+    private val service: UnsplashService,
     private val principalExtractor: AuthenticationPrincipalExtractor,
 ) {
 
@@ -25,7 +25,7 @@ class UnsplashController(
 
         return principalExtractor.getUserId(authentication)
             .flatMap { userId ->
-                apiService.getRandomPhoto(userId, query)
+                service.getRandomPhoto(userId, query)
             }
     }
 
@@ -41,7 +41,7 @@ class UnsplashController(
 
         return principalExtractor.getUserId(authentication)
             .flatMap { userId ->
-                apiService.getNewRandomPhotoUrlForScreen(userId, query, width, height, quality)
+                service.getNewRandomPhotoUrlForScreen(userId, query, width, height, quality)
             }
     }
 
@@ -51,7 +51,7 @@ class UnsplashController(
 
         return principalExtractor.getUserId(authentication)
             .flatMapMany { userId ->
-                apiService.getRecentPhotos(userId)
+                service.getRecentPhotos(userId)
             }
     }
 
@@ -67,7 +67,7 @@ class UnsplashController(
 
         return principalExtractor.getUserId(authentication)
             .flatMap { userId ->
-                apiService.getRecentPhotoUrlForScreen(userId, index, width, height, quality)
+                service.getRecentPhotoUrlForScreen(userId, index, width, height, quality)
             }
     }
 
@@ -75,7 +75,7 @@ class UnsplashController(
     fun getPhoto(@PathVariable id: String): Mono<String> {
         logger.info("Executing Unsplash getPhoto method with id: ${id}.")
 
-        return apiService.getPhoto(id)
+        return service.getPhoto(id)
     }
 
     @PostMapping("photo/{id}/like")
@@ -84,7 +84,7 @@ class UnsplashController(
 
         return principalExtractor.getUserId(authentication)
             .flatMap { userId ->
-                apiService.likePhoto(userId, id)
+                service.likePhoto(userId, id)
             }
     }
 
@@ -94,7 +94,7 @@ class UnsplashController(
 
         return principalExtractor.getUserId(authentication)
             .flatMap { accessToken ->
-                apiService.unlikePhoto(accessToken, id)
+                service.unlikePhoto(accessToken, id)
             }
     }
 }

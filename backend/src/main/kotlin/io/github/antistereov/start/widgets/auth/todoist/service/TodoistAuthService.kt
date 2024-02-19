@@ -5,7 +5,7 @@ import io.github.antistereov.start.global.model.exception.*
 import io.github.antistereov.start.security.AESEncryption
 import io.github.antistereov.start.widgets.auth.todoist.model.TodoistAuthDetails
 import io.github.antistereov.start.widgets.auth.todoist.model.TodoistTokenResponse
-import io.github.antistereov.start.user.repository.UserRepository
+import io.github.antistereov.start.user.service.UserService
 import io.github.antistereov.start.widgets.auth.todoist.config.TodoistProperties
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpHeaders
@@ -19,7 +19,7 @@ import reactor.core.publisher.Mono
 @Service
 class TodoistAuthService(
     private val webClient: WebClient,
-    private val userRepository: UserRepository,
+    private val userService: UserService,
     private val aesEncryption: AESEncryption,
     private val stateValidation: StateValidation,
     private val properties: TodoistProperties,
@@ -56,17 +56,11 @@ class TodoistAuthService(
     fun logout(userId: String): Mono<Void> {
         logger.debug("Deleting Todoist user information for user $userId.")
 
-        return userRepository.findById(userId)
-            .switchIfEmpty(Mono.error(UserNotFoundException(userId)))
-            .flatMap { user ->
-                user.auth.todoist = TodoistAuthDetails()
+        return userService.findById(userId).flatMap { user ->
+            user.auth.todoist = TodoistAuthDetails()
 
-                userRepository.save(user)
-                    .onErrorMap { throwable ->
-                        CannotSaveUserException(throwable)
-                    }
-                    .then()
-            }
+            userService.save(user).then()
+        }
     }
 
     private fun handleAuthentication(code: String, state: String): Mono<TodoistTokenResponse> {
@@ -94,28 +88,19 @@ class TodoistAuthService(
     private fun handleUser(userId: String, response: TodoistTokenResponse): Mono<TodoistTokenResponse> {
         logger.debug("Handling Todoist user {} with response: {}.", userId, response)
 
-        return userRepository.findById(userId)
-            .switchIfEmpty(Mono.error(UserNotFoundException(userId)))
-            .flatMap { user ->
-                user.auth.todoist.accessToken = aesEncryption.encrypt(response.accessToken)
-
-                userRepository.save(user)
-                    .onErrorMap { throwable ->
-                        CannotSaveUserException(throwable)
-                    }
-                    .thenReturn(response)
-            }
+        return userService.findById(userId).flatMap { user ->
+            user.auth.todoist.accessToken = aesEncryption.encrypt(response.accessToken)
+            userService.save(user).thenReturn(response)
+        }
     }
 
     fun getAccessToken(userId: String): Mono<String> {
         logger.debug("Getting Todoist access token for user $userId.")
 
-        return userRepository.findById(userId)
-            .switchIfEmpty(Mono.error(UserNotFoundException(userId)))
-            .flatMap { user ->
-                val encryptedAccessToken = user.auth.todoist.accessToken
-                    ?: return@flatMap Mono.error(MissingCredentialsException("Todoist", "access token", userId))
-                Mono.just(aesEncryption.decrypt(encryptedAccessToken))
-            }
+        return userService.findById(userId).flatMap { user ->
+            val encryptedAccessToken = user.auth.todoist.accessToken
+                ?: return@flatMap Mono.error(MissingCredentialsException("Todoist", "access token", userId))
+            Mono.just(aesEncryption.decrypt(encryptedAccessToken))
+        }
     }
 }

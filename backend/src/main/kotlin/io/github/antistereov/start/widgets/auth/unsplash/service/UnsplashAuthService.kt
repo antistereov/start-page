@@ -4,7 +4,7 @@ import io.github.antistereov.start.global.component.StateValidation
 import io.github.antistereov.start.global.model.exception.*
 import io.github.antistereov.start.security.AESEncryption
 import io.github.antistereov.start.widgets.auth.unsplash.model.UnsplashAuthDetails
-import io.github.antistereov.start.user.repository.UserRepository
+import io.github.antistereov.start.user.service.UserService
 import io.github.antistereov.start.widgets.auth.unsplash.config.UnsplashProperties
 import io.github.antistereov.start.widgets.auth.unsplash.model.UnsplashTokenResponse
 import org.slf4j.LoggerFactory
@@ -19,7 +19,7 @@ import reactor.core.publisher.Mono
 @Service
 class UnsplashAuthService(
     private val webClient: WebClient,
-    private val userRepository: UserRepository,
+    private val userService: UserService,
     private val aesEncryption: AESEncryption,
     private val stateValidation: StateValidation,
     private val properties: UnsplashProperties,
@@ -62,17 +62,11 @@ class UnsplashAuthService(
     fun logout(userId: String): Mono<Void> {
         logger.debug("Deleting Unsplash user information for user $userId.")
 
-        return userRepository.findById(userId)
-            .switchIfEmpty(Mono.error(UserNotFoundException(userId)))
-            .flatMap { user ->
-                user.auth.unsplash = UnsplashAuthDetails()
+        return userService.findById(userId).flatMap { user ->
+            user.auth.unsplash = UnsplashAuthDetails()
 
-                userRepository.save(user)
-                    .onErrorMap { throwable ->
-                        CannotSaveUserException(throwable)
-                    }
-                    .then()
-            }
+            userService.save(user).then()
+        }
     }
 
     private fun handleAuthentication(code: String, state: String): Mono<UnsplashTokenResponse> {
@@ -102,28 +96,20 @@ class UnsplashAuthService(
     private fun handleUser(userId: String, response: UnsplashTokenResponse): Mono<UnsplashTokenResponse> {
         logger.debug("Handling Unsplash user $userId")
 
-        return userRepository.findById(userId)
-            .switchIfEmpty(Mono.error(UserNotFoundException(userId)))
-            .flatMap { user ->
-                user.auth.unsplash.accessToken = aesEncryption.encrypt(response.accessToken)
+        return userService.findById(userId).flatMap { user ->
+            user.auth.unsplash.accessToken = aesEncryption.encrypt(response.accessToken)
 
-                userRepository.save(user)
-                    .onErrorMap { throwable ->
-                        CannotSaveUserException(throwable)
-                    }
-                    .thenReturn(response)
-            }
+            userService.save(user).thenReturn(response)
+        }
     }
 
     fun getAccessToken(userId: String): Mono<String> {
         logger.debug("Getting Unsplash access token for user $userId.")
 
-        return userRepository.findById(userId)
-            .switchIfEmpty(Mono.error(UserNotFoundException(userId)))
-            .flatMap { user ->
-                val encryptedAccessToken = user.auth.unsplash.accessToken
-                    ?: return@flatMap Mono.error(MissingCredentialsException(properties.serviceName, "access token", userId))
-                Mono.just(aesEncryption.decrypt(encryptedAccessToken))
-            }
+        return userService.findById(userId).flatMap { user ->
+            val encryptedAccessToken = user.auth.unsplash.accessToken
+                ?: return@flatMap Mono.error(MissingCredentialsException(properties.serviceName, "access token", userId))
+            Mono.just(aesEncryption.decrypt(encryptedAccessToken))
+        }
     }
 }

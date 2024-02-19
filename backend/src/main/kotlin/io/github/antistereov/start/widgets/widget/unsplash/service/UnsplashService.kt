@@ -1,9 +1,7 @@
 package io.github.antistereov.start.widgets.widget.unsplash.service
 
-import io.github.antistereov.start.global.model.exception.CannotSaveUserException
-import io.github.antistereov.start.global.model.exception.UserNotFoundException
 import io.github.antistereov.start.global.service.BaseService
-import io.github.antistereov.start.user.repository.UserRepository
+import io.github.antistereov.start.user.service.UserService
 import io.github.antistereov.start.widgets.auth.unsplash.service.UnsplashAuthService
 import io.github.antistereov.start.widgets.auth.unsplash.config.UnsplashProperties
 import io.github.antistereov.start.widgets.widget.unsplash.model.Photo
@@ -19,7 +17,7 @@ class UnsplashService(
     private val tokenService: UnsplashAuthService,
     private val baseService: BaseService,
     private val properties: UnsplashProperties,
-    private val userRepository: UserRepository,
+    private val userService: UserService,
 ) {
 
     private val logger: Logger = LoggerFactory.getLogger(UnsplashService::class.java)
@@ -69,9 +67,7 @@ class UnsplashService(
     fun getRecentPhotos(userId: String): Flux<Photo> {
         logger.debug("Getting recent photos for user $userId")
 
-        return userRepository.findById(userId)
-            .switchIfEmpty(Mono.error(UserNotFoundException(userId)))
-            .flatMapMany { user ->
+        return userService.findById(userId).flatMapMany { user ->
             Flux.fromIterable(user.widgets.unsplash.recentPhotos)
         }
     }
@@ -99,43 +95,35 @@ class UnsplashService(
     ): Mono<String> {
         logger.debug("Getting recent photo for user $userId at index $index")
 
-        return userRepository.findById(userId)
-            .switchIfEmpty(Mono.error(UserNotFoundException(userId)))
-            .map { user ->
-                val photo = user.widgets.unsplash.recentPhotos.getOrElse(index) {
-                    throw IllegalArgumentException("No recent pictures found for user $userId at index $index")
-                }
-                val width = calculateMinimumPictureWidth(photo.width, photo.height, screenWidth, screenHeight)
-                UriComponentsBuilder.fromHttpUrl(photo.imageUrl)
-                    .queryParam("w", width)
-                    .queryParam("q", quality)
-                    .toUriString()
+        return userService.findById(userId).map { user ->
+            val photo = user.widgets.unsplash.recentPhotos.getOrElse(index) {
+                throw IllegalArgumentException("No recent pictures found for user $userId at index $index")
             }
+            val width = calculateMinimumPictureWidth(photo.width, photo.height, screenWidth, screenHeight)
+            UriComponentsBuilder.fromHttpUrl(photo.imageUrl)
+                .queryParam("w", width)
+                .queryParam("q", quality)
+                .toUriString()
+        }
     }
 
     private fun saveRecentPicture(userId: String, response: String): Mono<Photo> {
         logger.debug("Saving recent picture for user $userId")
 
-        return userRepository.findById(userId)
-            .switchIfEmpty(Mono.error(UserNotFoundException(userId)))
-            .flatMap { user ->
-                val photo = Photo(
-                    baseService.extractField(response, "id"),
-                    baseService.extractField(response, "urls", "raw"),
-                    baseService.extractField(response, "width").toInt(),
-                    baseService.extractField(response, "height").toInt()
-                )
-                if (user.widgets.unsplash.recentPhotos.size >= 30) {
-                    user.widgets.unsplash.recentPhotos.removeAt(user.widgets.unsplash.recentPhotos.size - 1)
-                }
-                user.widgets.unsplash.recentPhotos.add(0, photo)
-                userRepository.save(user)
-                    .onErrorMap { throwable ->
-                        CannotSaveUserException(throwable)
-                    }
-                    .thenReturn(photo)
+        return userService.findById(userId).flatMap { user ->
+            val photo = Photo(
+                baseService.extractField(response, "id"),
+                baseService.extractField(response, "urls", "raw"),
+                baseService.extractField(response, "width").toInt(),
+                baseService.extractField(response, "height").toInt()
+            )
+            if (user.widgets.unsplash.recentPhotos.size >= 30) {
+                user.widgets.unsplash.recentPhotos.removeAt(user.widgets.unsplash.recentPhotos.size - 1)
             }
+            user.widgets.unsplash.recentPhotos.add(0, photo)
+            userService.save(user).thenReturn(photo)
         }
+    }
 
     private fun calculateMinimumPictureWidth(pictureWidth: Int, pictureHeight: Int, screenWidth: Int, screenHeight: Int): Int {
         logger.debug("Calculating minimum picture width")

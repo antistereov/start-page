@@ -10,7 +10,7 @@ import java.util.*
 
 @Service
 class NewsService(
-    private val webClientBuilder: WebClient.Builder,
+    private val webClient: WebClient,
 ) {
 
     private val logger = LoggerFactory.getLogger(NewsService::class.java)
@@ -27,7 +27,7 @@ class NewsService(
 
         val authHeaderValue = Base64.getEncoder()
             .encodeToString("${credentials.username}:${credentials.password}".toByteArray())
-        return webClientBuilder.build()
+        return webClient
             .get()
             .uri(uri)
             .header("Authorization", "Basic $authHeaderValue")

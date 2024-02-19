@@ -106,13 +106,11 @@ class DVBDepartureService(
             if (fields.getOrNull(0) == null || fields.getOrNull(3) == null) {
                 return@flatMap Flux.error<Point>(IllegalArgumentException("Point ID is missing"))
             }
-            Flux.just(
-                Point(
-                    id = fields[0],
-                    type = fields.getOrNull(1),
-                    city = fields.getOrNull(2),
-                    name = fields[3],
-                )
+            Flux.just(Point(
+                id = fields[0],
+                type = fields.getOrNull(1),
+                city = fields.getOrNull(2),
+                name = fields[3],)
             )
         }
     }

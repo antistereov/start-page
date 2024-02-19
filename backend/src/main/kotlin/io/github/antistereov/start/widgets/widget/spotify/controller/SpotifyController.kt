@@ -1,7 +1,7 @@
 package io.github.antistereov.start.widgets.widget.spotify.controller
 
 import io.github.antistereov.start.security.AuthenticationPrincipalExtractor
-import io.github.antistereov.start.widgets.widget.spotify.service.SpotifyApiService
+import io.github.antistereov.start.widgets.widget.spotify.service.SpotifyService
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.security.core.Authentication
@@ -12,12 +12,12 @@ import reactor.core.publisher.Mono
 
 @RestController
 @RequestMapping("/spotify")
-class SpotifyApiController(
-    private val apiService: SpotifyApiService,
+class SpotifyController(
+    private val service: SpotifyService,
     private val principalExtractor: AuthenticationPrincipalExtractor,
 ) {
 
-    private val logger: Logger = LoggerFactory.getLogger(SpotifyApiController::class.java)
+    private val logger: Logger = LoggerFactory.getLogger(SpotifyController::class.java)
 
     @GetMapping("/me/player/currently_playing")
     fun getCurrentSong(authentication: Authentication): Mono<String> {
@@ -25,7 +25,7 @@ class SpotifyApiController(
 
         return principalExtractor.getUserId(authentication)
             .flatMap { userId ->
-                apiService.getCurrentlyPlaying(userId)
+                service.getCurrentlyPlaying(userId)
             }
     }
 }

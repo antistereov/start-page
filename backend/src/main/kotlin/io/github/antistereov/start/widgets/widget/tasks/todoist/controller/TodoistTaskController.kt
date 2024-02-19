@@ -13,7 +13,7 @@ import reactor.core.publisher.Mono
 @RestController
 @RequestMapping("/tasks/todoist")
 class TodoistTaskController(
-    private val apiService: TodoistTasksService,
+    private val service: TodoistTasksService,
     private val principalExtractor: AuthenticationPrincipalExtractor,
 ) {
 
@@ -25,7 +25,7 @@ class TodoistTaskController(
 
         return principalExtractor.getUserId(authentication)
             .flatMap { userId ->
-                apiService.getTasks(userId)
+                service.getTasks(userId)
             }
     }
 }
