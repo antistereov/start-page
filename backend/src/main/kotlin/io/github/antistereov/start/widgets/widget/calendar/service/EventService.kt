@@ -1,16 +1,17 @@
 package io.github.antistereov.start.widgets.widget.calendar.service
 
+import io.github.antistereov.start.widgets.auth.nextcloud.service.NextcloudAuthService
 import io.github.antistereov.start.widgets.widget.calendar.dto.CalendarDTO
 import io.github.antistereov.start.widgets.widget.calendar.model.CalendarAuth
 import io.github.antistereov.start.widgets.widget.calendar.model.CalendarEvent
 import io.github.antistereov.start.widgets.widget.calendar.model.OnlineCalendar
 import io.github.antistereov.start.widgets.widget.calendar.model.RRuleModel
-import io.github.antistereov.start.widgets.widget.calendar.source.nextcloud.service.NextcloudCalendarService
 import net.fortuna.ical4j.data.CalendarBuilder
 import net.fortuna.ical4j.model.DateTime
 import net.fortuna.ical4j.model.Period
 import net.fortuna.ical4j.model.component.VEvent
 import net.fortuna.ical4j.model.property.RRule
+import okhttp3.Credentials
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
@@ -24,31 +25,42 @@ import java.util.*
 
 @Service
 class EventService(
-    private val nextcloudCalendarService: NextcloudCalendarService,
-    private val webClientBuilder: WebClient.Builder
+    private val nextcloudAuthService: NextcloudAuthService,
+    private val webClientBuilder: WebClient.Builder,
 ) {
 
     private val logger = LoggerFactory.getLogger(EventService::class.java)
 
     fun getCalendarEvents(userId: String, calendar: OnlineCalendar): Mono<CalendarDTO> {
-        return when (calendar.auth) {
-            CalendarAuth.Nextcloud -> nextcloudCalendarService.getCalendarEvents(userId, calendar.icsLink)
-            CalendarAuth.None -> getEvents(userId, calendar.icsLink)
+        return getEvents(userId, calendar)
+    }
+
+    fun getEvents(userId: String, calendar: OnlineCalendar): Mono<CalendarDTO> {
+        logger.debug("Getting calendar events.")
+
+        return buildWebClient(userId, calendar).flatMap { client ->
+            client
+                .get()
+                .retrieve()
+                .bodyToMono(String::class.java)
+                .flatMap { calendarData ->
+                    Mono.just(CalendarDTO(calendar.icsLink, calendarEvents(calendarData)))
+                }
         }
     }
 
-    fun getEvents(userId: String, icsLink: String): Mono<CalendarDTO> {
-        logger.debug("Getting calendar events.")
-
+    private fun buildWebClient(userId: String, calendar: OnlineCalendar): Mono<WebClient> {
         val client = webClientBuilder
-            .baseUrl(icsLink)
-            .build()
-        return client.get()
-            .retrieve()
-            .bodyToMono(String::class.java)
-            .flatMap { calendarData ->
-                Mono.just(CalendarDTO(icsLink, calendarEvents(calendarData)))
+            .baseUrl(calendar.icsLink)
+        return when (calendar.auth) {
+            CalendarAuth.None -> Mono.just(client.build())
+            CalendarAuth.Nextcloud -> {
+                nextcloudAuthService.getCredentials(userId).map { credentials ->
+                    client.defaultHeader("Authorization", Credentials.basic(credentials.username, credentials.password))
+                        .build()
+                }
             }
+        }
     }
 
     fun calendarEvents(calendarData: String): List<CalendarEvent> {

@@ -23,30 +23,9 @@ import java.io.StringReader
 import javax.xml.parsers.DocumentBuilderFactory
 
 @Service
-class NextcloudCalendarService(
-    private val webClientBuilder: WebClient.Builder,
-    private val authService: NextcloudAuthService,
-    private val eventService: EventService,
-) {
+class NextcloudCalendarService {
 
     private val logger = LoggerFactory.getLogger(NextcloudCalendarService::class.java)
-
-    fun getCalendarEvents(userId: String, icsLink: String): Mono<CalendarDTO> {
-        logger.debug("Getting calendar events.")
-
-        return authService.getCredentials(userId).flatMap { credentials ->
-            val client = webClientBuilder
-                .baseUrl(icsLink)
-                .defaultHeader("Authorization", Credentials.basic(credentials.username, credentials.password))
-                .build()
-            client.get()
-                .retrieve()
-                .bodyToMono(String::class.java)
-                .flatMap { calendarData ->
-                    Mono.just(CalendarDTO(icsLink, eventService.calendarEvents(calendarData)))
-                }
-        }
-    }
 
     fun getRemoteCalendars(credentials: NextcloudCredentials): Flux<OnlineCalendar> {
         logger.debug("Getting remote calendars for user: ${credentials.username}.")
