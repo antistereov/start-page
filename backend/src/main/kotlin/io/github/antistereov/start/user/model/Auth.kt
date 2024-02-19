@@ -1,6 +1,7 @@
 package io.github.antistereov.start.user.model
 
 import io.github.antistereov.start.widgets.auth.instagram.model.InstagramAuthDetails
+import io.github.antistereov.start.widgets.auth.nextcloud.model.NextcloudAuthCredentials
 import io.github.antistereov.start.widgets.auth.nextcloud.model.NextcloudCredentials
 import io.github.antistereov.start.widgets.auth.openai.model.OpenAIAuthDetails
 import io.github.antistereov.start.widgets.auth.spotify.model.SpotifyAuthDetails
@@ -12,6 +13,6 @@ data class Auth(
     var todoist: TodoistAuthDetails = TodoistAuthDetails(),
     var unsplash: UnsplashAuthDetails = UnsplashAuthDetails(),
     var instagram: InstagramAuthDetails = InstagramAuthDetails(),
-    var nextcloud: NextcloudCredentials = NextcloudCredentials(),
+    var nextcloud: NextcloudAuthCredentials = NextcloudAuthCredentials(),
     var openAi: OpenAIAuthDetails = OpenAIAuthDetails(),
 )

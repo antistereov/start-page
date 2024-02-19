@@ -9,6 +9,7 @@ import io.github.antistereov.start.widgets.auth.nextcloud.model.NextcloudCredent
 import io.github.antistereov.start.user.repository.UserRepository
 import io.github.antistereov.start.global.component.UrlHandler
 import io.github.antistereov.start.widgets.auth.nextcloud.config.NextcloudProperties
+import io.github.antistereov.start.widgets.auth.nextcloud.model.NextcloudAuthCredentials
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
@@ -67,9 +68,9 @@ class NextcloudAuthService(
         return userRepository.findById(userId)
             .switchIfEmpty(Mono.error(UserNotFoundException(userId)))
             .map { user ->
-                user.auth.nextcloud.host = aesEncryption.encrypt(urlHandler.normalizeBaseUrl(credentials.host!!))
-                user.auth.nextcloud.username = aesEncryption.encrypt(credentials.username!!)
-                user.auth.nextcloud.password = aesEncryption.encrypt(credentials.password!!)
+                user.auth.nextcloud.host = aesEncryption.encrypt(urlHandler.normalizeBaseUrl(credentials.host))
+                user.auth.nextcloud.username = aesEncryption.encrypt(credentials.username)
+                user.auth.nextcloud.password = aesEncryption.encrypt(credentials.password)
 
                 user
             }
@@ -91,7 +92,7 @@ class NextcloudAuthService(
         val webClient = webClientBuilder
             .baseUrl("${credentials.host}/remote.php/dav/files/${credentials.username}")
             .defaultHeaders { headers ->
-                headers.setBasicAuth(credentials.username!!, credentials.password!!)
+                headers.setBasicAuth(credentials.username, credentials.password)
             }
             .build()
 
@@ -108,7 +109,7 @@ class NextcloudAuthService(
         return userRepository.findById(userId)
             .switchIfEmpty(Mono.error(UserNotFoundException(userId)))
             .flatMap { user ->
-                user.auth.nextcloud = NextcloudCredentials()
+                user.auth.nextcloud = NextcloudAuthCredentials()
 
                 userRepository.save(user)
                     .onErrorMap { throwable ->
