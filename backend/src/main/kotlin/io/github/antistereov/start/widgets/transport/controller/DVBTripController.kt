@@ -55,8 +55,8 @@ class DVBTripController(
 
     @GetMapping("/trips/fromAddressToAddress")
     fun getTripFromAddressToAddress(
-        @RequestParam(required = true) originAddress: String,
-        @RequestParam(required = true) destinationAddress: String,
+        @RequestParam(required = true) origin: String,
+        @RequestParam(required = true) destination: String,
         @RequestParam(required = true) time: LocalDateTime,
         @RequestParam(required = false, defaultValue = "false") isArrivalTime: Boolean,
         @RequestParam(required = false, defaultValue = "true") shortTermChanges: Boolean,
@@ -70,12 +70,12 @@ class DVBTripController(
         ) mot: List<String>,
         @RequestParam(required = false, defaultValue = "true") includeAlternativeStops: Boolean,
 
-    ): Mono<String> {
-        logger.info("Getting trip for originAddress: $originAddress, destinationAddress: $destinationAddress")
+        ): Mono<String> {
+        logger.info("Getting trip for originAddress: $origin, destinationAddress: $destination")
 
         return dvbTripService.getTripsFromAddressToAddress(
-            originAddress,
-            destinationAddress,
+            origin,
+            destination,
             time,
             isArrivalTime,
             shortTermChanges,

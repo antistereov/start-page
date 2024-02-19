@@ -49,6 +49,16 @@ class DVBDepartureController(
         return dvbDepartureService.getDeparturesByStopId(stopId, limit)
     }
 
+    @GetMapping("/pointIdFinder")
+    fun bestPointIdFinder(
+        @RequestParam(required = true) query: String,
+        @RequestParam(required = false, defaultValue = "false") stopsOnly: Boolean
+    ): Mono<String> {
+        logger.info("Getting best point id finder for query: $query, stopsOnly: $stopsOnly")
+
+        return dvbDepartureService.bestPointIdFinder(query, stopsOnly)
+    }
+
     @GetMapping("/pointFinder")
     fun pointFinder(
         @RequestParam(required = true) query: String,
