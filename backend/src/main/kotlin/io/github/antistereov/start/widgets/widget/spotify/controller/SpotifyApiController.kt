@@ -1,7 +1,7 @@
-package io.github.antistereov.start.widgets.spotify.controller
+package io.github.antistereov.start.widgets.widget.spotify.controller
 
 import io.github.antistereov.start.security.AuthenticationPrincipalExtractor
-import io.github.antistereov.start.widgets.spotify.service.SpotifyApiService
+import io.github.antistereov.start.widgets.widget.spotify.service.SpotifyApiService
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.security.core.Authentication
@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RestController
 import reactor.core.publisher.Mono
 
 @RestController
-@RequestMapping("/widgets/spotify")
+@RequestMapping("/spotify")
 class SpotifyApiController(
     private val apiService: SpotifyApiService,
     private val principalExtractor: AuthenticationPrincipalExtractor,

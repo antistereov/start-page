@@ -1,14 +1,15 @@
-package io.github.antistereov.start.widgets.spotify.service
+package io.github.antistereov.start.widgets.widget.spotify.service
 
 import io.github.antistereov.start.global.service.BaseService
-import io.github.antistereov.start.widgets.spotify.config.SpotifyProperties
+import io.github.antistereov.start.widgets.auth.spotify.config.SpotifyProperties
+import io.github.antistereov.start.widgets.auth.spotify.service.SpotifyAuthService
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Mono
 
 @Service
 class SpotifyApiService(
-    private val tokenService: SpotifyTokenService,
+    private val tokenService: SpotifyAuthService,
     private val baseService: BaseService,
     private val properties: SpotifyProperties,
 ) {

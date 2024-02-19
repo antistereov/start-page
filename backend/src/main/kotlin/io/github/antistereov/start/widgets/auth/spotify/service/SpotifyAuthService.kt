@@ -1,12 +1,12 @@
-package io.github.antistereov.start.widgets.spotify.service
+package io.github.antistereov.start.widgets.auth.spotify.service
 
 import io.github.antistereov.start.global.component.StateValidation
 import io.github.antistereov.start.global.model.exception.*
 import io.github.antistereov.start.security.AESEncryption
-import io.github.antistereov.start.user.model.SpotifyAuthDetails
-import io.github.antistereov.start.widgets.spotify.model.SpotifyTokenResponse
+import io.github.antistereov.start.widgets.auth.spotify.model.SpotifyAuthDetails
+import io.github.antistereov.start.widgets.auth.spotify.model.SpotifyTokenResponse
 import io.github.antistereov.start.user.repository.UserRepository
-import io.github.antistereov.start.widgets.spotify.config.SpotifyProperties
+import io.github.antistereov.start.widgets.auth.spotify.config.SpotifyProperties
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.BodyInserters
@@ -17,7 +17,7 @@ import java.time.LocalDateTime
 import java.util.*
 
 @Service
-class SpotifyTokenService(
+class SpotifyAuthService(
     private val webClient: WebClient,
     private val userRepository: UserRepository,
     private val aesEncryption: AESEncryption,
@@ -25,7 +25,7 @@ class SpotifyTokenService(
     private val properties: SpotifyProperties,
 ) {
 
-    private val logger = LoggerFactory.getLogger(SpotifyTokenService::class.java)
+    private val logger = LoggerFactory.getLogger(SpotifyAuthService::class.java)
 
     fun getAuthorizationUrl(userId: String): Mono<String> {
         logger.debug("Getting authorization URL for user: $userId.")

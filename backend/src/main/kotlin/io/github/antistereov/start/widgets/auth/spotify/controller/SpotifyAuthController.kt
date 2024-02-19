@@ -1,7 +1,7 @@
-package io.github.antistereov.start.widgets.spotify.controller
+package io.github.antistereov.start.widgets.auth.spotify.controller
 
 import io.github.antistereov.start.security.AuthenticationPrincipalExtractor
-import io.github.antistereov.start.widgets.spotify.service.SpotifyTokenService
+import io.github.antistereov.start.widgets.auth.spotify.service.SpotifyAuthService
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.security.core.Authentication
@@ -9,13 +9,13 @@ import org.springframework.web.bind.annotation.*
 import reactor.core.publisher.Mono
 
 @RestController
-@RequestMapping("/widgets/spotify/auth")
-class SpotifyTokenController(
-    private val tokenService: SpotifyTokenService,
+@RequestMapping("/auth/spotify")
+class SpotifyAuthController(
+    private val tokenService: SpotifyAuthService,
     private val principalExtractor: AuthenticationPrincipalExtractor,
 ) {
 
-    private val logger: Logger = LoggerFactory.getLogger(SpotifyTokenController::class.java)
+    private val logger: Logger = LoggerFactory.getLogger(SpotifyAuthController::class.java)
 
     @GetMapping
     fun login(authentication: Authentication): Mono<String> {

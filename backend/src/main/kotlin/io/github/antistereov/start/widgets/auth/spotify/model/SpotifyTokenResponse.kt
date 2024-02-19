@@ -1,4 +1,4 @@
-package io.github.antistereov.start.widgets.spotify.model
+package io.github.antistereov.start.widgets.auth.spotify.model
 
 import com.fasterxml.jackson.annotation.JsonProperty
 

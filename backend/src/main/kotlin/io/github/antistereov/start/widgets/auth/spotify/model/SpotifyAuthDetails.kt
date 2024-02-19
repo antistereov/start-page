@@ -1,4 +1,4 @@
-package io.github.antistereov.start.user.model
+package io.github.antistereov.start.widgets.auth.spotify.model
 
 data class SpotifyAuthDetails(
     var userId: String? = null,

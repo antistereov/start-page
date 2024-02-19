@@ -1,4 +1,4 @@
-package io.github.antistereov.start.widgets.spotify.config
+package io.github.antistereov.start.widgets.auth.spotify.config
 
 import org.springframework.boot.context.properties.ConfigurationProperties
 

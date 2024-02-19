@@ -3,6 +3,7 @@ package io.github.antistereov.start.user.model
 import io.github.antistereov.start.widgets.auth.instagram.model.InstagramAuthDetails
 import io.github.antistereov.start.widgets.auth.nextcloud.model.NextcloudAuthDetails
 import io.github.antistereov.start.widgets.auth.openai.model.OpenAIAuthDetails
+import io.github.antistereov.start.widgets.auth.spotify.model.SpotifyAuthDetails
 import org.springframework.data.mongodb.core.mapping.Document
 
 @Document(collection = "users")
