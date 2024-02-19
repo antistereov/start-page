@@ -31,10 +31,10 @@ class WebSecurityConfig(
                 }
             }
             authorizeRequests {
-                authorize("/widgets/spotify/auth/callback", permitAll)
-                authorize("/widgets/todoist/auth/callback", permitAll)
-                authorize("/widgets/unsplash/auth/callback", permitAll)
-                authorize("/widgets/instagram/auth/callback", permitAll)
+                authorize("/auth/spotify/callback", permitAll)
+                authorize("/auth/todoist/callback", permitAll)
+                authorize("/auth/unsplash/callback", permitAll)
+                authorize("/auth/instagram/callback", permitAll)
 //                authorize("/api/users/login", permitAll)
 //                authorize("/api/users/session-test", permitAll)
 //                authorize("/api/users/**", hasRole("ADMIN"))
