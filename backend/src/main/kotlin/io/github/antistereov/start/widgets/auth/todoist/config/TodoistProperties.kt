@@ -1,4 +1,4 @@
-package io.github.antistereov.start.widgets.todoist.config
+package io.github.antistereov.start.widgets.auth.todoist.config
 
 import org.springframework.boot.context.properties.ConfigurationProperties
 

@@ -1,12 +1,12 @@
-package io.github.antistereov.start.widgets.todoist.service
+package io.github.antistereov.start.widgets.auth.todoist.service
 
 import io.github.antistereov.start.global.component.StateValidation
 import io.github.antistereov.start.global.model.exception.*
 import io.github.antistereov.start.security.AESEncryption
-import io.github.antistereov.start.user.model.TodoistAuthDetails
-import io.github.antistereov.start.widgets.todoist.model.TodoistTokenResponse
+import io.github.antistereov.start.widgets.auth.todoist.model.TodoistAuthDetails
+import io.github.antistereov.start.widgets.auth.todoist.model.TodoistTokenResponse
 import io.github.antistereov.start.user.repository.UserRepository
-import io.github.antistereov.start.widgets.todoist.config.TodoistProperties
+import io.github.antistereov.start.widgets.auth.todoist.config.TodoistProperties
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
@@ -17,7 +17,7 @@ import org.springframework.web.util.UriComponentsBuilder
 import reactor.core.publisher.Mono
 
 @Service
-class TodoistTokenService(
+class TodoistAuthService(
     private val webClient: WebClient,
     private val userRepository: UserRepository,
     private val aesEncryption: AESEncryption,
@@ -25,7 +25,7 @@ class TodoistTokenService(
     private val properties: TodoistProperties,
 ) {
 
-    private val logger = LoggerFactory.getLogger(TodoistTokenService::class.java)
+    private val logger = LoggerFactory.getLogger(TodoistAuthService::class.java)
 
     fun getAuthorizationUrl(userId: String): Mono<String> {
         logger.debug("Creating Todoist authorization URL for user $userId.")

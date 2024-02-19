@@ -1,4 +1,4 @@
-package io.github.antistereov.start.widgets.todoist.model
+package io.github.antistereov.start.widgets.auth.todoist.model
 
 import com.fasterxml.jackson.annotation.JsonProperty
 

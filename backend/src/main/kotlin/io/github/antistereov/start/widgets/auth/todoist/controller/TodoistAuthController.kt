@@ -1,7 +1,7 @@
-package io.github.antistereov.start.widgets.todoist.controller
+package io.github.antistereov.start.widgets.auth.todoist.controller
 
 import io.github.antistereov.start.security.AuthenticationPrincipalExtractor
-import io.github.antistereov.start.widgets.todoist.service.TodoistTokenService
+import io.github.antistereov.start.widgets.auth.todoist.service.TodoistAuthService
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.security.core.Authentication
@@ -9,13 +9,13 @@ import org.springframework.web.bind.annotation.*
 import reactor.core.publisher.Mono
 
 @RestController
-@RequestMapping("/widgets/todoist/auth")
-class TodoistTokenController(
-    private val tokenService: TodoistTokenService,
+@RequestMapping("/auth/todoist")
+class TodoistAuthController(
+    private val tokenService: TodoistAuthService,
     private val principalExtractor: AuthenticationPrincipalExtractor,
     ) {
 
-    private val logger: Logger = LoggerFactory.getLogger(TodoistTokenController::class.java)
+    private val logger: Logger = LoggerFactory.getLogger(TodoistAuthController::class.java)
 
     @GetMapping
     fun login(authentication: Authentication): Mono<String> {

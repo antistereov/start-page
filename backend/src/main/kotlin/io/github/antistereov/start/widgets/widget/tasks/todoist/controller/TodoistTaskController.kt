@@ -1,7 +1,7 @@
-package io.github.antistereov.start.widgets.todoist.controller
+package io.github.antistereov.start.widgets.widget.tasks.todoist.controller
 
 import io.github.antistereov.start.security.AuthenticationPrincipalExtractor
-import io.github.antistereov.start.widgets.todoist.service.TodoistApiService
+import io.github.antistereov.start.widgets.widget.tasks.todoist.service.TodoistTasksService
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.security.core.Authentication
@@ -11,13 +11,13 @@ import org.springframework.web.bind.annotation.RestController
 import reactor.core.publisher.Mono
 
 @RestController
-@RequestMapping("/widgets/todoist")
-class TodoistApiController(
-    private val apiService: TodoistApiService,
+@RequestMapping("/tasks/todoist")
+class TodoistTaskController(
+    private val apiService: TodoistTasksService,
     private val principalExtractor: AuthenticationPrincipalExtractor,
 ) {
 
-    private val logger: Logger = LoggerFactory.getLogger(TodoistApiController::class.java)
+    private val logger: Logger = LoggerFactory.getLogger(TodoistTaskController::class.java)
 
     @GetMapping("/tasks")
     fun getTasks(authentication: Authentication): Mono<String> {
