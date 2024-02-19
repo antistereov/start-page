@@ -16,7 +16,7 @@ class InstagramApiService(
     fun getUsername(userId: String, instagramUserId: String): Mono<String> {
         val uri = "${properties.apiBaseUrl}/$instagramUserId?fields=id,username"
         return tokenService.getAccessToken(userId).flatMap { accessToken ->
-            baseService.makeAuthorizedGetRequest(uri, accessToken)
+            baseService.getMono(uri, accessToken)
         }
     }
 
@@ -34,7 +34,7 @@ class InstagramApiService(
             .queryParam("after", after)
             .toUriString()
         return tokenService.getAccessToken(userId).flatMap { accessToken ->
-            baseService.makeAuthorizedGetRequest(uri, accessToken)
+            baseService.getMono(uri, accessToken)
         }
     }
 
@@ -42,7 +42,7 @@ class InstagramApiService(
         val uri = "${properties.apiBaseUrl}/$mediaId?fields=id,media_type,media_url,username,timestamp,caption,permalink"
 
         return tokenService.getAccessToken(userId).flatMap { accessToken ->
-            baseService.makeAuthorizedGetRequest(uri, accessToken)
+            baseService.getMono(uri, accessToken)
         }
     }
 }

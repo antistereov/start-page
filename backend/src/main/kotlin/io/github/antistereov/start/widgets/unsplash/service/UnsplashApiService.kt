@@ -32,7 +32,7 @@ class UnsplashApiService(
 
         if (query != null) uri.queryParam("query", query)
 
-        return baseService.makeGetRequest(uri.toUriString()).flatMap { response ->
+        return baseService.getMono(uri.toUriString()).flatMap { response ->
             saveRecentPicture(userId, response)
         }
     }
@@ -44,7 +44,7 @@ class UnsplashApiService(
             .queryParam("client_id", properties.clientId)
             .toUriString()
 
-        return baseService.makeGetRequest(uri)
+        return baseService.getMono(uri)
     }
 
     fun likePhoto(userId: String, photoId: String): Mono<String> {
@@ -52,7 +52,7 @@ class UnsplashApiService(
 
         val uri = "${properties.apiBaseUrl}/photos/$photoId/like"
         return tokenService.getAccessToken(userId).flatMap { accessToken ->
-            baseService.makeAuthorizedGetRequest(uri, accessToken)
+            baseService.postMono(uri, accessToken)
         }
     }
 
@@ -61,7 +61,7 @@ class UnsplashApiService(
 
         val uri = "${properties.apiBaseUrl}/photos/$photoId/like"
         return tokenService.getAccessToken(userId).flatMap { accessToken ->
-            baseService.makeAuthorizedDeleteRequest(uri, accessToken)
+            baseService.deleteMono(uri, accessToken)
         }
     }
 
@@ -148,4 +148,6 @@ class UnsplashApiService(
             (screenHeight * pictureAspectRatio).toInt()
         }
     }
+
+    // TODO check if portrait, square or landscape
 }

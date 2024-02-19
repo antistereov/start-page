@@ -16,7 +16,7 @@ class SpotifyApiService(
         val uri = "${properties.apiBaseUrl}/me/player/currently-playing"
 
         return tokenService.getAccessToken(userId).flatMap { accessToken ->
-            baseService.makeAuthorizedGetRequest(uri, accessToken)
+            baseService.getMono(uri, accessToken)
         }
     }
 }

@@ -1,6 +1,5 @@
 package io.github.antistereov.start.global.model.exception
 
-import org.springframework.http.HttpStatus
 import org.springframework.http.HttpStatusCode
 import java.net.URI
 

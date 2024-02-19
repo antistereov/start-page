@@ -1,15 +1,12 @@
 package io.github.antistereov.start.widgets.transport.service
 
-import io.github.antistereov.start.global.service.BaseService
 import io.github.antistereov.start.widgets.transport.model.DepartureMonitor
 import io.github.antistereov.start.widgets.transport.model.Point
 import io.github.antistereov.start.widgets.transport.model.PointFinder
-import io.netty.handler.codec.DecoderException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
-import org.springframework.web.reactive.function.client.WebClientResponseException
 import org.springframework.web.util.UriComponentsBuilder
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
@@ -20,7 +17,6 @@ import java.time.format.DateTimeFormatter
 class DVBDepartureService(
     private val webClient: WebClient,
     private val locationService: LocationService,
-    private val baseService: BaseService,
 ) {
 
     val logger: Logger = LoggerFactory.getLogger(DVBDepartureService::class.java)
@@ -50,10 +46,7 @@ class DVBDepartureService(
             .uri(url)
             .bodyValue(requestBody)
             .retrieve()
-            .let { baseService.handleError(url, it) }
             .bodyToFlux(DepartureMonitor::class.java)
-            .onErrorResume(WebClientResponseException::class.java, baseService.handleNetworkError(url))
-            .onErrorResume(DecoderException::class.java, baseService.handleParsingError(url))
     }
 
     fun getDeparturesByStopName(name: String, limit: Long): Flux<DepartureMonitor> {
@@ -85,10 +78,7 @@ class DVBDepartureService(
         return webClient.post()
             .uri(url)
             .retrieve()
-            .let { baseService.handleError(url, it) }
             .bodyToMono(PointFinder::class.java)
-            .onErrorResume(WebClientResponseException::class.java, baseService.handleNetworkError(url))
-            .onErrorResume(DecoderException::class.java, baseService.handleParsingError(url))
     }
 
     fun bestPointIdFinder(query: String, stopsOnly: Boolean): Mono<String> {

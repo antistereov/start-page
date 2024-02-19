@@ -2,19 +2,16 @@ package io.github.antistereov.start.widgets.unsplash.service
 
 import io.github.antistereov.start.global.component.StateValidation
 import io.github.antistereov.start.global.model.exception.*
-import io.github.antistereov.start.global.service.BaseService
 import io.github.antistereov.start.security.AESEncryption
 import io.github.antistereov.start.user.model.UnsplashAuthDetails
 import io.github.antistereov.start.user.repository.UserRepository
 import io.github.antistereov.start.widgets.unsplash.config.UnsplashProperties
 import io.github.antistereov.start.widgets.unsplash.model.UnsplashTokenResponse
-import io.netty.handler.codec.DecoderException
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.BodyInserters
 import org.springframework.web.reactive.function.client.WebClient
-import org.springframework.web.reactive.function.client.WebClientResponseException
 import org.springframework.web.util.UriComponentsBuilder
 import reactor.core.publisher.Mono
 
@@ -24,7 +21,6 @@ class UnsplashTokenService(
     private val userRepository: UserRepository,
     private val aesEncryption: AESEncryption,
     private val stateValidation: StateValidation,
-    private val baseService: BaseService,
     private val properties: UnsplashProperties,
 ) {
 
@@ -84,15 +80,12 @@ class UnsplashTokenService(
                     .with("redirect_uri", properties.redirectUri)
             )
             .retrieve()
-            .let { baseService.handleError(uri, it) }
             .bodyToMono(UnsplashTokenResponse::class.java)
             .flatMap { response ->
                 stateValidation.getUserId(state).flatMap { userId ->
                     handleUser(userId, response)
                 }
             }
-            .onErrorResume(WebClientResponseException::class.java, baseService.handleNetworkError(uri))
-            .onErrorResume(DecoderException::class.java, baseService.handleParsingError(uri))
     }
 
     private fun handleUser(userId: String, response: UnsplashTokenResponse): Mono<UnsplashTokenResponse> {

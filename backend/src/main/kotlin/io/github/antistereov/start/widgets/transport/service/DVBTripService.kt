@@ -152,10 +152,7 @@ class DVBTripService(
         return webClient.post()
             .uri(url)
             .retrieve()
-            .let { baseService.handleError(url, it) }
             .bodyToMono(String::class.java)
-//            .onErrorResume(WebClientResponseException::class.java, baseService.handleNetworkError(url))
-            .onErrorResume(DecoderException::class.java, baseService.handleParsingError(url))
     }
 
 

@@ -3,7 +3,6 @@ package io.github.antistereov.start.widgets.openai.service
 import io.github.antistereov.start.global.model.exception.CannotSaveUserException
 import io.github.antistereov.start.global.model.exception.MessageLimitExceededException
 import io.github.antistereov.start.global.model.exception.MissingCredentialsException
-import io.github.antistereov.start.global.service.BaseService
 import io.github.antistereov.start.security.AESEncryption
 import io.github.antistereov.start.user.model.ChatDetails
 import io.github.antistereov.start.user.model.User
@@ -19,7 +18,6 @@ import reactor.core.publisher.Mono
 @Service
 class ChatService(
     private val webClient: WebClient,
-    private val baseService: BaseService,
     private val properties: OpenAIProperties,
     private val userRepository: UserRepository,
     private val aesEncryption: AESEncryption,
@@ -81,7 +79,6 @@ class ChatService(
             .header("Authorization", "Bearer $apiKey")
             .bodyValue(chatRequest)
             .retrieve()
-            .let { baseService.handleError(uri, it) }
             .bodyToMono(ChatResponse::class.java)
     }
 

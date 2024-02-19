@@ -15,7 +15,7 @@ class TodoistApiService(
     fun getTasks(userId: String): Mono<String> {
         val uri = "${properties.apiBaseUrl}/tasks"
         return tokenService.getAccessToken(userId).flatMap {accessToken ->
-            baseService.makeAuthorizedGetRequest(uri, accessToken)
+            baseService.getMono(uri, accessToken)
         }
     }
 }

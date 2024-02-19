@@ -25,7 +25,7 @@ class UnsplashTokenController(
             tokenService.getAuthorizationUrl(userId).map { url ->
                 logger.info("Redirecting user $userId to Unsplash authorization URL.")
 
-                "redirect:$url}"
+                "redirect:$url"
             }
         }
     }
