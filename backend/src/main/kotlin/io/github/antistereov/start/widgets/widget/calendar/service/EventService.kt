@@ -1,5 +1,6 @@
 package io.github.antistereov.start.widgets.widget.calendar.service
 
+import io.github.antistereov.start.security.AESEncryption
 import io.github.antistereov.start.widgets.auth.nextcloud.service.NextcloudAuthService
 import io.github.antistereov.start.widgets.widget.calendar.dto.CalendarDTO
 import io.github.antistereov.start.widgets.widget.calendar.model.CalendarAuth
@@ -27,6 +28,7 @@ import java.util.*
 class EventService(
     private val nextcloudAuthService: NextcloudAuthService,
     private val webClientBuilder: WebClient.Builder,
+    private val aesEncryption: AESEncryption,
 ) {
 
     private val logger = LoggerFactory.getLogger(EventService::class.java)
@@ -50,8 +52,9 @@ class EventService(
     }
 
     private fun buildWebClient(userId: String, calendar: OnlineCalendar): Mono<WebClient> {
+        val decryptedCalendarIcsLink = aesEncryption.decrypt(calendar.icsLink)
         val client = webClientBuilder
-            .baseUrl(calendar.icsLink)
+            .baseUrl(decryptedCalendarIcsLink)
         return when (calendar.auth) {
             CalendarAuth.None -> Mono.just(client.build())
             CalendarAuth.Nextcloud -> {
