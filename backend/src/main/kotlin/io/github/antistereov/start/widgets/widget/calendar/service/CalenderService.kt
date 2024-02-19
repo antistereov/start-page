@@ -40,9 +40,11 @@ class CalenderService(
         return userService.findById(userId).flatMapMany { user ->
             val updatedCalendars = mutableListOf<OnlineCalendar>()
 
-            updatedCalendars.addAll(
-                user.widgets.calendar.calendars.filter { aesEncryption.decrypt(it.icsLink) !in icsLinks }
-            )
+            if (icsLinks.isNotEmpty()) {
+                updatedCalendars.addAll(
+                    user.widgets.calendar.calendars.filter { aesEncryption.decrypt(it.icsLink) !in icsLinks }
+                )
+            }
 
             user.widgets.calendar.calendars = updatedCalendars
 
