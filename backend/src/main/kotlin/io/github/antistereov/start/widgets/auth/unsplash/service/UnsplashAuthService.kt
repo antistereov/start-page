@@ -33,6 +33,7 @@ class UnsplashAuthService(
         return stateValidation.createState(userId).map { state ->
             UriComponentsBuilder.fromHttpUrl("https://unsplash.com/oauth/authorize")
                 .queryParam("redirect_uri", properties.redirectUri)
+                .queryParam("client_id", properties.clientId)
                 .queryParam("response_type", "code")
                 .queryParam("scope", properties.scopes)
                 .queryParam("state", state)
