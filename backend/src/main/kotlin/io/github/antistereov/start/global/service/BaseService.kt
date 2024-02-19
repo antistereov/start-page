@@ -1,5 +1,7 @@
 package io.github.antistereov.start.global.service
 
+import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.github.antistereov.start.global.model.exception.*
 import io.netty.handler.codec.DecoderException
 import org.springframework.http.HttpStatus
@@ -46,6 +48,14 @@ class BaseService(
             .bodyToMono(String::class.java)
             .onErrorResume(WebClientResponseException::class.java, handleNetworkError(uri))
             .onErrorResume(DecoderException::class.java, handleParsingError(uri))
+    }
+
+    fun extractField(response: String, vararg fields: String): String {
+        var json: JsonNode = jacksonObjectMapper().readTree(response)
+        for (field in fields) {
+            json = json.get(field) ?: throw IllegalArgumentException("Field $field not found in the JSON response")
+        }
+        return json.toString()
     }
 
     fun handleError(uri: String, responseSpec: WebClient.ResponseSpec): WebClient.ResponseSpec {
