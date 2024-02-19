@@ -23,7 +23,7 @@ class NextcloudAuthController(
 
     private val logger: Logger = LoggerFactory.getLogger(NextcloudAuthController::class.java)
 
-    @PostMapping("/auth")
+    @PostMapping
     fun auth(
         authentication: Authentication,
         @Valid @RequestBody credentials: NextcloudCredentials
@@ -36,7 +36,7 @@ class NextcloudAuthController(
             }
     }
 
-    @DeleteMapping("/auth")
+    @DeleteMapping
     fun logout(authentication: Authentication): Mono<String> {
         logger.info("Executing logout method.")
 
