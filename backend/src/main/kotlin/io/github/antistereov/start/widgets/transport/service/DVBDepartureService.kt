@@ -15,7 +15,7 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 @Service
-class DVBService(
+class DVBDepartureService(
     private val webClient: WebClient,
     private val locationService: LocationService,
     private val baseService: BaseService,
@@ -65,10 +65,6 @@ class DVBService(
         }
     }
 
-    fun getConnection(fromStopId: String, toStopId: String): Flux<String> {
-        TODO()
-    }
-
     fun pointFinder(query: String, stopsOnly: Boolean): Mono<PointFinder> {
         val url = UriComponentsBuilder.fromHttpUrl("https://webapi.vvo-online.de/tr/pointfinder?format=json")
             .queryParam("query", query)
@@ -86,7 +82,7 @@ class DVBService(
             .onErrorResume(DecoderException::class.java, baseService.handleParsingError(url))
     }
 
-    private fun parsePoints(points: List<String>): Flux<Point> {
+    fun parsePoints(points: List<String>): Flux<Point> {
         return Flux.fromIterable(points).flatMap { pointString ->
             val fields = pointString.split("|")
             if (fields.getOrNull(0) == null || fields.getOrNull(3) == null) {
