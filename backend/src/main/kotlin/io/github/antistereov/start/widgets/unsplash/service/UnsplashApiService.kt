@@ -6,6 +6,8 @@ import io.github.antistereov.start.global.service.BaseService
 import io.github.antistereov.start.user.repository.UserRepository
 import io.github.antistereov.start.widgets.unsplash.config.UnsplashProperties
 import io.github.antistereov.start.widgets.unsplash.model.Photo
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.web.util.UriComponentsBuilder
 import reactor.core.publisher.Flux
@@ -19,7 +21,11 @@ class UnsplashApiService(
     private val userRepository: UserRepository,
 ) {
 
+    private val logger: Logger = LoggerFactory.getLogger(UnsplashApiService::class.java)
+
     fun getRandomPhoto(userId: String, query: String? = null): Mono<Photo> {
+        logger.debug("Getting random photo for user $userId")
+
         val uri = UriComponentsBuilder.fromHttpUrl("${properties.apiBaseUrl}/photos/random")
             .queryParam("client_id", properties.clientId)
             .queryParam("orientation", "landscape")
@@ -32,6 +38,8 @@ class UnsplashApiService(
     }
 
     fun getPhoto(id: String): Mono<String> {
+        logger.debug("Getting photo with id $id")
+
         val uri = UriComponentsBuilder.fromHttpUrl("${properties.apiBaseUrl}/photos/$id")
             .queryParam("client_id", properties.clientId)
             .toUriString()
@@ -40,6 +48,8 @@ class UnsplashApiService(
     }
 
     fun likePhoto(userId: String, photoId: String): Mono<String> {
+        logger.debug("Liking photo with id $photoId for user $userId")
+
         val uri = "${properties.apiBaseUrl}/photos/$photoId/like"
         return tokenService.getAccessToken(userId).flatMap { accessToken ->
             baseService.makeAuthorizedGetRequest(uri, accessToken)
@@ -47,6 +57,8 @@ class UnsplashApiService(
     }
 
     fun unlikePhoto(userId: String, photoId: String): Mono<String> {
+        logger.debug("Unliking photo with id $photoId for user $userId")
+
         val uri = "${properties.apiBaseUrl}/photos/$photoId/like"
         return tokenService.getAccessToken(userId).flatMap { accessToken ->
             baseService.makeAuthorizedDeleteRequest(uri, accessToken)
@@ -54,6 +66,8 @@ class UnsplashApiService(
     }
 
     fun getRecentPhotos(userId: String): Flux<Photo> {
+        logger.debug("Getting recent photos for user $userId")
+
         return userRepository.findById(userId)
             .switchIfEmpty(Mono.error(UserNotFoundException(userId)))
             .flatMapMany { user ->
@@ -68,6 +82,8 @@ class UnsplashApiService(
         screenHeight: Int,
         quality: Int = 85
     ): Mono<String> {
+        logger.debug("Getting new random photo for user $userId")
+
         return getRandomPhoto(userId, query).then(
             getRecentPhotoUrlForScreen(userId, 0, screenWidth, screenHeight, quality)
         )
@@ -80,6 +96,8 @@ class UnsplashApiService(
         screenHeight: Int,
         quality: Int = 85
     ): Mono<String> {
+        logger.debug("Getting recent photo for user $userId at index $index")
+
         return userRepository.findById(userId)
             .switchIfEmpty(Mono.error(UserNotFoundException(userId)))
             .map { user ->
@@ -95,6 +113,8 @@ class UnsplashApiService(
     }
 
     private fun saveRecentPicture(userId: String, response: String): Mono<Photo> {
+        logger.debug("Saving recent picture for user $userId")
+
         return userRepository.findById(userId)
             .switchIfEmpty(Mono.error(UserNotFoundException(userId)))
             .flatMap { user ->
@@ -117,6 +137,8 @@ class UnsplashApiService(
         }
 
     private fun calculateMinimumPictureWidth(pictureWidth: Int, pictureHeight: Int, screenWidth: Int, screenHeight: Int): Int {
+        logger.debug("Calculating minimum picture width")
+
         val screenAspectRatio = screenWidth.toDouble() / screenHeight
         val pictureAspectRatio = pictureWidth.toDouble() / pictureHeight
 
