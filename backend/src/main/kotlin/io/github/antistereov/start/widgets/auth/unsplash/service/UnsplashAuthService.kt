@@ -1,12 +1,12 @@
-package io.github.antistereov.start.widgets.unsplash.service
+package io.github.antistereov.start.widgets.auth.unsplash.service
 
 import io.github.antistereov.start.global.component.StateValidation
 import io.github.antistereov.start.global.model.exception.*
 import io.github.antistereov.start.security.AESEncryption
-import io.github.antistereov.start.user.model.UnsplashAuthDetails
+import io.github.antistereov.start.widgets.auth.unsplash.model.UnsplashAuthDetails
 import io.github.antistereov.start.user.repository.UserRepository
-import io.github.antistereov.start.widgets.unsplash.config.UnsplashProperties
-import io.github.antistereov.start.widgets.unsplash.model.UnsplashTokenResponse
+import io.github.antistereov.start.widgets.auth.unsplash.config.UnsplashProperties
+import io.github.antistereov.start.widgets.auth.unsplash.model.UnsplashTokenResponse
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
@@ -17,7 +17,7 @@ import org.springframework.web.util.UriComponentsBuilder
 import reactor.core.publisher.Mono
 
 @Service
-class UnsplashTokenService(
+class UnsplashAuthService(
     private val webClient: WebClient,
     private val userRepository: UserRepository,
     private val aesEncryption: AESEncryption,
@@ -25,7 +25,7 @@ class UnsplashTokenService(
     private val properties: UnsplashProperties,
 ) {
 
-    private val logger = LoggerFactory.getLogger(UnsplashTokenService::class.java)
+    private val logger = LoggerFactory.getLogger(UnsplashAuthService::class.java)
 
     fun getAuthorizationUrl(userId: String): Mono<String> {
         logger.debug("Creating Unsplash authorization URL for user $userId.")

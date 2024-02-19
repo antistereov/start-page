@@ -1,7 +1,7 @@
-package io.github.antistereov.start.widgets.unsplash.controller
+package io.github.antistereov.start.widgets.auth.unsplash.controller
 
 import io.github.antistereov.start.security.AuthenticationPrincipalExtractor
-import io.github.antistereov.start.widgets.unsplash.service.UnsplashTokenService
+import io.github.antistereov.start.widgets.auth.unsplash.service.UnsplashAuthService
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.security.core.Authentication
@@ -9,13 +9,13 @@ import org.springframework.web.bind.annotation.*
 import reactor.core.publisher.Mono
 
 @RestController
-@RequestMapping("/widgets/unsplash/auth")
-class UnsplashTokenController(
-    private val tokenService: UnsplashTokenService,
+@RequestMapping("/auth/unsplash")
+class UnsplashAuthController(
+    private val tokenService: UnsplashAuthService,
     private val principalExtractor: AuthenticationPrincipalExtractor,
 ) {
 
-    private val logger: Logger = LoggerFactory.getLogger(UnsplashTokenController::class.java)
+    private val logger: Logger = LoggerFactory.getLogger(UnsplashAuthController::class.java)
 
     @GetMapping
     fun login(authentication: Authentication): Mono<String> {

@@ -5,6 +5,7 @@ import io.github.antistereov.start.widgets.auth.nextcloud.model.NextcloudAuthDet
 import io.github.antistereov.start.widgets.auth.openai.model.OpenAIAuthDetails
 import io.github.antistereov.start.widgets.auth.spotify.model.SpotifyAuthDetails
 import io.github.antistereov.start.widgets.auth.todoist.model.TodoistAuthDetails
+import io.github.antistereov.start.widgets.auth.unsplash.model.UnsplashAuthDetails
 import org.springframework.data.mongodb.core.mapping.Document
 
 @Document(collection = "users")

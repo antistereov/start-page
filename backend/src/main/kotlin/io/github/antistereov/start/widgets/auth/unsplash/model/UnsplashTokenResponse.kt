@@ -1,4 +1,4 @@
-package io.github.antistereov.start.widgets.unsplash.model
+package io.github.antistereov.start.widgets.auth.unsplash.model
 
 import com.fasterxml.jackson.annotation.JsonProperty
 

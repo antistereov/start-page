@@ -1,4 +1,4 @@
-package io.github.antistereov.start.widgets.unsplash.config
+package io.github.antistereov.start.widgets.auth.unsplash.config
 
 import org.springframework.boot.context.properties.ConfigurationProperties
 

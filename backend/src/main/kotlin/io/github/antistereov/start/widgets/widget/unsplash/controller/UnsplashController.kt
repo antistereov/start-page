@@ -1,8 +1,8 @@
-package io.github.antistereov.start.widgets.unsplash.controller
+package io.github.antistereov.start.widgets.widget.unsplash.controller
 
 import io.github.antistereov.start.security.AuthenticationPrincipalExtractor
-import io.github.antistereov.start.widgets.unsplash.model.Photo
-import io.github.antistereov.start.widgets.unsplash.service.UnsplashApiService
+import io.github.antistereov.start.widgets.widget.unsplash.model.Photo
+import io.github.antistereov.start.widgets.widget.unsplash.service.UnsplashService
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.security.core.Authentication
@@ -11,13 +11,13 @@ import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
 @RestController
-@RequestMapping("/widgets/unsplash")
-class UnsplashApiController(
-    private val apiService: UnsplashApiService,
+@RequestMapping("/unsplash")
+class UnsplashController(
+    private val apiService: UnsplashService,
     private val principalExtractor: AuthenticationPrincipalExtractor,
 ) {
 
-    private val logger: Logger = LoggerFactory.getLogger(UnsplashApiController::class.java)
+    private val logger: Logger = LoggerFactory.getLogger(UnsplashController::class.java)
 
     @GetMapping("/photo")
     fun getRandomPhoto(authentication: Authentication, @RequestParam query: String? = null): Mono<Photo> {

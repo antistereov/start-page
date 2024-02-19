@@ -1,11 +1,12 @@
-package io.github.antistereov.start.widgets.unsplash.service
+package io.github.antistereov.start.widgets.widget.unsplash.service
 
 import io.github.antistereov.start.global.model.exception.CannotSaveUserException
 import io.github.antistereov.start.global.model.exception.UserNotFoundException
 import io.github.antistereov.start.global.service.BaseService
 import io.github.antistereov.start.user.repository.UserRepository
-import io.github.antistereov.start.widgets.unsplash.config.UnsplashProperties
-import io.github.antistereov.start.widgets.unsplash.model.Photo
+import io.github.antistereov.start.widgets.auth.unsplash.service.UnsplashAuthService
+import io.github.antistereov.start.widgets.auth.unsplash.config.UnsplashProperties
+import io.github.antistereov.start.widgets.widget.unsplash.model.Photo
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
@@ -14,14 +15,14 @@ import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
 @Service
-class UnsplashApiService(
-    private val tokenService: UnsplashTokenService,
+class UnsplashService(
+    private val tokenService: UnsplashAuthService,
     private val baseService: BaseService,
     private val properties: UnsplashProperties,
     private val userRepository: UserRepository,
 ) {
 
-    private val logger: Logger = LoggerFactory.getLogger(UnsplashApiService::class.java)
+    private val logger: Logger = LoggerFactory.getLogger(UnsplashService::class.java)
 
     fun getRandomPhoto(userId: String, query: String? = null): Mono<Photo> {
         logger.debug("Getting random photo for user $userId")

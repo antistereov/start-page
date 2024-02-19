@@ -1,4 +1,4 @@
-package io.github.antistereov.start.widgets.unsplash.model
+package io.github.antistereov.start.widgets.widget.unsplash.model
 
 class Photo(
     val id: String,

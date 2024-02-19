@@ -1,6 +1,6 @@
-package io.github.antistereov.start.user.model
+package io.github.antistereov.start.widgets.auth.unsplash.model
 
-import io.github.antistereov.start.widgets.unsplash.model.Photo
+import io.github.antistereov.start.widgets.widget.unsplash.model.Photo
 
 
 data class UnsplashAuthDetails(
