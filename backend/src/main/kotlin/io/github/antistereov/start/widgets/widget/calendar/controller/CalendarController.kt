@@ -1,31 +1,29 @@
-package io.github.antistereov.start.widgets.widget.calendar.caldav.controller
+package io.github.antistereov.start.widgets.widget.calendar.controller
 
 import io.github.antistereov.start.security.AuthenticationPrincipalExtractor
+import io.github.antistereov.start.widgets.widget.calendar.dto.CalendarDTO
 import io.github.antistereov.start.widgets.widget.calendar.model.OnlineCalendar
-import io.github.antistereov.start.widgets.widget.calendar.caldav.service.CalDavCalenderService
-import io.github.antistereov.start.widgets.widget.calendar.nextcloud.service.NextcloudEventService
+import io.github.antistereov.start.widgets.widget.calendar.service.CalenderService
 import org.slf4j.LoggerFactory
 import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.*
 import reactor.core.publisher.Flux
 
 @RestController
-@RequestMapping("/calendar/caldav")
-class CalDavCalendarController(
-    private val apiService: CalDavCalenderService,
-    private val eventService: NextcloudEventService,
+@RequestMapping("/calendar")
+class CalendarController(
+    private val calenderService: CalenderService,
     private val principalExtractor: AuthenticationPrincipalExtractor,
 ) {
 
-    private val logger = LoggerFactory.getLogger(CalDavCalendarController::class.java)
+    private val logger = LoggerFactory.getLogger(CalendarController::class.java)
 
     @GetMapping
     fun getUserCalendars(authentication: Authentication): Flux<OnlineCalendar> {
         logger.info("Getting user calendars.")
 
         return principalExtractor.getUserId(authentication).flatMapMany { userId ->
-            apiService.getUserCalendars(userId).flatMapIterable { it }
-        }
+            calenderService.getUserCalendars(userId)        }
     }
 
     @PostMapping
@@ -36,28 +34,31 @@ class CalDavCalendarController(
         logger.info("Updating calendars.")
 
         return principalExtractor.getUserId(authentication).flatMapMany { userId ->
-            apiService.addCalendars(userId, calendars)
+            calenderService.addCalendars(userId, calendars)
         }
     }
 
     @DeleteMapping
     fun deleteCalendars(
         authentication: Authentication,
-        @RequestBody icsLinks: List<String>?,
+        @RequestBody icsLinks: List<String> = emptyList(),
     ): Flux<OnlineCalendar> {
         logger.info("Deleting calendars.")
 
         return principalExtractor.getUserId(authentication).flatMapMany { userId ->
-            apiService.deleteCalendars(userId, icsLinks)
+            calenderService.deleteCalendars(userId, icsLinks)
         }
     }
 
-    @GetMapping("/refresh")
-    fun refreshCalendarEvents(authentication: Authentication): Flux<OnlineCalendar> {
+    @GetMapping("/events")
+    fun getCalendarEvents(
+        authentication: Authentication,
+        @RequestParam icsLinks: List<String> = emptyList()
+    ): Flux<CalendarDTO> {
         logger.info("Refreshing calendar events.")
 
         return principalExtractor.getUserId(authentication).flatMapMany { userId ->
-            eventService.refreshCalendarEvents(userId)
+            calenderService.getCalendarEvents(userId, icsLinks)
         }
     }
 }
