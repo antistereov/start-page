@@ -141,7 +141,6 @@ class InstagramAuthService(
                         updateAuthDetails(
                             userId,
                             instagramUserId = instagramUser.id,
-                            instagramUsername = instagramUser.username
                         )
                     } else {
                         Mono.error(InvalidThirdPartyAPIResponseException(properties.serviceName, "No username in response found."))
@@ -232,7 +231,6 @@ class InstagramAuthService(
     private fun updateAuthDetails(
         userId: String,
         instagramUserId: String? = null,
-        instagramUsername: String? = null,
         accessToken: String? = null,
         expiresIn: Long? = null,
     ): Mono<User> {
@@ -242,7 +240,6 @@ class InstagramAuthService(
             .switchIfEmpty(Mono.error(UserNotFoundException(userId)))
             .flatMap { user ->
                 instagramUserId?.let { user.auth.instagram.userId = aesEncryption.encrypt(it) }
-                instagramUsername?.let {user.auth.instagram.username = aesEncryption.encrypt(it)}
                 accessToken?.let { user.auth.instagram.accessToken = aesEncryption.encrypt(it) }
                 expiresIn?.let { user.auth.instagram.expirationDate = LocalDateTime.now().plusSeconds(it) }
 
