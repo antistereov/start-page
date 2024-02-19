@@ -10,6 +10,8 @@ import io.github.antistereov.start.widgets.instagram.config.InstagramProperties
 import io.github.antistereov.start.widgets.instagram.model.InstagramLongLivedTokenResponse
 import io.github.antistereov.start.widgets.instagram.model.InstagramShortLivedTokenResponse
 import io.github.antistereov.start.widgets.instagram.model.InstagramUser
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.BodyInserters
 import org.springframework.web.reactive.function.client.WebClient
@@ -25,6 +27,8 @@ class InstagramTokenService(
     private val stateValidation: StateValidation,
     private val properties: InstagramProperties,
 ) {
+
+    // TODO: Add logger
 
     fun getAuthorizationUrl(userId: String): Mono<String> {
         return stateValidation.createState(userId).map { state ->
@@ -63,12 +67,14 @@ class InstagramTokenService(
     }
 
     fun getAccessToken(userId: String): Mono<String> {
-        return userRepository.findById(userId).flatMap { user ->
-            val accessToken = user.instagram.accessToken
-            if (accessToken != null) {
-                Mono.just(aesEncryption.decrypt(accessToken))
-            } else {
-                Mono.error(MissingCredentialsException(properties.serviceName, "access token", userId))
+        return userRepository.findById(userId)
+            .switchIfEmpty(Mono.error(UserNotFoundException(userId)))
+            .flatMap { user ->
+                val accessToken = user.instagram.accessToken
+                if (accessToken != null) {
+                    Mono.just(aesEncryption.decrypt(accessToken))
+                } else {
+                    Mono.error(MissingCredentialsException(properties.serviceName, "access token", userId))
             }
         }
     }
