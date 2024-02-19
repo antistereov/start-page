@@ -3,7 +3,6 @@ package io.github.antistereov.start.widgets.widget.calendar.caldav.controller
 import io.github.antistereov.start.security.AuthenticationPrincipalExtractor
 import io.github.antistereov.start.widgets.widget.calendar.model.OnlineCalendar
 import io.github.antistereov.start.widgets.widget.calendar.caldav.service.CalDavCalenderService
-import io.github.antistereov.start.widgets.widget.calendar.caldav.service.CalDavEventService
 import io.github.antistereov.start.widgets.widget.calendar.nextcloud.service.NextcloudEventService
 import org.slf4j.LoggerFactory
 import org.springframework.security.core.Authentication
