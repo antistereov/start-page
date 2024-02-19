@@ -1,4 +1,4 @@
-package io.github.antistereov.start.widgets.transport.model
+package io.github.antistereov.start.widgets.widget.transport.dvb.model
 
 import com.fasterxml.jackson.annotation.JsonProperty
 

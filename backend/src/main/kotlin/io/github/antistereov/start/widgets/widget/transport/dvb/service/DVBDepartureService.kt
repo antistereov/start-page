@@ -1,8 +1,9 @@
-package io.github.antistereov.start.widgets.transport.service
+package io.github.antistereov.start.widgets.widget.transport.dvb.service
 
-import io.github.antistereov.start.widgets.transport.model.DepartureMonitor
-import io.github.antistereov.start.widgets.transport.model.Point
-import io.github.antistereov.start.widgets.transport.model.PointFinder
+import io.github.antistereov.start.widgets.widget.transport.dvb.model.DepartureMonitor
+import io.github.antistereov.start.widgets.widget.transport.dvb.model.Point
+import io.github.antistereov.start.widgets.widget.transport.dvb.model.PointFinder
+import io.github.antistereov.start.widgets.widget.location.service.LocationService
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service

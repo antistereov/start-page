@@ -1,4 +1,4 @@
-package io.github.antistereov.start.widgets.transport.model
+package io.github.antistereov.start.widgets.widget.location.model
 
 data class LocationAddress(
     val road: String,

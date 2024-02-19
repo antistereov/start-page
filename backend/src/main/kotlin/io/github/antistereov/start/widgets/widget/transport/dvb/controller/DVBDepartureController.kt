@@ -1,8 +1,8 @@
-package io.github.antistereov.start.widgets.transport.controller
+package io.github.antistereov.start.widgets.widget.transport.dvb.controller
 
-import io.github.antistereov.start.widgets.transport.model.DepartureMonitor
-import io.github.antistereov.start.widgets.transport.model.PointFinder
-import io.github.antistereov.start.widgets.transport.service.DVBDepartureService
+import io.github.antistereov.start.widgets.widget.transport.dvb.model.DepartureMonitor
+import io.github.antistereov.start.widgets.widget.transport.dvb.model.PointFinder
+import io.github.antistereov.start.widgets.widget.transport.dvb.service.DVBDepartureService
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.web.bind.annotation.*
@@ -10,7 +10,7 @@ import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
 @RestController
-@RequestMapping("/widgets/transport/dvb")
+@RequestMapping("/transport/dvb")
 class DVBDepartureController(
     private val dvbDepartureService: DVBDepartureService
 ) {

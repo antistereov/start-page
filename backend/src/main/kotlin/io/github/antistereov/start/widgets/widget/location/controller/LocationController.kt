@@ -1,7 +1,7 @@
-package io.github.antistereov.start.widgets.transport.controller
+package io.github.antistereov.start.widgets.widget.location.controller
 
-import io.github.antistereov.start.widgets.transport.model.NearbyStop
-import io.github.antistereov.start.widgets.transport.service.LocationService
+import io.github.antistereov.start.widgets.widget.transport.dvb.model.NearbyStop
+import io.github.antistereov.start.widgets.widget.location.service.LocationService
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.web.bind.annotation.GetMapping
@@ -12,14 +12,14 @@ import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
 @RestController
-@RequestMapping("/widgets/transport")
+@RequestMapping("/location")
 class LocationController(
     private val locationService: LocationService,
 ) {
 
     private val logger: Logger = LoggerFactory.getLogger(LocationController::class.java)
 
-    @GetMapping("/location")
+    @GetMapping
     fun getLocation(
         @RequestParam(required = true) lat: Double,
         @RequestParam(required = true) lon: Double
@@ -31,7 +31,7 @@ class LocationController(
         }
     }
 
-    @GetMapping("/nearby")
+    @GetMapping("/nearbyPublicTransport")
     fun getNearbyPublicTransport(
         @RequestParam(required = true) lat: Double,
         @RequestParam(required = true) lon: Double,

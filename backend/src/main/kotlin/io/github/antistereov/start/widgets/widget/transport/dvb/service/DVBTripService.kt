@@ -1,5 +1,6 @@
-package io.github.antistereov.start.widgets.transport.service
+package io.github.antistereov.start.widgets.widget.transport.dvb.service
 
+import io.github.antistereov.start.widgets.widget.location.service.LocationService
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
