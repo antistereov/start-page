@@ -1,8 +1,13 @@
 package io.github.antistereov.start.global.model.exception
 
+import org.springframework.http.HttpStatus
+import org.springframework.http.HttpStatusCode
+import java.net.URI
+
 class ThirdPartyAPIException(
-    service: String,
+    uri: URI,
+    httpStatusCode: HttpStatusCode,
     message: String
 ) : RuntimeException(
-    "Error from $service API: $message"
+    "Third party API returned an error: $httpStatusCode - $message"
 )
