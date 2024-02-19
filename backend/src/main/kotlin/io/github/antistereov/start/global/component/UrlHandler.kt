@@ -1,4 +1,4 @@
-package io.github.antistereov.start.util
+package io.github.antistereov.start.global.component
 
 import org.springframework.stereotype.Component
 import java.net.URL
