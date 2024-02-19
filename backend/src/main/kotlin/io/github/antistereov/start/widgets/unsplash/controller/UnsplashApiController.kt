@@ -17,7 +17,7 @@ class UnsplashApiController(
     private val principalExtractor: AuthenticationPrincipalExtractor,
 ) {
 
-    val logger: Logger = LoggerFactory.getLogger(UnsplashApiController::class.java)
+    private val logger: Logger = LoggerFactory.getLogger(UnsplashApiController::class.java)
 
     @GetMapping("/photo")
     fun getRandomPhoto(authentication: Authentication, @RequestParam query: String? = null): Mono<Photo> {

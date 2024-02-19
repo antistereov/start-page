@@ -15,11 +15,11 @@ class InstagramTokenController(
     private val principalExtractor: AuthenticationPrincipalExtractor,
 ) {
 
-    val logger: Logger = LoggerFactory.getLogger(InstagramTokenController::class.java)
+    private val logger: Logger = LoggerFactory.getLogger(InstagramTokenController::class.java)
 
     @GetMapping
     fun login(authentication: Authentication): Mono<String> {
-        logger.info("Executing Instagram login method.")
+        logger.info("Executing login method.")
 
         return principalExtractor.getUserId(authentication).flatMap { userId ->
             tokenService.getAuthorizationUrl(userId).map { url ->
@@ -38,7 +38,7 @@ class InstagramTokenController(
         @RequestParam errorReason: String?,
         @RequestParam errorDescription: String?,
     ): Mono<String> {
-        logger.info("Received Instagram callback with code: $code, state: $state and error: $error.")
+        logger.info("Received callback with state: $state and error: $error.")
 
         return tokenService.authenticate(code, state, error, errorReason, errorDescription)
             .map {
@@ -50,13 +50,13 @@ class InstagramTokenController(
 
     @GetMapping("/refresh")
     fun refreshAccessToken(authentication: Authentication): Mono<String> {
-        logger.info("Executing Instagram refreshAccessToken method.")
+        logger.info("Executing refreshAccessToken method.")
 
         return principalExtractor.getUserId(authentication)
             .flatMap { userId ->
                 tokenService.refreshAccessToken(userId)
                     .map {
-                        logger.info("Successfully refreshed Instagram access token for user: $userId.")
+                        logger.info("Successfully refreshed access token for user: $userId.")
 
                         "Successfully refreshed Instagram access token for user: $userId."
                     }
@@ -65,7 +65,7 @@ class InstagramTokenController(
 
     @GetMapping("/user/update")
     fun updateUserInfo(authentication: Authentication): Mono<String> {
-        logger.info("Executing Instagram updateUserInfo method.")
+        logger.info("Executing updateUserInfo method.")
 
         return principalExtractor.getUserId(authentication).flatMap { userId ->
             tokenService.updateUserInfo(userId)
@@ -82,21 +82,21 @@ class InstagramTokenController(
         authentication: Authentication,
         @RequestBody accessToken: String
     ): Mono<String> {
-        logger.info("Executing Instagram saveAccessToken method.")
+        logger.info("Executing saveAccessToken method.")
 
         return principalExtractor.getUserId(authentication).flatMap { userId ->
             tokenService.saveAccessToken(userId, accessToken)
                 .map {
-                    logger.info("Successfully saved Instagram access token for user: $userId")
+                    logger.info("Successfully saved access token for user: $userId")
 
-                    "Successfully saved Instagram access token for user: $userId"
+                    "Successfully saved access token for user: $userId"
                 }
         }
     }
 
     @DeleteMapping
     fun logout(authentication: Authentication): Mono<String> {
-        logger.info("Executing Instagram logout method.")
+        logger.info("Executing logout method.")
 
         return principalExtractor.getUserId(authentication).flatMap { userId ->
             tokenService.logout(userId).then(Mono.fromCallable { "Instagram user information deleted for user: $userId." })

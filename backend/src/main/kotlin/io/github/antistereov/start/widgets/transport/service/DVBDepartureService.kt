@@ -19,7 +19,7 @@ class DVBDepartureService(
     private val locationService: LocationService,
 ) {
 
-    val logger: Logger = LoggerFactory.getLogger(DVBDepartureService::class.java)
+    private val logger: Logger = LoggerFactory.getLogger(DVBDepartureService::class.java)
 
     fun getNearbyDepartures(lat: Double, lon: Double, radius: Long, limit: Long): Flux<DepartureMonitor> {
         logger.debug("Getting nearby departures for $lat, $lon")
@@ -32,6 +32,7 @@ class DVBDepartureService(
 
     fun getDeparturesByStopId(stopId: String, limit: Long): Flux<DepartureMonitor> {
         logger.debug("Getting departures for $stopId")
+
         val url = "http://webapi.vvo-online.de/dm?format=json"
         val requestBody = mapOf(
             "stopid" to stopId,
@@ -51,6 +52,7 @@ class DVBDepartureService(
 
     fun getDeparturesByStopName(name: String, limit: Long): Flux<DepartureMonitor> {
         logger.debug("Getting departures for $name")
+
         return getStopIdByName(name).flatMap { points ->
             getDeparturesByStopId(points.id, limit)
         }
@@ -58,6 +60,7 @@ class DVBDepartureService(
 
     private fun getStopIdByName(name: String): Flux<Point> {
         logger.debug("Getting stop ID for $name")
+
         return pointFinder(name, true).flatMapMany { pointFinder ->
             if (pointFinder.points.isEmpty()) {
                 return@flatMapMany Flux.error(IllegalArgumentException("No stop with name $name found"))
@@ -68,6 +71,7 @@ class DVBDepartureService(
 
     fun pointFinder(query: String, stopsOnly: Boolean): Mono<PointFinder> {
         logger.debug("Finding points for $query")
+
         val url = UriComponentsBuilder.fromHttpUrl("https://webapi.vvo-online.de/tr/pointfinder?format=json")
             .queryParam("query", query)
             .queryParam("stopsOnly", stopsOnly)
@@ -82,6 +86,8 @@ class DVBDepartureService(
     }
 
     fun bestPointIdFinder(query: String, stopsOnly: Boolean): Mono<String> {
+        logger.debug("Finding best point ID for $query")
+
         return pointFinder(query, stopsOnly).handle { pointFinder, sink ->
             if (pointFinder.points.isEmpty()) {
                 sink.error(IllegalArgumentException("No point found for $query"))
@@ -93,6 +99,7 @@ class DVBDepartureService(
 
     fun parsePoints(points: List<String>): Flux<Point> {
         logger.debug("Parsing points")
+
         return Flux.fromIterable(points).flatMap { pointString ->
             val fields = pointString.split("|")
             if (fields.getOrNull(0) == null || fields.getOrNull(3) == null) {

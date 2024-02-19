@@ -15,7 +15,7 @@ class UnsplashTokenController(
     private val principalExtractor: AuthenticationPrincipalExtractor,
 ) {
 
-    val logger: Logger = LoggerFactory.getLogger(UnsplashTokenController::class.java)
+    private val logger: Logger = LoggerFactory.getLogger(UnsplashTokenController::class.java)
 
     @GetMapping
     fun login(authentication: Authentication): Mono<String> {

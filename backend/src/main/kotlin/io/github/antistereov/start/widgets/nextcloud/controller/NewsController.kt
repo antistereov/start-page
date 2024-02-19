@@ -20,14 +20,14 @@ class NewsController(
     private val nextcloudAuthService: NextcloudAuthService,
 ) {
 
-    val logger: Logger = LoggerFactory.getLogger(NewsController::class.java)
+    private val logger: Logger = LoggerFactory.getLogger(NewsController::class.java)
 
     @GetMapping("/items")
     fun getLatestNews(
         authentication: Authentication,
         @RequestParam batchSize: Int = 30
     ): Mono<String> {
-        logger.info("Executing Nextcloud getLatestNews method.")
+        logger.info("Getting latest news.")
 
         return principalExtractor.getUserId(authentication)
             .flatMap { userId ->

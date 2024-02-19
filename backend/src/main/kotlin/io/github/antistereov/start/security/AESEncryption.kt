@@ -1,6 +1,7 @@
 package io.github.antistereov.start.security
 
 import io.github.antistereov.start.config.properties.EncryptionProperties
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import java.util.Base64
 import javax.crypto.Cipher
@@ -11,7 +12,11 @@ class AESEncryption(
     private val properties: EncryptionProperties,
 ) {
 
+    private val logger = LoggerFactory.getLogger(AESEncryption::class.java)
+
     fun encrypt(strToEncrypt: String): String {
+        logger.debug("Encrypting...")
+
         val cipher = Cipher.getInstance("AES/ECB/PKCS5Padding")
         val secretKeySpec = SecretKeySpec(properties.secretKey.toByteArray(), "AES")
         cipher.init(Cipher.ENCRYPT_MODE, secretKeySpec)
@@ -20,6 +25,8 @@ class AESEncryption(
     }
 
     fun decrypt(strToDecrypt: String): String {
+        logger.debug("Decrypting...")
+
         val cipher = Cipher.getInstance("AES/ECB/PKCS5Padding")
         val secretKeySpec = SecretKeySpec(properties.secretKey.toByteArray(), "AES")
         cipher.init(Cipher.DECRYPT_MODE, secretKeySpec)

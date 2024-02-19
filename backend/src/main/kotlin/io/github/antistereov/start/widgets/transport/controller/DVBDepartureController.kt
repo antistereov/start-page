@@ -15,7 +15,7 @@ class DVBDepartureController(
     private val dvbDepartureService: DVBDepartureService
 ) {
 
-    val logger: Logger = LoggerFactory.getLogger(DVBDepartureController::class.java)
+    private val logger: Logger = LoggerFactory.getLogger(DVBDepartureController::class.java)
 
     @GetMapping("/departures/nearby")
     fun getNearbyDepartures(

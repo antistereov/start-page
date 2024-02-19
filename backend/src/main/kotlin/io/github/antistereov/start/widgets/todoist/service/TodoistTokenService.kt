@@ -7,6 +7,7 @@ import io.github.antistereov.start.user.model.TodoistAuthDetails
 import io.github.antistereov.start.widgets.todoist.model.TodoistTokenResponse
 import io.github.antistereov.start.user.repository.UserRepository
 import io.github.antistereov.start.widgets.todoist.config.TodoistProperties
+import org.slf4j.LoggerFactory
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
@@ -24,7 +25,11 @@ class TodoistTokenService(
     private val properties: TodoistProperties,
 ) {
 
+    private val logger = LoggerFactory.getLogger(TodoistTokenService::class.java)
+
     fun getAuthorizationUrl(userId: String): Mono<String> {
+        logger.debug("Creating Todoist authorization URL for user $userId.")
+
         return stateValidation.createState(userId).map { state ->
             UriComponentsBuilder.fromHttpUrl("https://todoist.com/oauth/authorize")
                 .queryParam("client_id", properties.clientId)
@@ -35,6 +40,8 @@ class TodoistTokenService(
     }
 
     fun authenticate(code: String?, state: String?, error: String?): Mono<TodoistTokenResponse> {
+        logger.debug("Received Todoist callback with state: $state and error: $error.")
+
         if (code != null && state != null) {
             return handleAuthentication(code, state)
         }
@@ -47,6 +54,8 @@ class TodoistTokenService(
     }
 
     fun logout(userId: String): Mono<Void> {
+        logger.debug("Deleting Todoist user information for user $userId.")
+
         return userRepository.findById(userId)
             .switchIfEmpty(Mono.error(UserNotFoundException(userId)))
             .flatMap { user ->
@@ -61,6 +70,8 @@ class TodoistTokenService(
     }
 
     private fun handleAuthentication(code: String, state: String): Mono<TodoistTokenResponse> {
+        logger.debug("Handling Todoist authentication with state: $state.")
+
         val uri = "https://todoist.com/oauth/access_token"
 
         return webClient.post()
@@ -81,6 +92,8 @@ class TodoistTokenService(
     }
 
     private fun handleUser(userId: String, response: TodoistTokenResponse): Mono<TodoistTokenResponse> {
+        logger.debug("Handling Todoist user {} with response: {}.", userId, response)
+
         return userRepository.findById(userId)
             .switchIfEmpty(Mono.error(UserNotFoundException(userId)))
             .flatMap { user ->
@@ -95,6 +108,8 @@ class TodoistTokenService(
     }
 
     fun getAccessToken(userId: String): Mono<String> {
+        logger.debug("Getting Todoist access token for user $userId.")
+
         return userRepository.findById(userId)
             .switchIfEmpty(Mono.error(UserNotFoundException(userId)))
             .flatMap { user ->

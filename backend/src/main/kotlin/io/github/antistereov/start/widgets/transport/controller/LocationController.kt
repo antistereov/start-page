@@ -17,7 +17,7 @@ class LocationController(
     private val locationService: LocationService,
 ) {
 
-    val logger: Logger = LoggerFactory.getLogger(LocationController::class.java)
+    private val logger: Logger = LoggerFactory.getLogger(LocationController::class.java)
 
     @GetMapping("/location")
     fun getLocation(

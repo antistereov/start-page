@@ -21,14 +21,14 @@ class NextcloudAuthController(
     private val principalExtractor: AuthenticationPrincipalExtractor,
 ) {
 
-    val logger: Logger = LoggerFactory.getLogger(NextcloudAuthController::class.java)
+    private val logger: Logger = LoggerFactory.getLogger(NextcloudAuthController::class.java)
 
     @PostMapping("/auth")
     fun auth(
         authentication: Authentication,
         @Valid @RequestBody credentials: NextcloudCredentials
     ): Mono<String> {
-        logger.info("Executing Nextcloud authentication method.")
+        logger.info("Executing authentication method.")
 
         return principalExtractor.getUserId(authentication)
             .flatMap { userId ->
@@ -38,7 +38,7 @@ class NextcloudAuthController(
 
     @DeleteMapping("/auth")
     fun logout(authentication: Authentication): Mono<String> {
-        logger.info("Executing Nextcloud logout method.")
+        logger.info("Executing logout method.")
 
         return principalExtractor.getUserId(authentication).flatMap { userId ->
             nextcloudAuthService.logout(userId).then(Mono.fromCallable { "Nextcloud user information deleted for user: $userId." })

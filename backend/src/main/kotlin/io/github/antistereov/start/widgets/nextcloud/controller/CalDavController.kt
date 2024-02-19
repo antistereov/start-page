@@ -6,6 +6,7 @@ import io.github.antistereov.start.widgets.nextcloud.service.CalDavApiService
 import io.github.antistereov.start.widgets.nextcloud.service.CalDavEventService
 import io.github.antistereov.start.widgets.nextcloud.service.NextcloudAuthService
 import io.github.antistereov.start.widgets.nextcloud.service.CalDavRemoteService
+import org.slf4j.LoggerFactory
 import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.*
 import reactor.core.publisher.Flux
@@ -20,8 +21,12 @@ class CalDavController(
     private val principalExtractor: AuthenticationPrincipalExtractor,
 ) {
 
+    private val logger = LoggerFactory.getLogger(CalDavController::class.java)
+
     @GetMapping("/calendars")
     fun getUserCalendars(authentication: Authentication): Flux<NextcloudCalendar> {
+        logger.info("Getting user calendars.")
+
         return principalExtractor.getUserId(authentication).flatMapMany { userId ->
             apiService.getUserCalendars(userId).flatMapIterable { it }
         }
@@ -29,6 +34,8 @@ class CalDavController(
 
     @GetMapping("/calendars/remote")
     fun getRemoteCalendars(authentication: Authentication): Flux<NextcloudCalendar> {
+        logger.info("Getting remote calendars.")
+
         return principalExtractor.getUserId(authentication).flatMapMany { userId ->
             nextcloudAuthService.getCredentials(userId).flatMapMany { credentials ->
                 remoteService.getRemoteCalendars(credentials)
@@ -41,6 +48,8 @@ class CalDavController(
         authentication: Authentication,
         @RequestBody calendars: MutableList<NextcloudCalendar>,
     ): Flux<NextcloudCalendar> {
+        logger.info("Updating calendars.")
+
         return principalExtractor.getUserId(authentication).flatMapMany { userId ->
             apiService.addCalendars(userId, calendars)
         }
@@ -51,6 +60,8 @@ class CalDavController(
         authentication: Authentication,
         @RequestBody icsLinks: List<String>?,
     ): Flux<NextcloudCalendar> {
+        logger.info("Deleting calendars.")
+
         return principalExtractor.getUserId(authentication).flatMapMany { userId ->
             apiService.deleteCalendars(userId, icsLinks)
         }
@@ -58,6 +69,8 @@ class CalDavController(
 
     @GetMapping("/calendars/refresh")
     fun refreshCalendarEvents(authentication: Authentication): Flux<NextcloudCalendar> {
+        logger.info("Refreshing calendar events.")
+
         return principalExtractor.getUserId(authentication).flatMapMany { userId ->
             eventService.refreshCalendarEvents(userId)
         }

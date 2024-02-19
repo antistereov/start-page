@@ -17,7 +17,7 @@ class TodoistApiController(
     private val principalExtractor: AuthenticationPrincipalExtractor,
 ) {
 
-    val logger: Logger = LoggerFactory.getLogger(TodoistApiController::class.java)
+    private val logger: Logger = LoggerFactory.getLogger(TodoistApiController::class.java)
 
     @GetMapping("/tasks")
     fun getTasks(authentication: Authentication): Mono<String> {

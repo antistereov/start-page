@@ -19,14 +19,14 @@ class InstagramApiController(
     private val principalExtractor: AuthenticationPrincipalExtractor,
 ) {
 
-    val logger: Logger? = LoggerFactory.getLogger(InstagramApiController::class.java)
+    private val logger: Logger = LoggerFactory.getLogger(InstagramApiController::class.java)
 
     @GetMapping("/{instagramUserId}")
     fun getUsername(
         authentication: Authentication,
         @PathVariable instagramUserId: String
     ): Mono<String> {
-        logger?.info("Executing Instagram getUserMedia method.")
+        logger.info("Executing getUsername method.")
 
         return principalExtractor.getUserId(authentication)
             .flatMap { userId ->
@@ -42,7 +42,7 @@ class InstagramApiController(
         @RequestParam before: String?,
         @RequestParam after: String?,
     ): Mono<String> {
-        logger?.info("Executing Instagram getUserMedia method.")
+        logger.info("Executing getUserMedia method.")
 
         return principalExtractor.getUserId(authentication)
             .flatMap { userId ->
@@ -55,7 +55,7 @@ class InstagramApiController(
         authentication: Authentication,
         @PathVariable mediaId: String
     ): Mono<String> {
-        logger?.info("Executing Instagram getMedia method.")
+        logger.info("Executing getMedia method.")
 
         return principalExtractor.getUserId(authentication)
             .flatMap { userId ->

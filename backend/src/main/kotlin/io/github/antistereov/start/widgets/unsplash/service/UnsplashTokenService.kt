@@ -7,6 +7,7 @@ import io.github.antistereov.start.user.model.UnsplashAuthDetails
 import io.github.antistereov.start.user.repository.UserRepository
 import io.github.antistereov.start.widgets.unsplash.config.UnsplashProperties
 import io.github.antistereov.start.widgets.unsplash.model.UnsplashTokenResponse
+import org.slf4j.LoggerFactory
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
@@ -24,7 +25,11 @@ class UnsplashTokenService(
     private val properties: UnsplashProperties,
 ) {
 
+    private val logger = LoggerFactory.getLogger(UnsplashTokenService::class.java)
+
     fun getAuthorizationUrl(userId: String): Mono<String> {
+        logger.debug("Creating Unsplash authorization URL for user $userId.")
+
         return stateValidation.createState(userId).map { state ->
             UriComponentsBuilder.fromHttpUrl("https://unsplash.com/oauth/authorize")
                 .queryParam("redirect_uri", properties.redirectUri)
@@ -41,6 +46,8 @@ class UnsplashTokenService(
         error: String?,
         errorDescription: String?
     ): Mono<UnsplashTokenResponse> {
+        logger.debug("Received Unsplash callback with state: $state and error: $error.")
+
         if (code != null && state != null) {
             return handleAuthentication(code, state)
         }
@@ -53,6 +60,8 @@ class UnsplashTokenService(
     }
 
     fun logout(userId: String): Mono<Void> {
+        logger.debug("Deleting Unsplash user information for user $userId.")
+
         return userRepository.findById(userId)
             .switchIfEmpty(Mono.error(UserNotFoundException(userId)))
             .flatMap { user ->
@@ -67,6 +76,8 @@ class UnsplashTokenService(
     }
 
     private fun handleAuthentication(code: String, state: String): Mono<UnsplashTokenResponse> {
+        logger.debug("Handling Unsplash authentication with state: $state.")
+
         val uri = "https://unsplash.com/oauth/token"
 
         return webClient.post()
@@ -89,6 +100,8 @@ class UnsplashTokenService(
     }
 
     private fun handleUser(userId: String, response: UnsplashTokenResponse): Mono<UnsplashTokenResponse> {
+        logger.debug("Handling Unsplash user $userId")
+
         return userRepository.findById(userId)
             .switchIfEmpty(Mono.error(UserNotFoundException(userId)))
             .flatMap { user ->
@@ -103,6 +116,8 @@ class UnsplashTokenService(
     }
 
     fun getAccessToken(userId: String): Mono<String> {
+        logger.debug("Getting Unsplash access token for user $userId.")
+
         return userRepository.findById(userId)
             .switchIfEmpty(Mono.error(UserNotFoundException(userId)))
             .flatMap { user ->

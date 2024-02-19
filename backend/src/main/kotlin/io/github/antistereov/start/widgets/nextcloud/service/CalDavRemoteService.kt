@@ -6,6 +6,7 @@ import io.github.antistereov.start.widgets.nextcloud.model.NextcloudCredentials
 import okhttp3.Credentials
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.w3c.dom.Element
 import org.xml.sax.InputSource
@@ -18,13 +19,19 @@ import javax.xml.parsers.DocumentBuilderFactory
 @Service
 class CalDavRemoteService {
 
+    private val logger = LoggerFactory.getLogger(CalDavRemoteService::class.java)
+
     fun getRemoteCalendars(credentials: NextcloudCredentials): Flux<NextcloudCalendar> {
+        logger.debug("Getting remote calendars for user: ${credentials.username}.")
+
         return fetchCalendarData(credentials).flatMapMany { calendarData ->
             parseCalendarData(calendarData, credentials)
         }
     }
 
     private fun fetchCalendarData(credentials: NextcloudCredentials): Mono<String> {
+        logger.debug("Fetching calendar data.")
+
         return Mono.fromCallable {
             val calendarUrl = "${credentials.url}/remote.php/dav/calendars/${credentials.username}/"
             val client = OkHttpClient()
@@ -40,6 +47,8 @@ class CalDavRemoteService {
     }
 
     private fun parseCalendarData(calendarData: String, credentials: NextcloudCredentials): Flux<NextcloudCalendar> {
+        logger.debug("Parsing calendar data.")
+
         return Mono.fromCallable {
             val document = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(InputSource(StringReader(calendarData)))
             val calendarElements = document.getElementsByTagName("d:response")
@@ -62,11 +71,15 @@ class CalDavRemoteService {
     }
 
     private fun checkIsCalendar(calendarElement: Element): Boolean {
+        logger.debug("Checking if element is calendar.")
+
         val resourceTypeElement = calendarElement.getElementsByTagName("d:resourcetype").item(0) as Element
         return resourceTypeElement.getElementsByTagName("cal:calendar").length > 0
     }
 
     private fun createCalendar(calendarElement: Element, credentials: NextcloudCredentials): NextcloudCalendar? {
+        logger.debug("Creating calendar entity.")
+
         val hrefElement = calendarElement.getElementsByTagName("d:href").item(0)
         val icsPath = hrefElement.textContent!!
         val icsLink = "${credentials.url}$icsPath?export"

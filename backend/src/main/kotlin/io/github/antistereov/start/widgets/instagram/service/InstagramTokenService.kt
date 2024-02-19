@@ -30,7 +30,7 @@ class InstagramTokenService(
     private val logger = LoggerFactory.getLogger(InstagramTokenService::class.java)
 
     fun getAuthorizationUrl(userId: String): Mono<String> {
-        logger.info("Getting authorization URL for user $userId")
+        logger.debug("Getting authorization URL for user $userId")
 
         return stateValidation.createState(userId).map { state ->
             UriComponentsBuilder.fromHttpUrl("https://api.instagram.com/oauth/authorize")
@@ -50,7 +50,7 @@ class InstagramTokenService(
         errorCode: String?,
         errorReason: String?,
     ): Mono<InstagramLongLivedTokenResponse> {
-        logger.info("Authenticating with code: $code, state: $state, error: $error, errorCode: $errorCode, errorReason: $errorReason")
+        logger.debug("Authenticating with state: $state, error: $error, errorCode: $errorCode, errorReason: $errorReason")
 
         if (code != null && state != null) {
             return handleShortLivedToken(code, state).flatMap { user ->
@@ -70,7 +70,7 @@ class InstagramTokenService(
     }
 
     fun getAccessToken(userId: String): Mono<String> {
-        logger.info("Getting access token for user $userId")
+        logger.debug("Getting access token for user $userId")
 
         return userRepository.findById(userId)
             .switchIfEmpty(Mono.error(UserNotFoundException(userId)))
@@ -85,7 +85,7 @@ class InstagramTokenService(
     }
 
     fun refreshAccessToken(userId: String): Mono<User> {
-        logger.info("Refreshing access token for user $userId")
+        logger.debug("Refreshing access token for user $userId")
 
         val currentTime = LocalDateTime.now()
 
@@ -118,13 +118,13 @@ class InstagramTokenService(
     }
 
     fun saveAccessToken(userId: String, accessToken: String): Mono<User> {
-        logger.info("Saving access token for user $userId")
+        logger.debug("Saving access token for user $userId")
 
         return updateAuthDetails(userId, accessToken = accessToken, expiresIn = 90*24*60*60)
     }
 
     fun updateUserInfo(userId: String): Mono<User> {
-        logger.info("Updating user info for user $userId")
+        logger.debug("Updating user info for user $userId")
 
         return getAccessToken(userId).flatMap { accessToken ->
             val uri = UriComponentsBuilder.fromHttpUrl("${properties.apiBaseUrl}/me")
@@ -151,7 +151,7 @@ class InstagramTokenService(
     }
 
     fun logout(userId: String): Mono<Void> {
-        logger.info("Logging out user $userId")
+        logger.debug("Logging out user $userId")
 
         return userRepository.findById(userId)
             .switchIfEmpty(Mono.error(UserNotFoundException(userId)))
@@ -166,7 +166,7 @@ class InstagramTokenService(
     }
 
     private fun getShortLivedToken(code: String): Mono<InstagramShortLivedTokenResponse> {
-        logger.info("Getting short lived token.")
+        logger.debug("Getting short lived token.")
 
         return webClient
             .post()
@@ -187,7 +187,7 @@ class InstagramTokenService(
         state: String,
         expiresIn: Long? = 3600L
     ): Mono<User> {
-        logger.info("Handling short lived token.")
+        logger.debug("Handling short lived token.")
 
         return stateValidation.getUserId(state).flatMap { userId ->
             getShortLivedToken(code).flatMap { response ->
@@ -202,7 +202,7 @@ class InstagramTokenService(
     }
 
     private fun getLongLivedToken(accessToken: String): Mono<InstagramLongLivedTokenResponse> {
-        logger.info("Getting long lived token.")
+        logger.debug("Getting long lived token.")
 
         return webClient
             .post()
@@ -217,7 +217,7 @@ class InstagramTokenService(
     }
 
     private fun handleLongLivedToken(userId: String, accessToken: String): Mono<InstagramLongLivedTokenResponse> {
-        logger.info("Handling long lived token for user $userId")
+        logger.debug("Handling long lived token for user $userId")
 
         return getLongLivedToken(accessToken).flatMap { response ->
             updateAuthDetails(
@@ -236,7 +236,7 @@ class InstagramTokenService(
         accessToken: String? = null,
         expiresIn: Long? = null,
     ): Mono<User> {
-        logger.info("Updating auth details for user $userId")
+        logger.debug("Updating auth details for user $userId")
 
         return userRepository.findById(userId)
             .switchIfEmpty(Mono.error(UserNotFoundException(userId)))

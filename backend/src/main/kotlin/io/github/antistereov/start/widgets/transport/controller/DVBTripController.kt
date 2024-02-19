@@ -16,7 +16,7 @@ class DVBTripController(
     private val dvbTripService: DVBTripService,
 ) {
 
-    val logger: Logger = LoggerFactory.getLogger(DVBTripController::class.java)
+    private val logger: Logger = LoggerFactory.getLogger(DVBTripController::class.java)
 
     @GetMapping("/trips")
     fun getTrip(

@@ -16,7 +16,7 @@ class OpenAIAuthController(
     private val principalExtractor: AuthenticationPrincipalExtractor,
 ) {
 
-    val logger: Logger = LoggerFactory.getLogger(OpenAIAuthService::class.java)
+    private val logger: Logger = LoggerFactory.getLogger(OpenAIAuthService::class.java)
 
     @PostMapping
     fun auth(

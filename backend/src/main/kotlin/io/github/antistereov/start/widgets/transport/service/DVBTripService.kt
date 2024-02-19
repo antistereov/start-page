@@ -31,6 +31,7 @@ class DVBTripService(
         includeAlternativeStops: Boolean = true,
     ): Mono<String> {
         logger.debug("Getting trip from $originName to $destinationName")
+
         return departureService.bestPointIdFinder(originName, false).flatMap { originPoint ->
             departureService.bestPointIdFinder(destinationName, false).flatMap { destinationPoint ->
                 getTrip(
@@ -64,6 +65,8 @@ class DVBTripService(
         mot: List<String> = listOf("Tram", "CityBus", "IntercityBus", "SuburbanRailway", "Train", "Cableway", "Ferry", "HailedSharedTaxi"),
         includeAlternativeStops: Boolean = true,
     ): Mono<String> {
+        logger.debug("Getting trip from $originLat, $originLon to $destinationName")
+
         return locationService.getLocationAddress(originLat, originLon).flatMap { originAddress ->
             departureService.pointFinder(destinationName, false).flatMap { destinationPoints ->
                 getTrip(
@@ -97,6 +100,7 @@ class DVBTripService(
         includeAlternativeStops: Boolean = true,
     ): Mono<String> {
         logger.debug("Getting trip from $originName to $destinationLat, $destinationLon")
+
         return locationService.getLocationAddress(destinationLat, destinationLon).flatMap { destinationAddress ->
             departureService.pointFinder(originName, false).flatMap { originPoints ->
                 getTrip(
@@ -130,6 +134,7 @@ class DVBTripService(
         includeAlternativeStops: Boolean = true,
     ): Mono<String> {
         logger.debug("Getting trip from $origin to $destination")
+
         val url = UriComponentsBuilder.fromHttpUrl("http://webapi.vvo-online.de/tr/trips")
             .queryParam("format", "json")
             .queryParam("origin", origin)

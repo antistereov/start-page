@@ -17,7 +17,7 @@ class SpotifyApiController(
     private val principalExtractor: AuthenticationPrincipalExtractor,
 ) {
 
-    val logger: Logger = LoggerFactory.getLogger(SpotifyApiController::class.java)
+    private val logger: Logger = LoggerFactory.getLogger(SpotifyApiController::class.java)
 
     @GetMapping("/me/player/currently_playing")
     fun getCurrentSong(authentication: Authentication): Mono<String> {

@@ -7,6 +7,7 @@ import io.github.antistereov.start.user.model.SpotifyAuthDetails
 import io.github.antistereov.start.widgets.spotify.model.SpotifyTokenResponse
 import io.github.antistereov.start.user.repository.UserRepository
 import io.github.antistereov.start.widgets.spotify.config.SpotifyProperties
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.BodyInserters
 import org.springframework.web.reactive.function.client.WebClient
@@ -24,7 +25,11 @@ class SpotifyTokenService(
     private val properties: SpotifyProperties,
 ) {
 
+    private val logger = LoggerFactory.getLogger(SpotifyTokenService::class.java)
+
     fun getAuthorizationUrl(userId: String): Mono<String> {
+        logger.debug("Getting authorization URL for user: $userId.")
+
         return stateValidation.createState(userId).map { state ->
             UriComponentsBuilder
                 .fromHttpUrl("https://accounts.spotify.com/authorize")
@@ -38,6 +43,8 @@ class SpotifyTokenService(
     }
 
     fun authenticate(code: String?, state: String?, error: String?): Mono<SpotifyTokenResponse> {
+        logger.debug("Authenticating user.")
+
         if (code != null && state != null) {
             return handleAuthentication(code, state)
         }
@@ -50,6 +57,8 @@ class SpotifyTokenService(
     }
 
     fun logout(userId: String): Mono<Void> {
+        logger.debug("Logging out user: $userId.")
+
         return userRepository.findById(userId)
             .switchIfEmpty(Mono.error(UserNotFoundException(userId)))
             .flatMap { user ->
@@ -64,6 +73,8 @@ class SpotifyTokenService(
     }
 
     private fun handleAuthentication(code: String, state: String): Mono<SpotifyTokenResponse> {
+        logger.debug("Handling authentication.")
+
         val auth = "${properties.clientId}:${properties.clientSecret}"
         val encodedAuth = Base64.getEncoder().encodeToString(auth.toByteArray())
         val uri = "https://accounts.spotify.com/api/token"
@@ -93,6 +104,8 @@ class SpotifyTokenService(
     }
 
     private fun handleUser(userId: String, response: SpotifyTokenResponse): Mono<SpotifyTokenResponse> {
+        logger.debug("Handling user.")
+
         return userRepository.findById(userId)
             .switchIfEmpty(Mono.error(UserNotFoundException(userId)))
             .flatMap { user ->
@@ -113,6 +126,8 @@ class SpotifyTokenService(
     }
 
     fun refreshToken(userId: String): Mono<SpotifyTokenResponse> {
+        logger.debug("Refreshing token for user: $userId.")
+
         val uri = "https://accounts.spotify.com/api/token"
 
         return userRepository.findById(userId)
@@ -150,6 +165,8 @@ class SpotifyTokenService(
     }
 
     fun getAccessToken(userId: String): Mono<String> {
+        logger.debug("Getting access token for user: $userId.")
+
         val currentTime = LocalDateTime.now()
 
         return userRepository.findById(userId)

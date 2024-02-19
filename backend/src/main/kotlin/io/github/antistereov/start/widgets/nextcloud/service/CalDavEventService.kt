@@ -14,6 +14,7 @@ import net.fortuna.ical4j.model.Period
 import net.fortuna.ical4j.model.component.VEvent
 import net.fortuna.ical4j.model.property.RRule
 import okhttp3.Credentials
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
 import reactor.core.publisher.Flux
@@ -31,7 +32,12 @@ class CalDavEventService(
     private val userRepository: UserRepository,
     private val aesEncryption: AESEncryption,
 ) {
+
+    private val logger = LoggerFactory.getLogger(CalDavEventService::class.java)
+
     fun refreshCalendarEvents(userId: String): Flux<NextcloudCalendar> {
+        logger.debug("Refreshing calendar events for user: $userId.")
+
         return userRepository.findById(userId)
             .switchIfEmpty(Mono.error(UserNotFoundException(userId)))
             .flatMapMany { user ->
@@ -56,6 +62,8 @@ class CalDavEventService(
         userId: String,
         calendars: MutableList<NextcloudCalendar>
     ): Flux<NextcloudCalendar> {
+        logger.debug("Refreshing user calendars.")
+
         return userRepository.findById(userId)
             .switchIfEmpty(Mono.error(UserNotFoundException(userId)))
             .flatMap { user ->
@@ -79,6 +87,8 @@ class CalDavEventService(
     }
 
     private fun getCalendarEvents(credentials: NextcloudCredentials, icsLink: String): Flux<Event> {
+        logger.debug("Getting calendar events.")
+
         val client = WebClient.builder()
             .baseUrl(icsLink)
             .defaultHeader("Authorization", Credentials.basic(credentials.username, credentials.password))
@@ -129,6 +139,8 @@ class CalDavEventService(
 
 
     fun encryptEvents(events: List<Event>): List<Event> {
+        logger.debug("Encrypting events.")
+
         return events.map { event ->
             Event(
                 summary = aesEncryption.encrypt(event.summary),
@@ -143,6 +155,8 @@ class CalDavEventService(
     }
 
     fun decryptEvents(events: List<Event>): List<Event> {
+        logger.debug("Decrypting events.")
+
         return events.map { event ->
             Event(
                 summary = aesEncryption.decrypt(event.summary),
@@ -157,6 +171,8 @@ class CalDavEventService(
     }
 
     private fun parseRRule(rruleString: String): RRuleModel {
+        logger.debug("Parsing RRule.")
+
         val rruleParts = rruleString.split(";").associate {
             val (key, value) = it.split("=")
             key to value

@@ -15,7 +15,7 @@ class TodoistTokenController(
     private val principalExtractor: AuthenticationPrincipalExtractor,
     ) {
 
-    val logger: Logger = LoggerFactory.getLogger(TodoistTokenController::class.java)
+    private val logger: Logger = LoggerFactory.getLogger(TodoistTokenController::class.java)
 
     @GetMapping
     fun login(authentication: Authentication): Mono<String> {
@@ -36,7 +36,7 @@ class TodoistTokenController(
         @RequestParam state: String?,
         @RequestParam error: String?,
     ): Mono<String> {
-        logger.info("Received Todoist callback with code: $code, state: $state and error: $error")
+        logger.info("Received Todoist callback with state: $state and error: $error")
 
         return tokenService.authenticate(code, state, error)
             .map {

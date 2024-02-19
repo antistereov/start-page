@@ -6,9 +6,11 @@ import io.github.antistereov.start.security.AESEncryption
 import io.github.antistereov.start.user.model.User
 import io.github.antistereov.start.user.repository.UserRepository
 import io.github.antistereov.start.widgets.nextcloud.model.NextcloudCalendar
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import kotlin.math.log
 
 @Service
 class CalDavApiService(
@@ -17,7 +19,11 @@ class CalDavApiService(
     private val eventService: CalDavEventService,
 ) {
 
+    private val logger = LoggerFactory.getLogger(CalDavApiService::class.java)
+
     fun addCalendars(userId: String, calendars: List<NextcloudCalendar>): Flux<NextcloudCalendar> {
+        logger.debug("Adding calendars for user: $userId.")
+
         return fetchUser(userId)
             .flatMapMany { user ->
                 checkForDuplicates(user, calendars)
@@ -27,11 +33,15 @@ class CalDavApiService(
     }
 
     private fun fetchUser(userId: String): Mono<User> {
+        logger.debug("Fetching user: $userId.")
+
         return userRepository.findById(userId)
             .switchIfEmpty(Mono.error(UserNotFoundException(userId)))
     }
 
     private fun checkForDuplicates(user: User, calendars: List<NextcloudCalendar>) {
+        logger.debug("Checking for duplicates.")
+
         val existingIcsLinks = user.nextcloud.calendars.map { it.icsLink }
         val decryptedIcsLinks = existingIcsLinks.map { aesEncryption.decrypt(it) }
         val duplicates = calendars.find { it.icsLink in decryptedIcsLinks }
@@ -41,6 +51,8 @@ class CalDavApiService(
     }
 
     private fun encryptCalendars(calendars: List<NextcloudCalendar>): List<NextcloudCalendar> {
+        logger.debug("Encrypting calendars.")
+
         return calendars.map { calendar ->
             NextcloudCalendar(
                 name = aesEncryption.encrypt(calendar.name),
@@ -53,6 +65,8 @@ class CalDavApiService(
     }
 
     private fun addNewCalendars(user: User, newCalendars: List<NextcloudCalendar>): Flux<NextcloudCalendar> {
+        logger.debug("Adding new calendars.")
+
         user.nextcloud.calendars.addAll(newCalendars)
         return userRepository.save(user)
             .onErrorMap { throwable ->
@@ -64,6 +78,8 @@ class CalDavApiService(
     }
 
     fun deleteCalendars(userId: String, icsLinks: List<String>?): Flux<NextcloudCalendar> {
+        logger.debug("Deleting calendars for user: $userId.")
+
         return userRepository.findById(userId)
             .switchIfEmpty(Mono.error(UserNotFoundException(userId)))
             .flatMapMany { user ->
@@ -86,6 +102,8 @@ class CalDavApiService(
     }
 
     fun getUserCalendars(userId: String): Mono<List<NextcloudCalendar>> {
+        logger.debug("Getting user calendars for user: $userId.")
+
         return userRepository.findById(userId)
             .switchIfEmpty(Mono.error(UserNotFoundException(userId)))
             .map { user ->

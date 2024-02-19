@@ -10,6 +10,7 @@ import io.github.antistereov.start.user.repository.UserRepository
 import io.github.antistereov.start.util.UrlHandler
 import io.github.antistereov.start.widgets.nextcloud.config.NextcloudProperties
 import io.github.antistereov.start.widgets.nextcloud.model.NextcloudCredentials
+import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
@@ -24,7 +25,11 @@ class NextcloudAuthService(
     private val properties: NextcloudProperties,
 ) {
 
+    private val logger = LoggerFactory.getLogger(NextcloudAuthService::class.java)
+
     fun getCredentials(userId: String): Mono<NextcloudCredentials> {
+        logger.debug("Getting credentials for user: $userId.")
+
         return userRepository.findById(userId)
             .switchIfEmpty(Mono.error(UserNotFoundException(userId)))
             .handle { user, sink ->
@@ -58,6 +63,8 @@ class NextcloudAuthService(
     }
 
     fun authentication(userId: String, credentials: NextcloudCredentials): Mono<String> {
+        logger.debug("Authenticating user: $userId.")
+
         return userRepository.findById(userId)
             .switchIfEmpty(Mono.error(UserNotFoundException(userId)))
             .map { user ->
@@ -80,6 +87,8 @@ class NextcloudAuthService(
     }
 
     fun verifyCredentials(credentials: NextcloudCredentials): Mono<String> {
+        logger.debug("Verifying credentials.")
+
         val webClient = webClientBuilder
             .baseUrl("${credentials.url}/remote.php/dav/files/${credentials.username}")
             .defaultHeaders { headers ->
@@ -95,6 +104,8 @@ class NextcloudAuthService(
     }
 
     fun logout(userId: String): Mono<Void> {
+        logger.debug("Logging out user: $userId.")
+
         return userRepository.findById(userId)
             .switchIfEmpty(Mono.error(UserNotFoundException(userId)))
             .flatMap { user ->

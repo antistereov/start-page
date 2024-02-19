@@ -9,6 +9,7 @@ import io.github.antistereov.start.widgets.openai.config.OpenAIProperties
 import io.github.antistereov.start.widgets.openai.model.ChatRequest
 import io.github.antistereov.start.widgets.openai.model.ChatResponse
 import io.github.antistereov.start.widgets.openai.model.Message
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
 import reactor.core.publisher.Mono
@@ -21,7 +22,11 @@ class OpenAIAuthService(
     private val aesEncryption: AESEncryption,
 ) {
 
+    private val logger = LoggerFactory.getLogger(OpenAIAuthService::class.java)
+
     fun authentication(userId: String, apiKey: String): Mono<String> {
+        logger.debug("Authenticating user: $userId.")
+
         return userRepository.findById(userId)
             .switchIfEmpty(Mono.error(UserNotFoundException(userId)))
             .map { user ->
@@ -41,6 +46,8 @@ class OpenAIAuthService(
     }
 
     fun verifyCredentials(apiKey: String): Mono<String> {
+        logger.debug("Verifying credentials.")
+
         val uri = "${properties.apiBaseUrl}/chat/completions"
 
         return webClient
@@ -54,6 +61,8 @@ class OpenAIAuthService(
     }
 
     fun logout(userId: String): Mono<Void> {
+        logger.debug("Logging out user: $userId.")
+
         return userRepository.findById(userId)
             .switchIfEmpty(Mono.error(UserNotFoundException(userId)))
             .flatMap { user ->

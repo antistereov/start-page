@@ -11,6 +11,7 @@ import io.github.antistereov.start.widgets.openai.config.OpenAIProperties
 import io.github.antistereov.start.widgets.openai.model.ChatRequest
 import io.github.antistereov.start.widgets.openai.model.ChatResponse
 import io.github.antistereov.start.widgets.openai.model.Message
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
 import reactor.core.publisher.Mono
@@ -25,7 +26,11 @@ class ChatService(
 
     //TODO: Add @ annotation like Copilot, e.g. @Summarize
 
+    private val logger = LoggerFactory.getLogger(ChatService::class.java)
+
     fun chat(userId: String, content: String): Mono<ChatResponse> {
+        logger.debug("Chatting with user: $userId.")
+
         return fetchAndValidateUser(userId).flatMap { user ->
             createChatRequest(user, content).flatMap { chatRequest ->
                 sendChatRequestAndHandleResponse(user, chatRequest).flatMap { response ->
@@ -36,6 +41,8 @@ class ChatService(
     }
 
     private fun fetchAndValidateUser(userId: String): Mono<User> {
+        logger.debug("Fetching and validating user: $userId.")
+
         return userRepository.findById(userId).flatMap { user ->
             val chatHistory = decryptMessages(user.openAi.chatDetails.history)
 
@@ -48,6 +55,8 @@ class ChatService(
     }
 
     private fun createChatRequest(user: User, content: String): Mono<ChatRequest> {
+        logger.debug("Creating chat request.")
+
         val newMessage = Message("user", content)
         val systemMessage = Message(
             "system",
@@ -68,6 +77,8 @@ class ChatService(
     }
 
     private fun sendChatRequestAndHandleResponse(user: User, chatRequest: ChatRequest): Mono<ChatResponse> {
+        logger.debug("Sending chat request and handling response.")
+
         val encryptedApiKey = user.openAi.apiKey
             ?: return Mono.error(MissingCredentialsException(properties.serviceName, "API key", user.id))
         val uri = "${properties.apiBaseUrl}/chat/completions"
@@ -83,6 +94,8 @@ class ChatService(
     }
 
     private fun updateChatHistory(user: User, response: ChatResponse, newMessage: Message): Mono<ChatResponse> {
+        logger.debug("Updating chat history.")
+
         val chatHistory = decryptMessages(user.openAi.chatDetails.history)
         val entryNumber = chatHistory.size
         chatHistory[entryNumber] = newMessage
@@ -98,6 +111,8 @@ class ChatService(
     }
 
     fun deleteHistoryEntry(userId: String, entryNumber: Int): Mono<Message> {
+        logger.debug("Deleting history entry.")
+
         return userRepository.findById(userId).flatMap { user ->
             val history = user.openAi.chatDetails.history
             if (history.size <= entryNumber) {
@@ -123,6 +138,8 @@ class ChatService(
     }
 
     fun clearChatHistory(userId: String): Mono<ChatDetails> {
+        logger.debug("Clearing chat history.")
+
         return userRepository.findById(userId).flatMap { user ->
             user.openAi.chatDetails.history.clear()
             user.openAi.chatDetails.totalTokens = 0
@@ -135,6 +152,8 @@ class ChatService(
     }
 
     fun getHistoryEntry(userId: String, entryNumber: Int): Mono<Message> {
+        logger.debug("Getting history entry.")
+
         return userRepository.findById(userId).handle { user, sink ->
             val history = user.openAi.chatDetails.history
             if (history.size <= entryNumber) {
@@ -149,6 +168,8 @@ class ChatService(
     }
 
     fun getChatHistory(userId: String): Mono<ChatDetails> {
+        logger.debug("Getting chat history.")
+
         return userRepository.findById(userId).map { user ->
             ChatDetails(
                 decryptMessages(user.openAi.chatDetails.history),
@@ -158,6 +179,8 @@ class ChatService(
     }
 
     private fun encryptMessages(history: MutableMap<Int, Message>): MutableMap<Int, Message> {
+        logger.debug("Encrypting messages.")
+
         return history.mapValues { (_, message) ->
             val encryptedContent = aesEncryption.encrypt(message.content)
             message.copy(content = encryptedContent)
@@ -165,6 +188,8 @@ class ChatService(
     }
 
     private fun decryptMessages(history: MutableMap<Int, Message>): MutableMap<Int, Message> {
+        logger.debug("Decrypting messages.")
+
         return history.mapValues { (_, message) ->
             val decryptedContent = aesEncryption.decrypt(message.content)
             message.copy(content = decryptedContent)

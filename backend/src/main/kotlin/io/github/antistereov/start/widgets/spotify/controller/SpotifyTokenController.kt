@@ -15,7 +15,7 @@ class SpotifyTokenController(
     private val principalExtractor: AuthenticationPrincipalExtractor,
 ) {
 
-    val logger: Logger = LoggerFactory.getLogger(SpotifyTokenController::class.java)
+    private val logger: Logger = LoggerFactory.getLogger(SpotifyTokenController::class.java)
 
     @GetMapping
     fun login(authentication: Authentication): Mono<String> {
@@ -36,7 +36,7 @@ class SpotifyTokenController(
         @RequestParam state: String?,
         @RequestParam error: String?,
     ): Mono<String> {
-        logger.info("Received Spotify callback with code: $code, state: $state and error: $error.")
+        logger.info("Received Spotify callback with state: $state and error: $error.")
 
         return tokenService.authenticate(code, state, error)
             .map {

@@ -18,7 +18,7 @@ class ChatController(
     private val principalExtractor: AuthenticationPrincipalExtractor,
 ) {
 
-    val logger: Logger = LoggerFactory.getLogger(ChatController::class.java)
+    private val logger: Logger = LoggerFactory.getLogger(ChatController::class.java)
 
     @PostMapping
     fun chat(
