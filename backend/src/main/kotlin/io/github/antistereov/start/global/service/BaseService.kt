@@ -6,6 +6,7 @@ import io.github.antistereov.start.global.model.exception.*
 import io.netty.handler.codec.DecoderException
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
+import org.springframework.web.reactive.function.BodyInserters
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.WebClientResponseException
 import reactor.core.publisher.Mono
@@ -15,39 +16,74 @@ class BaseService(
     private val webClient: WebClient,
 ) {
 
-    fun makeGetRequest(uri: String): Mono<String> {
+    fun getMono(
+        uri: String,
+        bearer: String? = null,
+        basic: String? = null,
+        body: Any? = null,
+    ): Mono<String> {
+        if (bearer != null && basic != null) {
+            throw IllegalArgumentException("Both Bearer and Basic authentication cannot be non-null.")
+        }
+
         return webClient
             .get()
-            .uri(uri)
+            .uri(uri).apply {
+                if (bearer != null) {
+                    this.headers { it.setBearerAuth(bearer) }
+                } else if (basic != null) {
+                    this.headers { it.setBasicAuth(basic) }
+                }
+            }
             .retrieve()
-            .let { handleError(uri, it) }
             .bodyToMono(String::class.java)
-            .onErrorResume(WebClientResponseException::class.java, handleNetworkError(uri))
-            .onErrorResume(DecoderException::class.java, handleParsingError(uri))
     }
 
-    fun makeAuthorizedGetRequest(uri: String, accessToken: String): Mono<String> {
+    fun postMono(
+        uri: String,
+        bearer: String? = null,
+        basic: String? = null,
+        body: Any? = null,
+    ): Mono<String> {
+        if (bearer != null && basic != null) {
+            throw IllegalArgumentException("Both Bearer and Basic authentication cannot be non-null.")
+        }
+
         return webClient
-            .get()
-            .uri(uri)
-            .headers { it.setBearerAuth(accessToken) }
+            .post()
+            .uri(uri).apply {
+                if (bearer != null) {
+                    this.headers { it.setBearerAuth(bearer) }
+                } else if (basic != null) {
+                    this.headers { it.setBasicAuth(basic) }
+                }
+            }
+            .body(body?.let { BodyInserters.fromValue(it) } ?: BodyInserters.empty<Any>())
             .retrieve()
-            .let { handleError(uri, it) }
             .bodyToMono(String::class.java)
-            .onErrorResume(WebClientResponseException::class.java, handleNetworkError(uri))
-            .onErrorResume(DecoderException::class.java, handleParsingError(uri))
     }
 
-    fun makeAuthorizedDeleteRequest(uri: String, accessToken: String): Mono<String> {
+    fun deleteMono(
+        uri: String,
+        bearer: String? = null,
+        basic: String? = null,
+        body: Any? = null,
+    ): Mono<String> {
+        if (bearer != null && basic != null) {
+            throw IllegalArgumentException("Both Bearer and Basic authentication cannot be non-null.")
+        }
+
         return webClient
             .delete()
-            .uri(uri)
-            .headers { it.setBearerAuth(accessToken) }
+            .uri(uri).apply {
+                if (bearer != null) {
+                    this.headers { it.setBearerAuth(bearer) }
+                } else if (basic != null) {
+                    this.headers { it.setBasicAuth(basic) }
+                }
+            }
             .retrieve()
-            .let { handleError(uri, it) }
             .bodyToMono(String::class.java)
-            .onErrorResume(WebClientResponseException::class.java, handleNetworkError(uri))
-            .onErrorResume(DecoderException::class.java, handleParsingError(uri))
     }
 
     fun extractField(response: String, vararg fields: String): String {
@@ -56,26 +92,5 @@ class BaseService(
             json = json.get(field) ?: throw IllegalArgumentException("Field $field not found in the JSON response")
         }
         return json.asText()
-    }
-
-    fun handleError(uri: String, responseSpec: WebClient.ResponseSpec): WebClient.ResponseSpec {
-        return responseSpec.onStatus({ status -> status.is4xxClientError || status.is5xxServerError }, {
-            it.bodyToMono(String::class.java)
-                .flatMap { errorMessage ->
-                    Mono.error(ThirdPartyAPIException(uri, errorMessage))
-                }
-        })
-    }
-
-    fun <T> handleNetworkError(uri: String): (WebClientResponseException) -> Mono<T> = { e ->
-        if (e.statusCode == HttpStatus.REQUEST_TIMEOUT) {
-            Mono.error(TimeoutException("Request to $uri timed out"))
-        } else {
-            Mono.error(NetworkErrorException("Network error occurred while calling $uri: ${e.message}"))
-        }
-    }
-
-    fun <T> handleParsingError(uri: String): (DecoderException) -> Mono<T> = { e ->
-        Mono.error(ParsingErrorException("Error parsing response from $uri: ${e.message}"))
     }
 }
