@@ -45,7 +45,7 @@ class BaseService(
         basic: String? = null,
         body: Any? = null,
     ): Mono<String> {
-        logger.debug("POST $uri, bearer=${bearer != null}, basic=${basic != null}, body=$body")
+        logger.debug("POST {}, bearer={}, basic={}, body={}", uri, bearer != null, basic != null, body)
 
         if (bearer != null && basic != null) {
             throw IllegalArgumentException("Both Bearer and Basic authentication cannot be non-null.")
@@ -90,7 +90,7 @@ class BaseService(
     }
 
     fun extractField(response: String, vararg fields: String): String {
-        logger.debug("Extracting field $fields from the JSON response")
+        logger.debug("Extracting field {} from the JSON response", fields)
 
         var json: JsonNode = jacksonObjectMapper().readTree(response)
         for (field in fields) {
