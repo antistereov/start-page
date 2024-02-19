@@ -4,7 +4,7 @@ import io.github.antistereov.start.global.model.exception.CannotSaveUserExceptio
 import io.github.antistereov.start.global.model.exception.MessageLimitExceededException
 import io.github.antistereov.start.global.model.exception.MissingCredentialsException
 import io.github.antistereov.start.security.AESEncryption
-import io.github.antistereov.start.user.model.ChatDetails
+import io.github.antistereov.start.widgets.widget.chat.model.ChatHistory
 import io.github.antistereov.start.user.model.User
 import io.github.antistereov.start.user.repository.UserRepository
 import io.github.antistereov.start.widgets.auth.openai.config.OpenAIProperties
@@ -44,7 +44,7 @@ class ChatService(
         logger.debug("Fetching and validating user: $userId.")
 
         return userRepository.findById(userId).flatMap { user ->
-            val chatHistory = decryptMessages(user.openAi.chatDetails.history)
+            val chatHistory = decryptMessages(user.openAi.chatHistory.history)
 
             if (chatHistory.size >= properties.messageLimit) {
                 return@flatMap Mono.error(MessageLimitExceededException())
@@ -67,7 +67,7 @@ class ChatService(
         val chatRequest = ChatRequest(
             mutableListOf(systemMessage)
                 .apply {
-                    addAll(decryptMessages(user.openAi.chatDetails.history).values)
+                    addAll(decryptMessages(user.openAi.chatHistory.history).values)
                     add(newMessage)
                 },
             user = user.id,
@@ -96,12 +96,12 @@ class ChatService(
     private fun updateChatHistory(user: User, response: ChatResponse, newMessage: Message): Mono<ChatResponse> {
         logger.debug("Updating chat history.")
 
-        val chatHistory = decryptMessages(user.openAi.chatDetails.history)
+        val chatHistory = decryptMessages(user.openAi.chatHistory.history)
         val entryNumber = chatHistory.size
         chatHistory[entryNumber] = newMessage
         chatHistory[entryNumber + 1] = response.choices.first().message
-        user.openAi.chatDetails.history = encryptMessages(chatHistory)
-        user.openAi.chatDetails.totalTokens = response.usage.totalTokens
+        user.openAi.chatHistory.history = encryptMessages(chatHistory)
+        user.openAi.chatHistory.totalTokens = response.usage.totalTokens
 
         return userRepository.save(user)
             .onErrorMap { throwable ->
@@ -114,7 +114,7 @@ class ChatService(
         logger.debug("Deleting history entry.")
 
         return userRepository.findById(userId).flatMap { user ->
-            val history = user.openAi.chatDetails.history
+            val history = user.openAi.chatHistory.history
             if (history.size <= entryNumber) {
                 return@flatMap Mono.error(IndexOutOfBoundsException("No history entry at index $entryNumber"))
             }
@@ -128,7 +128,7 @@ class ChatService(
                     updatedHistory[key] = value
                 }
             }
-            user.openAi.chatDetails.history = updatedHistory
+            user.openAi.chatHistory.history = updatedHistory
             userRepository.save(user)
                 .onErrorMap { throwable ->
                     CannotSaveUserException(throwable)
@@ -137,17 +137,17 @@ class ChatService(
         }
     }
 
-    fun clearChatHistory(userId: String): Mono<ChatDetails> {
+    fun clearChatHistory(userId: String): Mono<ChatHistory> {
         logger.debug("Clearing chat history.")
 
         return userRepository.findById(userId).flatMap { user ->
-            user.openAi.chatDetails.history.clear()
-            user.openAi.chatDetails.totalTokens = 0
+            user.openAi.chatHistory.history.clear()
+            user.openAi.chatHistory.totalTokens = 0
             userRepository.save(user)
                 .onErrorMap { throwable ->
                     CannotSaveUserException(throwable)
                 }
-                .thenReturn(user.openAi.chatDetails)
+                .thenReturn(user.openAi.chatHistory)
         }
     }
 
@@ -155,7 +155,7 @@ class ChatService(
         logger.debug("Getting history entry.")
 
         return userRepository.findById(userId).handle { user, sink ->
-            val history = user.openAi.chatDetails.history
+            val history = user.openAi.chatHistory.history
             if (history.size <= entryNumber) {
                 sink.error(IndexOutOfBoundsException("No history entry at index $entryNumber"))
                 return@handle
@@ -167,13 +167,13 @@ class ChatService(
         }
     }
 
-    fun getChatHistory(userId: String): Mono<ChatDetails> {
+    fun getChatHistory(userId: String): Mono<ChatHistory> {
         logger.debug("Getting chat history.")
 
         return userRepository.findById(userId).map { user ->
-            ChatDetails(
-                decryptMessages(user.openAi.chatDetails.history),
-                user.openAi.chatDetails.totalTokens
+            ChatHistory(
+                decryptMessages(user.openAi.chatHistory.history),
+                user.openAi.chatHistory.totalTokens
             )
         }
     }

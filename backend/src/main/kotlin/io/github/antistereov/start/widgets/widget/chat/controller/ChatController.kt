@@ -1,7 +1,7 @@
 package io.github.antistereov.start.widgets.widget.chat.controller
 
 import io.github.antistereov.start.security.AuthenticationPrincipalExtractor
-import io.github.antistereov.start.user.model.ChatDetails
+import io.github.antistereov.start.widgets.widget.chat.model.ChatHistory
 import io.github.antistereov.start.widgets.widget.chat.model.ChatResponse
 import io.github.antistereov.start.widgets.widget.chat.model.Message
 import io.github.antistereov.start.widgets.widget.chat.service.ChatService
@@ -45,7 +45,7 @@ class ChatController(
     @GetMapping("/history")
     fun getHistory(
         authentication: Authentication
-    ): Mono<ChatDetails> {
+    ): Mono<ChatHistory> {
         logger.info("Executing ChatController getHistory method.")
 
         return principalExtractor.getUserId(authentication)
@@ -66,7 +66,7 @@ class ChatController(
     @DeleteMapping("/history")
     fun deleteHistory(
         authentication: Authentication,
-    ): Mono<ChatDetails> {
+    ): Mono<ChatHistory> {
         logger.info("Executing ChatController deleteHistory method.")
 
         return principalExtractor.getUserId(authentication)
