@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*
 import reactor.core.publisher.Mono
 
 @RestController
-@RequestMapping("/widgets/instagram/auth")
+@RequestMapping("/auth/instagram")
 class InstagramAuthController(
     private val tokenService: InstagramAuthService,
     private val principalExtractor: AuthenticationPrincipalExtractor,
