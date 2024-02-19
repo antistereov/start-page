@@ -5,6 +5,8 @@ import io.github.antistereov.start.global.service.BaseService
 import io.github.antistereov.start.widgets.transport.model.LocationAddress
 import io.github.antistereov.start.widgets.transport.model.NearbyStop
 import io.netty.handler.codec.DecoderException
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.WebClientResponseException
@@ -23,7 +25,10 @@ class LocationService(
     private val baseService: BaseService,
 ) {
 
+    val logger: Logger = LoggerFactory.getLogger(LocationService::class.java)
+
     fun getLocationAddress(latitude: Double, longitude: Double): Mono<LocationAddress> {
+        logger.debug("Getting location address for $latitude, $longitude")
         return encode(latitude.toString())
             .zipWith(encode(longitude.toString()))
             .flatMap { tuple ->
@@ -53,6 +58,7 @@ class LocationService(
     }
 
     fun toAddressString(locationAddress: LocationAddress): String {
+        logger.debug("Converting location address to string")
         return "${locationAddress.road} " +
                 "${locationAddress.houseNumber}, " +
                 "${locationAddress.postcode} ${locationAddress.city}, " +
@@ -60,6 +66,7 @@ class LocationService(
     }
 
     fun getNearbyPublicTransport(lat: Double, lon: Double, radius: Long): Flux<NearbyStop> {
+        logger.debug("Getting nearby public transport for $lat, $lon")
         val query = """
             [out:json];
             (
@@ -90,6 +97,7 @@ class LocationService(
         lat: Double,
         lon: Double
     ): Flux<NearbyStop> {
+        logger.debug("Parsing public transport response")
         return getLocationAddress(lat, lon).flatMapMany { location ->
             val mapper = ObjectMapper()
             val json = mapper.readTree(response)
@@ -115,6 +123,7 @@ class LocationService(
     }
 
     fun processStops(stops: Flux<NearbyStop>): Flux<NearbyStop> {
+        logger.debug("Processing stops")
         return stops.groupBy { it.name }
             .flatMap { group ->
                 group.collectList().map { stopsList ->
@@ -129,6 +138,7 @@ class LocationService(
     }
 
     private fun calculateDistance(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Double {
+        logger.debug("Calculating distance")
         val earthRadius = 6371.0 // radius in kilometers
         val dLat = Math.toRadians(lat2 - lat1)
         val dLon = Math.toRadians(lon2 - lon1)
@@ -140,6 +150,7 @@ class LocationService(
     }
 
     private fun encode(value: String): Mono<String> {
+        logger.debug("Encoding value: $value")
         return Mono.fromCallable { URLEncoder.encode(value, "UTF-8") }
             .subscribeOn(Schedulers.boundedElastic())
             .flatMap { Mono.just(it) }

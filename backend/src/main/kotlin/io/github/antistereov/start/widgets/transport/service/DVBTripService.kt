@@ -2,9 +2,10 @@ package io.github.antistereov.start.widgets.transport.service
 
 import io.github.antistereov.start.global.service.BaseService
 import io.netty.handler.codec.DecoderException
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
-import org.springframework.web.reactive.function.client.WebClientResponseException
 import org.springframework.web.util.UriComponentsBuilder
 import reactor.core.publisher.Mono
 import java.time.LocalDateTime
@@ -16,6 +17,8 @@ class DVBTripService(
     private val locationService: LocationService,
     private val baseService: BaseService,
 ) {
+
+    private val logger: Logger = LoggerFactory.getLogger(DVBTripService::class.java)
 
     fun getTripsFromAddressToAddress(
         originName: String,
@@ -30,11 +33,12 @@ class DVBTripService(
         mot: List<String> = listOf("Tram", "CityBus", "IntercityBus", "SuburbanRailway", "Train", "Cableway", "Ferry", "HailedSharedTaxi"),
         includeAlternativeStops: Boolean = true,
     ): Mono<String> {
-        return departureService.pointFinder(originName, false).flatMap { originPoints ->
-            departureService.pointFinder(destinationName, false).flatMap { destinationPoints ->
+        logger.debug("Getting trip from $originName to $destinationName")
+        return departureService.bestPointIdFinder(originName, false).flatMap { originPoint ->
+            departureService.bestPointIdFinder(destinationName, false).flatMap { destinationPoint ->
                 getTrip(
-                    originPoints.points[0].split("|")[0],
-                    destinationPoints.points[0].split("|")[0],
+                    originPoint,
+                    destinationPoint,
                     time,
                     isArrivalTime,
                     shortTermChanges,
@@ -95,6 +99,7 @@ class DVBTripService(
         mot: List<String> = listOf("Tram", "CityBus", "IntercityBus", "SuburbanRailway", "Train", "Cableway", "Ferry", "HailedSharedTaxi"),
         includeAlternativeStops: Boolean = true,
     ): Mono<String> {
+        logger.debug("Getting trip from $originName to $destinationLat, $destinationLon")
         return locationService.getLocationAddress(destinationLat, destinationLon).flatMap { destinationAddress ->
             departureService.pointFinder(originName, false).flatMap { originPoints ->
                 getTrip(
@@ -127,6 +132,7 @@ class DVBTripService(
         mot: List<String> = listOf("Tram", "CityBus", "IntercityBus", "SuburbanRailway", "Train", "Cableway", "Ferry", "HailedSharedTaxi"),
         includeAlternativeStops: Boolean = true,
     ): Mono<String> {
+        logger.debug("Getting trip from $origin to $destination")
         val url = UriComponentsBuilder.fromHttpUrl("http://webapi.vvo-online.de/tr/trips")
             .queryParam("format", "json")
             .queryParam("origin", origin)
@@ -148,7 +154,7 @@ class DVBTripService(
             .retrieve()
             .let { baseService.handleError(url, it) }
             .bodyToMono(String::class.java)
-            .onErrorResume(WebClientResponseException::class.java, baseService.handleNetworkError(url))
+//            .onErrorResume(WebClientResponseException::class.java, baseService.handleNetworkError(url))
             .onErrorResume(DecoderException::class.java, baseService.handleParsingError(url))
     }
 
