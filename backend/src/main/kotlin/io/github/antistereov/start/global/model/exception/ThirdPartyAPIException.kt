@@ -9,5 +9,5 @@ class ThirdPartyAPIException(
     httpStatusCode: HttpStatusCode,
     message: String
 ) : RuntimeException(
-    "Third party API returned an error: $httpStatusCode - $message"
+    "Third-party API request to $uri failed with status code $httpStatusCode: $message"
 )
