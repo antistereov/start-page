@@ -24,7 +24,7 @@ spotify:
   service-name: Spotify
   client-id: ${SPOTIFY_CLIENT_ID}
   client-secret: ${SPOTIFY_CLIENT_SECRET}
-  redirect-uri: http://localhost:8000/widgets/spotify/auth/callback
+  redirect-uri: http://localhost:8000/auth/spotify/callback
   apiBase-url: https://api.spotify.com/v1
   scopes: user-read-currently-playing
 
@@ -32,7 +32,7 @@ todoist:
   service-name: Todoist
   client-id: ${TODOIST_CLIENT_ID}
   client-secret: ${TODOIST_CLIENT_SECRET}
-  redirect-uri: http://localhost:8000/widgets/todoist/auth/callback
+  redirect-uri: http://localhost:8000/auth/todoist/callback
   api-base-url: https://api.todoist.com/rest/v2
   scopes: data:read
 
@@ -40,7 +40,7 @@ unsplash:
   service-name: Unsplash
   client-id: ${UNSPLASH_CLIENT_ID}
   client-secret: ${UNSPLASH_CLIENT_SECRET}
-  redirect-uri: http://localhost:8000/widgets/unsplash/auth/callback
+  redirect-uri: http://localhost:8000/auth/unsplash/callback
   api-base-url: https://api.unsplash.com
   scopes: write_likes+public
 
@@ -48,7 +48,7 @@ instagram:
   service-name: Instagram
   client-id: ${INSTAGRAM_CLIENT_ID}
   client-secret: ${INSTAGRAM_CLIENT_SECRET}
-  redirect-uri: http://localhost:8000/widgets/instagram/auth/callback
+  redirect-uri: http://localhost:8000/auth/instagram/callback
   api-base-url: https://graph.instagram.com/v19.0
   scopes: user_profile,user_media
 
