@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler
 @ControllerAdvice
 class GlobalExceptionHandler {
 
-    val logger: Logger = LoggerFactory.getLogger(GlobalExceptionHandler::class.java)
+    private val logger: Logger = LoggerFactory.getLogger(GlobalExceptionHandler::class.java)
 
     private val exceptionToHttpStatus = mapOf(
         // Custom exceptions
@@ -38,6 +38,8 @@ class GlobalExceptionHandler {
         IndexOutOfBoundsException::class.java to HttpStatus.BAD_REQUEST,
         IllegalArgumentException::class.java to HttpStatus.BAD_REQUEST,
         TimeoutException::class.java to HttpStatus.REQUEST_TIMEOUT,
+
+        // ical4j exceptions
         NetworkErrorException::class.java to HttpStatus.INTERNAL_SERVER_ERROR,
         ParsingErrorException::class.java to HttpStatus.BAD_REQUEST,
     )
