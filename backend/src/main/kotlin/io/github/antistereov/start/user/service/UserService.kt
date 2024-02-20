@@ -2,6 +2,7 @@ package io.github.antistereov.start.user.service
 
 import io.github.antistereov.start.global.model.exception.CannotSaveUserException
 import io.github.antistereov.start.global.model.exception.ServiceException
+import io.github.antistereov.start.global.model.exception.UserNotFoundException
 import io.github.antistereov.start.user.model.User
 import io.github.antistereov.start.user.repository.UserRepository
 import org.slf4j.LoggerFactory
@@ -32,7 +33,7 @@ class UserService(
         logger.debug("Finding user by ID: $userId")
 
         return userRepository.findById(userId)
-            .switchIfEmpty(Mono.error(IllegalArgumentException("User not found: $userId")))
+            .switchIfEmpty(Mono.error(UserNotFoundException(userId)))
     }
 
     fun save(user: User): Mono<User> {
