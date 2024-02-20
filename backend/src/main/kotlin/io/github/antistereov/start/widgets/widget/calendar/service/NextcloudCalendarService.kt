@@ -5,6 +5,8 @@ import io.github.antistereov.start.widgets.widget.calendar.model.OnlineCalendar
 import io.github.antistereov.start.widgets.auth.nextcloud.model.NextcloudCredentials
 import io.github.antistereov.start.widgets.widget.calendar.model.CalendarAuth
 import io.github.antistereov.start.widgets.widget.calendar.model.CalendarType
+import net.fortuna.ical4j.data.CalendarBuilder
+import net.fortuna.ical4j.data.ParserException
 import okhttp3.Credentials
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -15,6 +17,7 @@ import org.xml.sax.InputSource
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.core.scheduler.Schedulers
+import java.io.IOException
 import java.io.StringReader
 import javax.xml.parsers.DocumentBuilderFactory
 
@@ -26,6 +29,12 @@ class NextcloudCalendarService {
     fun getRemoteCalendars(credentials: NextcloudCredentials): Flux<OnlineCalendar> {
         logger.debug("Getting remote calendars for user: ${credentials.username}.")
 
+        return getRemoteCalendarsRaw(credentials).flatMapMany { calendarData ->
+                parseCalendarData(calendarData)
+            }
+    }
+
+    fun getRemoteCalendarsRaw(credentials: NextcloudCredentials): Mono<MutableMap<String, String>> {
         return Mono.fromCallable {
             val calendarUrl = "${credentials.host}/remote.php/dav/calendars/${credentials.username}/"
             val client = OkHttpClient()
@@ -36,28 +45,51 @@ class NextcloudCalendarService {
                 .build()
 
             val response = client.newCall(request).execute()
-            response.body?.string() ?: ""
-        }.subscribeOn(Schedulers.boundedElastic())
-            .flatMapMany { calendarData ->
-                parseCalendarData(calendarData, credentials)
-            }
-    }
-
-    private fun parseCalendarData(calendarData: String, credentials: NextcloudCredentials): Flux<OnlineCalendar> {
-        logger.debug("Parsing calendar data.")
-
-        return Mono.fromCallable {
+            val calendarData = response.body?.string() ?: ""
             val document = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(InputSource(StringReader(calendarData)))
             val calendarElements = document.getElementsByTagName("d:response")
 
-            val calendars = mutableListOf<OnlineCalendar>()
+            val calendarDataMap = mutableMapOf<String, String>()
 
             for (i in 0 until calendarElements.length) {
                 val calendarElement = calendarElements.item(i) as Element
-                val isCalendar = checkIsCalendar(calendarElement)
+                val hrefElement = calendarElement.getElementsByTagName("d:href").item(0)
+                val icsPath = hrefElement.textContent!!
+                val icsLink = "${credentials.host}$icsPath?export"
+
+                // Fetch the raw calendar data
+                val calendarRequest = Request.Builder()
+                    .url(icsLink)
+                    .header("Authorization", Credentials.basic(credentials.username, credentials.password))
+                    .build()
+
+                val calendarResponse = client.newCall(calendarRequest).execute()
+                val rawCalendarData = calendarResponse.body?.string() ?: ""
+
+                calendarDataMap[icsLink] = rawCalendarData
+            }
+
+            calendarDataMap
+        }.subscribeOn(Schedulers.boundedElastic())
+    }
+
+    private fun parseCalendarData(calendarDataMap: Map<String, String>): Flux<OnlineCalendar> {
+        logger.debug("Parsing calendar data.")
+
+        return Mono.fromCallable {
+            val calendars = mutableListOf<OnlineCalendar>()
+
+            for ((icsLink, rawCalendarData) in calendarDataMap) {
+                val isCalendar = isCalendar(rawCalendarData)
+                val isTasks = isTaskList(rawCalendarData)
 
                 if (isCalendar) {
-                    val calendar = createCalendar(calendarElement, credentials)
+                    val calendar = createCalendar(icsLink, rawCalendarData, CalendarType.Calendar)
+                    if (calendar != null) calendars.add(calendar)
+                }
+
+                if (isTasks) {
+                    val calendar = createCalendar(icsLink, rawCalendarData, CalendarType.Tasks)
                     if (calendar != null) calendars.add(calendar)
                 }
             }
@@ -67,27 +99,43 @@ class NextcloudCalendarService {
             .flatMapMany { calendars -> Flux.fromIterable(calendars) }
     }
 
-    private fun checkIsCalendar(calendarElement: Element): Boolean {
-        logger.debug("Checking if element is calendar.")
+    private fun isTaskList(icsData: String): Boolean {
+        try {
+            val builder = CalendarBuilder()
+            val calendar = builder.build(StringReader(icsData))
+            return !calendar.getComponents("VTODO").isEmpty()
+        } catch (e: IOException) {
+            e.printStackTrace()
+        } catch (e: ParserException) {
+            logger.warn("Skipping calendar: ${e.message}")
+        }
 
-        val resourceTypeElement = calendarElement.getElementsByTagName("d:resourcetype").item(0) as Element
-        return resourceTypeElement.getElementsByTagName("cal:calendar").length > 0
+        return false
     }
 
-    private fun createCalendar(calendarElement: Element, credentials: NextcloudCredentials): OnlineCalendar? {
+    private fun isCalendar(icsData: String): Boolean {
+        try {
+            val builder = CalendarBuilder()
+            val calendar = builder.build(StringReader(icsData))
+            return !calendar.getComponents("VEVENT").isEmpty()
+        } catch (e: IOException) {
+            e.printStackTrace()
+        } catch (e: ParserException) {
+            logger.warn("Skipping calendar: ${e.message}")
+        }
+
+        return false
+    }
+
+    private fun createCalendar(icsLink: String, rawCalendarData: String, type: CalendarType): OnlineCalendar? {
         logger.debug("Creating calendar entity.")
 
-        val hrefElement = calendarElement.getElementsByTagName("d:href").item(0)
-        val icsPath = hrefElement.textContent!!
-        val icsLink = "${credentials.host}$icsPath?export"
+        val builder = CalendarBuilder()
+        val calendar = builder.build(StringReader(rawCalendarData))
 
-        val nameElement = calendarElement.getElementsByTagName("d:displayname").item(0)
-        val colorElement = calendarElement.getElementsByTagName("x1:calendar-color").item(0)
-        val descriptionElement = calendarElement.getElementsByTagName("d:calendar-description").item(0)
-
-        val name = nameElement?.textContent
-        val color = colorElement?.textContent
-        val description = descriptionElement?.textContent
+        val name = calendar.getProperty("X-WR-CALNAME")?.value
+        val color = calendar.getProperty("X-APPLE-CALENDAR-COLOR")?.value
+        val description = calendar.getProperty("X-WR-CALDESC")?.value
 
         return if (name != null && color != null && name != "DEFAULT_TASK_CALENDAR_NAME") {
             OnlineCalendar(
@@ -96,7 +144,7 @@ class NextcloudCalendarService {
                 icsLink,
                 description,
                 CalendarAuth.Nextcloud,
-                CalendarType.Calendar,
+                type,
             )
         } else {
             null

@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import reactor.core.publisher.Flux
+import reactor.core.publisher.Mono
 
 @RestController
 @RequestMapping("/calendar/nextcloud")
@@ -28,6 +29,17 @@ class NextcloudCalendarController(
         return principalExtractor.getUserId(authentication).flatMapMany { userId ->
             nextcloudAuthService.getCredentials(userId).flatMapMany { credentials ->
                 remoteService.getRemoteCalendars(credentials)
+            }
+        }
+    }
+
+    @GetMapping("/raw")
+    fun getRemoteCalendarsRaw(authentication: Authentication): Mono<MutableMap<String, String>> {
+        logger.info("Getting remote calendars.")
+
+        return principalExtractor.getUserId(authentication).flatMap { userId ->
+            nextcloudAuthService.getCredentials(userId).flatMap { credentials ->
+                remoteService.getRemoteCalendarsRaw(credentials)
             }
         }
     }
