@@ -32,7 +32,7 @@ class OpenAIAuthService(
         .flatMap { user ->
             verifyCredentials(apiKey)
                 .then(userService.save(user))
-                .map { "Credentials are correct, verified and have been saved." }
+                .map { "OpenAI API key is correct and have been saved for user: $userId" }
         }
     }
 
