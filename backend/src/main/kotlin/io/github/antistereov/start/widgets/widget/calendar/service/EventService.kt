@@ -1,6 +1,5 @@
 package io.github.antistereov.start.widgets.widget.calendar.service
 
-import io.github.antistereov.start.security.AESEncryption
 import io.github.antistereov.start.widgets.auth.nextcloud.service.NextcloudAuthService
 import io.github.antistereov.start.widgets.widget.calendar.dto.CalendarDTO
 import io.github.antistereov.start.widgets.widget.calendar.model.CalendarAuth
@@ -28,7 +27,6 @@ import java.util.*
 class EventService(
     private val nextcloudAuthService: NextcloudAuthService,
     private val webClientBuilder: WebClient.Builder,
-    private val aesEncryption: AESEncryption,
 ) {
 
     private val logger = LoggerFactory.getLogger(EventService::class.java)
@@ -38,7 +36,7 @@ class EventService(
     }
 
     fun getEvents(userId: String, calendar: OnlineCalendar): Mono<CalendarDTO> {
-        logger.debug("Getting calendar events.")
+        logger.debug("Getting calendar events for calendar: ${calendar.name}")
 
         return buildWebClient(userId, calendar).flatMap { client ->
             client
@@ -52,14 +50,13 @@ class EventService(
     }
 
     private fun buildWebClient(userId: String, calendar: OnlineCalendar): Mono<WebClient> {
-        val decryptedCalendarIcsLink = aesEncryption.decrypt(calendar.icsLink)
-        val client = webClientBuilder
-            .baseUrl(decryptedCalendarIcsLink)
         return when (calendar.auth) {
-            CalendarAuth.None -> Mono.just(client.build())
+            CalendarAuth.None -> Mono.just(webClientBuilder.clone().baseUrl(calendar.icsLink).build())
             CalendarAuth.Nextcloud -> {
                 nextcloudAuthService.getCredentials(userId).map { credentials ->
-                    client.defaultHeader("Authorization", Credentials.basic(credentials.username, credentials.password))
+                    webClientBuilder.clone()
+                        .baseUrl(calendar.icsLink)
+                        .defaultHeader("Authorization", Credentials.basic(credentials.username, credentials.password))
                         .build()
                 }
             }

@@ -23,7 +23,8 @@ class CalendarController(
         logger.info("Getting user calendars.")
 
         return principalExtractor.getUserId(authentication).flatMapMany { userId ->
-            calenderService.getUserCalendars(userId)        }
+            calenderService.getUserCalendars(userId)
+        }
     }
 
     @PostMapping
@@ -55,7 +56,7 @@ class CalendarController(
         authentication: Authentication,
         @RequestParam icsLinks: List<String> = emptyList()
     ): Flux<CalendarDTO> {
-        logger.info("Refreshing calendar events.")
+        logger.info("Getting calendar events.")
 
         return principalExtractor.getUserId(authentication).flatMapMany { userId ->
             calenderService.getCalendarEvents(userId, icsLinks)

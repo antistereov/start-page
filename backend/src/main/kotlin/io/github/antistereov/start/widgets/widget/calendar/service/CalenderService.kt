@@ -68,13 +68,10 @@ class CalenderService(
         logger.debug("Getting calendar events of calendars: {} for user: {}.", icsLinks, userId)
 
         return userService.findById(userId).flatMapMany { user ->
-            val calendars = mutableListOf<OnlineCalendar>()
-
-            calendars.addAll(
-                user.widgets.calendar.calendars
-                    .filter { aesEncryption.decrypt(it.icsLink) !in icsLinks }
-                    .filter { it.type == CalendarType.Calendar }
-            )
+            val calendars = user.widgets.calendar.calendars
+                .filter { it.type == CalendarType.Calendar }
+                .map { decryptCalendar(it) }.toMutableList()
+            if (icsLinks.isNotEmpty()) calendars.removeIf { aesEncryption.decrypt(it.icsLink) !in icsLinks }
 
             Flux.fromIterable(calendars).flatMap { calendar ->
                 eventService.getCalendarEvents(userId, calendar)
