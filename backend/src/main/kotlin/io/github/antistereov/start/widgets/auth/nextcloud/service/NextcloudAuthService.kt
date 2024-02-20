@@ -71,7 +71,7 @@ class NextcloudAuthService(
         .flatMap { user ->
             verifyCredentials(credentials)
                 .then(userService.save(user))
-                .map { "Credentials are correct, verified and have been saved." }
+                .map { "Nextcloud credentials are correct and have been saved for user: $userId" }
         }
     }
 
