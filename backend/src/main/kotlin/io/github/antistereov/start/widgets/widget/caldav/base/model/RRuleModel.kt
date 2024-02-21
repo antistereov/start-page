@@ -1,4 +1,4 @@
-package io.github.antistereov.start.widgets.widget.calendar.model
+package io.github.antistereov.start.widgets.widget.caldav.base.model
 
 import java.time.LocalDateTime
 

@@ -1,10 +1,9 @@
-package io.github.antistereov.start.widgets.widget.calendar.service
+package io.github.antistereov.start.widgets.widget.caldav.nextcloud.service
 
 
-import io.github.antistereov.start.widgets.widget.calendar.model.OnlineCalendar
+import io.github.antistereov.start.widgets.widget.caldav.calendar.model.CalDavCalendar
 import io.github.antistereov.start.widgets.auth.nextcloud.model.NextcloudCredentials
-import io.github.antistereov.start.widgets.widget.calendar.model.CalendarAuth
-import io.github.antistereov.start.widgets.widget.calendar.model.CalendarType
+import io.github.antistereov.start.widgets.widget.caldav.base.model.CalDavAuthType
 import net.fortuna.ical4j.data.CalendarBuilder
 import net.fortuna.ical4j.data.ParserException
 import net.fortuna.ical4j.model.Property
@@ -28,11 +27,11 @@ import java.io.StringReader
 import javax.xml.parsers.DocumentBuilderFactory
 
 @Service
-class NextcloudCalendarService {
+class NextcloudCalDavService {
 
-    private val logger = LoggerFactory.getLogger(NextcloudCalendarService::class.java)
+    private val logger = LoggerFactory.getLogger(NextcloudCalDavService::class.java)
 
-    fun getRemoteCalendars(credentials: NextcloudCredentials): Flux<OnlineCalendar> {
+    fun getRemoteCalendars(credentials: NextcloudCredentials): Flux<CalDavCalendar> {
         logger.debug("Getting remote calendars for user: ${credentials.username}.")
 
         return getRemoteCalendarsRaw(credentials).flatMapMany { calendarData ->
@@ -79,23 +78,23 @@ class NextcloudCalendarService {
         }.subscribeOn(Schedulers.boundedElastic())
     }
 
-    private fun parseCalendarData(calendarDataMap: Map<String, String>): Flux<OnlineCalendar> {
+    private fun parseCalendarData(calendarDataMap: Map<String, String>): Flux<CalDavCalendar> {
         logger.debug("Parsing calendar data.")
 
         return Mono.fromCallable {
-            val calendars = mutableListOf<OnlineCalendar>()
+            val calendars = mutableListOf<CalDavCalendar>()
 
             for ((icsLink, rawCalendarData) in calendarDataMap) {
                 val isCalendar = isCalendar(rawCalendarData)
                 val isTasks = isTaskList(rawCalendarData)
 
                 if (isCalendar) {
-                    val calendar = createCalendar(icsLink, rawCalendarData, CalendarType.Calendar)
+                    val calendar = createCalendar(icsLink, rawCalendarData)
                     if (calendar != null) calendars.add(calendar)
                 }
 
                 if (isTasks) {
-                    val calendar = createCalendar(icsLink, rawCalendarData, CalendarType.Tasks)
+                    val calendar = createCalendar(icsLink, rawCalendarData)
                     if (calendar != null) calendars.add(calendar)
                 }
             }
@@ -133,7 +132,7 @@ class NextcloudCalendarService {
         return false
     }
 
-    private fun createCalendar(icsLink: String, rawCalendarData: String, type: CalendarType): OnlineCalendar? {
+    private fun createCalendar(icsLink: String, rawCalendarData: String): CalDavCalendar? {
         logger.debug("Creating calendar entity.")
 
         val builder = CalendarBuilder()
@@ -142,18 +141,15 @@ class NextcloudCalendarService {
         val name = calendar.getProperty<XProperty>("X-WR-CALNAME")?.value
         val color = calendar.getProperty<XProperty>("X-APPLE-CALENDAR-COLOR")?.value
         val description = calendar.getProperty<Description>(Property.DESCRIPTION)?.value
-        val timezone = calendar.getProperty<Property>("TZID")?.value
 
         return if (name != null && color != null) {
-            OnlineCalendar(
+            CalDavCalendar(
                 name,
                 color,
                 icsLink,
                 description,
-                CalendarAuth.Nextcloud,
-                type,
+                CalDavAuthType.Nextcloud,
                 null,
-                timezone,
                 false,
             )
         } else {

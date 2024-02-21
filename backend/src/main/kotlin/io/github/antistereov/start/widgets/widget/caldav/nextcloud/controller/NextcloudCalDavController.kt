@@ -1,9 +1,10 @@
-package io.github.antistereov.start.widgets.widget.calendar.controller
+package io.github.antistereov.start.widgets.widget.caldav.nextcloud.controller
 
 import io.github.antistereov.start.security.AuthenticationPrincipalExtractor
 import io.github.antistereov.start.widgets.auth.nextcloud.service.NextcloudAuthService
-import io.github.antistereov.start.widgets.widget.calendar.model.OnlineCalendar
-import io.github.antistereov.start.widgets.widget.calendar.service.NextcloudCalendarService
+import io.github.antistereov.start.widgets.widget.caldav.calendar.controller.CalendarController
+import io.github.antistereov.start.widgets.widget.caldav.calendar.model.CalDavCalendar
+import io.github.antistereov.start.widgets.widget.caldav.nextcloud.service.NextcloudCalDavService
 import org.slf4j.LoggerFactory
 import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.GetMapping
@@ -13,9 +14,9 @@ import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
 @RestController
-@RequestMapping("/calendar/nextcloud")
-class NextcloudCalendarController(
-    private val remoteService: NextcloudCalendarService,
+@RequestMapping("/caldav/nextcloud")
+class NextcloudCalDavController(
+    private val remoteService: NextcloudCalDavService,
     private val nextcloudAuthService: NextcloudAuthService,
     private val principalExtractor: AuthenticationPrincipalExtractor,
 ) {
@@ -23,7 +24,7 @@ class NextcloudCalendarController(
     private val logger = LoggerFactory.getLogger(CalendarController::class.java)
 
     @GetMapping
-    fun getRemoteCalendars(authentication: Authentication): Flux<OnlineCalendar> {
+    fun getRemoteCalendars(authentication: Authentication): Flux<CalDavCalendar> {
         logger.info("Getting remote calendars.")
 
         return principalExtractor.getUserId(authentication).flatMapMany { userId ->
