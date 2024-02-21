@@ -10,13 +10,13 @@ import org.springframework.stereotype.Service
 import reactor.core.publisher.Mono
 
 @Service
-class CalendarService(
+class CaldavCalendarService(
     userService: UserService,
     aesEncryption: AESEncryption,
-    eventService: EventService,
+    eventService: CalDavEventService,
 ) : CalDavService(userService, aesEncryption, eventService) {
 
-    private val logger = LoggerFactory.getLogger(CalendarService::class.java)
+    private val logger = LoggerFactory.getLogger(CaldavCalendarService::class.java)
 
     fun getUserCalendars(userId: String): Mono<List<CalDavResource>> {
         logger.debug("Getting user calendars for user: $userId.")

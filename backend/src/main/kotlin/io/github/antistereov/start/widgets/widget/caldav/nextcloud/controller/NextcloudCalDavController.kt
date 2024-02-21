@@ -3,7 +3,7 @@ package io.github.antistereov.start.widgets.widget.caldav.nextcloud.controller
 import io.github.antistereov.start.security.AuthenticationPrincipalExtractor
 import io.github.antistereov.start.widgets.auth.nextcloud.service.NextcloudAuthService
 import io.github.antistereov.start.widgets.widget.caldav.base.model.CalDavResource
-import io.github.antistereov.start.widgets.widget.caldav.calendar.controller.CalendarController
+import io.github.antistereov.start.widgets.widget.caldav.calendar.controller.CaldavCalendarController
 import io.github.antistereov.start.widgets.widget.caldav.nextcloud.service.NextcloudCalDavService
 import org.slf4j.LoggerFactory
 import org.springframework.security.core.Authentication
@@ -21,7 +21,7 @@ class NextcloudCalDavController(
     private val principalExtractor: AuthenticationPrincipalExtractor,
 ) {
 
-    private val logger = LoggerFactory.getLogger(CalendarController::class.java)
+    private val logger = LoggerFactory.getLogger(CaldavCalendarController::class.java)
 
     @GetMapping
     fun getRemoteCalendars(authentication: Authentication): Flux<CalDavResource> {

@@ -16,13 +16,13 @@ import org.springframework.web.reactive.function.client.WebClient
 import java.time.ZoneId
 
 @Service
-class EventService(
+class CalDavEventService(
     nextcloudAuthService: NextcloudAuthService,
     webClientBuilder: WebClient.Builder,
     aesEncryption: AESEncryption,
 ) : CalDavEntityService(nextcloudAuthService, webClientBuilder, aesEncryption) {
 
-    private val logger = LoggerFactory.getLogger(EventService::class.java)
+    private val logger = LoggerFactory.getLogger(CalDavEventService::class.java)
 
     override fun filterEntity(entity: Component, period: Period): Boolean {
         if (entity !is VEvent) return false
