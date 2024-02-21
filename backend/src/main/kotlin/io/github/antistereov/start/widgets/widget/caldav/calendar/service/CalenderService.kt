@@ -5,10 +5,8 @@ import io.github.antistereov.start.user.service.UserService
 import io.github.antistereov.start.widgets.widget.caldav.base.model.CalDavResource
 import io.github.antistereov.start.widgets.widget.caldav.base.model.CalDavResourceType
 import io.github.antistereov.start.widgets.widget.caldav.base.service.CalDavService
-import io.github.antistereov.start.widgets.widget.caldav.calendar.model.CalDavCalendar
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
-import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
 @Service

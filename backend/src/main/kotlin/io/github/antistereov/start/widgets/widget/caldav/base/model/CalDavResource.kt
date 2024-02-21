@@ -11,5 +11,5 @@ open class CalDavResource(
     open val auth: CalDavAuthType,
     open var lastUpdated: Instant?,
     open val readOnly: Boolean,
-    open var entities: List<CalDavEntity>,
+    open var entities: List<CalDavEntity> = emptyList(),
 )
