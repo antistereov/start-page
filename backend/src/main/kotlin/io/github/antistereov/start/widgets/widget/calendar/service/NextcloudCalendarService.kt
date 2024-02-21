@@ -7,6 +7,12 @@ import io.github.antistereov.start.widgets.widget.calendar.model.CalendarAuth
 import io.github.antistereov.start.widgets.widget.calendar.model.CalendarType
 import net.fortuna.ical4j.data.CalendarBuilder
 import net.fortuna.ical4j.data.ParserException
+import net.fortuna.ical4j.model.Property
+import net.fortuna.ical4j.model.Component
+import net.fortuna.ical4j.model.component.VEvent
+import net.fortuna.ical4j.model.component.VToDo
+import net.fortuna.ical4j.model.property.Description
+import net.fortuna.ical4j.model.property.XProperty
 import okhttp3.Credentials
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -103,7 +109,7 @@ class NextcloudCalendarService {
         try {
             val builder = CalendarBuilder()
             val calendar = builder.build(StringReader(icsData))
-            return !calendar.getComponents("VTODO").isEmpty()
+            return calendar.getComponents<VToDo>(Component.VTODO).isNotEmpty()
         } catch (e: IOException) {
             e.printStackTrace()
         } catch (e: ParserException) {
@@ -117,7 +123,7 @@ class NextcloudCalendarService {
         try {
             val builder = CalendarBuilder()
             val calendar = builder.build(StringReader(icsData))
-            return !calendar.getComponents("VEVENT").isEmpty()
+            return calendar.getComponents<VEvent>(Component.VEVENT).isNotEmpty()
         } catch (e: IOException) {
             e.printStackTrace()
         } catch (e: ParserException) {
@@ -133,11 +139,12 @@ class NextcloudCalendarService {
         val builder = CalendarBuilder()
         val calendar = builder.build(StringReader(rawCalendarData))
 
-        val name = calendar.getProperty("X-WR-CALNAME")?.value
-        val color = calendar.getProperty("X-APPLE-CALENDAR-COLOR")?.value
-        val description = calendar.getProperty("X-WR-CALDESC")?.value
+        val name = calendar.getProperty<XProperty>("X-WR-CALNAME")?.value
+        val color = calendar.getProperty<XProperty>("X-APPLE-CALENDAR-COLOR")?.value
+        val description = calendar.getProperty<Description>(Property.DESCRIPTION)?.value
+        val timezone = calendar.getProperty<Property>("TZID")?.value
 
-        return if (name != null && color != null && name != "DEFAULT_TASK_CALENDAR_NAME") {
+        return if (name != null && color != null) {
             OnlineCalendar(
                 name,
                 color,
@@ -145,11 +152,12 @@ class NextcloudCalendarService {
                 description,
                 CalendarAuth.Nextcloud,
                 type,
+                null,
+                timezone,
+                false,
             )
         } else {
             null
         }
     }
-
-
 }
