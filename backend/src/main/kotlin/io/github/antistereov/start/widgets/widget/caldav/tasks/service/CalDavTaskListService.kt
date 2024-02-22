@@ -1,4 +1,4 @@
-package io.github.antistereov.start.widgets.widget.caldav.calendar.service
+package io.github.antistereov.start.widgets.widget.caldav.tasks.service
 
 import io.github.antistereov.start.security.AESEncryption
 import io.github.antistereov.start.user.service.UserService
@@ -11,20 +11,20 @@ import org.springframework.stereotype.Service
 import reactor.core.publisher.Mono
 
 @Service
-class CaldavCalendarService(
+class CalDavTaskListService(
     userService: UserService,
     aesEncryption: AESEncryption,
     entityService: CalDavEntityService,
 ) : CalDavService(userService, aesEncryption, entityService) {
 
-    private val logger = LoggerFactory.getLogger(CaldavCalendarService::class.java)
+    private val logger = LoggerFactory.getLogger(CalDavTaskListService::class.java)
 
-    fun getUserCalendars(userId: String): Mono<List<CalDavResource>> {
-        logger.debug("Getting user calendars for user: $userId.")
+    fun getUserTaskLists(userId: String): Mono<List<CalDavResource>> {
+        logger.debug("Getting user task lists for user: $userId.")
 
         return super.getUserResources(userId)
             .map { resources ->
-                resources.filter { it.type == CalDavResourceType.Calendar }
+                resources.filter { it.type == CalDavResourceType.TaskList }
             }
     }
 }

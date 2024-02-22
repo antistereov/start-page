@@ -5,14 +5,17 @@ import io.github.antistereov.start.user.model.User
 import io.github.antistereov.start.user.service.UserService
 import io.github.antistereov.start.widgets.widget.caldav.base.model.CalDavResource
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import java.time.Instant
 
-open class CalDavService(
+@Service
+class CalDavService(
     private val userService: UserService,
     private val aesEncryption: AESEncryption,
-    private val entityService: CalDavEntityService,
+    @Qualifier("calDavEntityService") private val entityService: CalDavEntityService,
 ) {
     
     private val logger = LoggerFactory.getLogger(CalDavService::class.java)

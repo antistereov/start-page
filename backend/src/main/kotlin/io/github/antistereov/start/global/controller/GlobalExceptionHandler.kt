@@ -27,6 +27,7 @@ class GlobalExceptionHandler {
         MissingCredentialsException::class.java to HttpStatus.BAD_REQUEST,
         NetworkErrorException::class.java to HttpStatus.INTERNAL_SERVER_ERROR,
         ParsingErrorException::class.java to HttpStatus.BAD_REQUEST,
+        ResourceReadOnlyException::class.java to HttpStatus.FORBIDDEN,
         ServiceException::class.java to HttpStatus.INTERNAL_SERVER_ERROR,
         ThirdPartyAPIException::class.java to HttpStatus.INTERNAL_SERVER_ERROR,
         ThirdPartyAuthorizationCanceledException::class.java to HttpStatus.UNAUTHORIZED,

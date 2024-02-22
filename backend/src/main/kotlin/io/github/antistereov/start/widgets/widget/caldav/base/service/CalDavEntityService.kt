@@ -8,18 +8,26 @@ import io.github.antistereov.start.widgets.widget.caldav.base.model.CalDavResour
 import io.github.antistereov.start.widgets.widget.caldav.base.model.RRuleModel
 import net.fortuna.ical4j.data.CalendarBuilder
 import net.fortuna.ical4j.model.Component
+import net.fortuna.ical4j.model.DateTime
 import net.fortuna.ical4j.model.Period
+import net.fortuna.ical4j.model.component.VEvent
+import net.fortuna.ical4j.model.component.VToDo
+import net.fortuna.ical4j.model.parameter.Value
+import net.fortuna.ical4j.model.property.RRule
+import net.fortuna.ical4j.model.property.Status
 import okhttp3.Credentials
 import org.slf4j.LoggerFactory
+import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
 import reactor.core.publisher.Mono
 import java.io.StringReader
 import java.time.LocalDateTime
-import java.time.ZonedDateTime
+import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.*
 
-open class CalDavEntityService(
+@Service
+class CalDavEntityService(
     private val nextcloudAuthService: NextcloudAuthService,
     private val webClientBuilder: WebClient.Builder,
     private val aesEncryption: AESEncryption,
@@ -31,6 +39,36 @@ open class CalDavEntityService(
         logger.debug("Updating resource entities for resource: ${resource.name} for user: $userId")
 
         return getEntities(userId, resource)
+    }
+
+    fun encryptEntity(entity: CalDavEntity): CalDavEntity {
+        logger.debug("Encrypting entity.")
+
+        return entity.copy(
+            summary = aesEncryption.encrypt(entity.summary),
+            description = entity.description?.let { aesEncryption.encrypt(it) },
+            location = entity.location?.let { aesEncryption.encrypt(it) },
+        )
+    }
+
+    fun encryptEntities(entities: MutableList<CalDavEntity>): MutableList<CalDavEntity> {
+        logger.debug("Encrypting entities.")
+
+        return entities.map { entity ->
+            encryptEntity(entity)
+        }.toMutableList()
+    }
+
+    fun decryptEntities(entities: List<CalDavEntity>): MutableList<CalDavEntity> {
+        logger.debug("Decrypting entities.")
+
+        return entities.map { entity ->
+            entity.copy(
+                summary = aesEncryption.decrypt(entity.summary),
+                description = entity.description?.let { aesEncryption.decrypt(it) },
+                location = entity.location?.let { aesEncryption.decrypt(it) },
+            )
+        }.toMutableList()
     }
 
     private fun getEntities(userId: String, resource: CalDavResource): Mono<CalDavResource> {
@@ -47,15 +85,17 @@ open class CalDavEntityService(
         }
     }
 
-    private fun buildWebClient(userId: String, resource: CalDavResource): Mono<WebClient> {
+    private fun buildWebClient(userId: String, resource: CalDavResource, uid: String? = null): Mono<WebClient> {
         logger.debug("Building web client for resource: ${resource.name} for user: $userId.")
 
+        val url = if (uid != null) "${resource.icsLink}/$uid" else resource.icsLink
+
         return when (resource.auth) {
-            CalDavAuthType.None -> Mono.just(webClientBuilder.clone().baseUrl(resource.icsLink).build())
+            CalDavAuthType.None -> Mono.just(webClientBuilder.clone().baseUrl(url).build())
             CalDavAuthType.Nextcloud -> {
                 nextcloudAuthService.getCredentials(userId).map { credentials ->
                     webClientBuilder.clone()
-                        .baseUrl(resource.icsLink)
+                        .baseUrl(url)
                         .defaultHeader("Authorization", Credentials.basic(credentials.username, credentials.password))
                         .build()
                 }
@@ -63,41 +103,86 @@ open class CalDavEntityService(
         }
     }
 
-    private fun updateResource(resource: CalDavResource, resourceEvents: List<CalDavEntity>): CalDavResource {
+    private fun updateResource(resource: CalDavResource, entities: List<CalDavEntity>): CalDavResource {
         logger.debug("Updating resource.")
         return resource.apply {
-            this.entities = resourceEvents
+            this.entities = entities.toMutableList()
         }
     }
 
-    open fun getResourceEntities(resourceData: String): List<CalDavEntity> {
+    private fun getResourceEntities(resourceData: String): List<CalDavEntity> {
         logger.debug("Getting resource entities.")
 
         val resourceBuilder = CalendarBuilder()
         val resource = resourceBuilder.build(StringReader(resourceData))
 
-        val now = ZonedDateTime.now()
-        val future = now.plusYears(1)
-
-        val nowDate = net.fortuna.ical4j.model.DateTime(Date.from(now.toInstant()))
-        val futureDate = net.fortuna.ical4j.model.DateTime(Date.from(future.toInstant()))
-
-        val period = Period(nowDate, futureDate)
-
         return resource.components
-            .filter { filterEntity(it, period) }
+            .filter { filterActiveAndFutureEntities(it) }
             .mapNotNull { mapEntityToCalDavEntity(it) }
     }
 
-    open fun filterEntity(entity: Component, period: Period): Boolean {
-        return false
+    private fun filterActiveAndFutureEntities(entity: Component): Boolean {
+        val threeMonthsAgo = LocalDateTime.now().minusMonths(3)
+        val oneYearFromNow = LocalDateTime.now().plusYears(1)
+
+        return when (entity) {
+            is VToDo -> entity.status?.value != Status.VTODO_COMPLETED.value
+            is VEvent -> {
+                val startDate = entity.startDate.date
+                if (startDate == null) {
+                    false
+                } else {
+                    val startDateTime = startDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime()
+                    val rruleProperty = entity.getProperty<RRule>(RRule.RRULE)
+                    if (rruleProperty != null) {
+                        val seedDate = DateTime(Date.from(startDateTime.atZone(ZoneId.systemDefault()).toInstant()))
+                        val recurPeriod = Period(seedDate, DateTime(Date.from(oneYearFromNow.atZone(ZoneId.systemDefault()).toInstant())))
+                        val periods = rruleProperty.recur.getDates(seedDate, recurPeriod, Value.DATE_TIME)
+                        periods.any { DateTime(it).toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime().isAfter(threeMonthsAgo) }
+                    } else {
+                        startDateTime.isAfter(threeMonthsAgo) && startDateTime.isBefore(oneYearFromNow)
+                    }
+                }
+            }
+            else -> false
+        }
     }
 
-    open fun mapEntityToCalDavEntity(entity: Component): CalDavEntity? {
-        return null
+    private fun mapEntityToCalDavEntity(entity: Component): CalDavEntity? {
+        return when (entity) {
+            is VEvent -> {
+                CalDavEntity(
+                    uid = entity.uid.value,
+                    summary = entity.summary?.value ?: "",
+                    description = entity.description?.value,
+                    location = entity.location?.value,
+                    start = entity.startDate.date.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime(),
+                    end = entity.endDate.date.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime(),
+                    allDay = entity.startDate.isUtc,
+                    rrule = entity.getProperty<RRule>(RRule.RRULE)?.value?.let { parseRRule(it) },
+                    status = entity.status?.value,
+                    priority = entity.priority?.value?.toInt()
+                )
+            }
+            is VToDo -> {
+                CalDavEntity(
+                    uid = entity.uid.value,
+                    summary = entity.summary?.value ?: "",
+                    description = entity.description?.value,
+                    location = entity.location?.value,
+                    start = entity.startDate?.date?.toInstant()?.atZone(ZoneId.systemDefault())?.toLocalDateTime(),
+                    end = entity.due?.date?.toInstant()?.atZone(ZoneId.systemDefault())?.toLocalDateTime(),
+                    allDay = entity.startDate?.isUtc ?: false,
+                    rrule = entity.getProperty<RRule>(RRule.RRULE)?.value?.let { parseRRule(it) },
+                    status = entity.status?.value,
+                    priority = entity.priority?.value?.toInt()
+                )
+            }
+            else -> null
+        }
     }
 
-    open fun parseRRule(rruleString: String): RRuleModel? {
+    private fun parseRRule(rruleString: String): RRuleModel? {
         logger.debug("Parsing RRule.")
 
         val rruleParts = rruleString.split(";").associate {
@@ -124,30 +209,6 @@ open class CalDavEntityService(
         } catch (e: Exception) {
             logger.error("Error parsing RRULE string: $rruleString", e)
             null
-        }
-    }
-
-    fun encryptEntities(entities: List<CalDavEntity>): List<CalDavEntity> {
-        logger.debug("Encrypting entities.")
-
-        return entities.map { entity ->
-            entity.copy(
-                summary = aesEncryption.encrypt(entity.summary),
-                description = entity.description?.let { aesEncryption.encrypt(it) },
-                location = entity.location?.let { aesEncryption.encrypt(it) },
-            )
-        }
-    }
-
-    fun decryptEntities(entities: List<CalDavEntity>): List<CalDavEntity> {
-        logger.debug("Decrypting entities.")
-
-        return entities.map { entity ->
-            entity.copy(
-                summary = aesEncryption.decrypt(entity.summary),
-                description = entity.description?.let { aesEncryption.decrypt(it) },
-                location = entity.location?.let { aesEncryption.decrypt(it) },
-            )
         }
     }
 }
