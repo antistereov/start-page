@@ -7,8 +7,8 @@ import io.github.antistereov.start.widgets.widget.caldav.base.model.CalDavResour
 import io.github.antistereov.start.widgets.widget.caldav.base.model.CalDavResourceType
 import net.fortuna.ical4j.data.CalendarBuilder
 import net.fortuna.ical4j.data.ParserException
-import net.fortuna.ical4j.model.Property
 import net.fortuna.ical4j.model.Component
+import net.fortuna.ical4j.model.Property
 import net.fortuna.ical4j.model.component.VEvent
 import net.fortuna.ical4j.model.component.VToDo
 import net.fortuna.ical4j.model.property.Description
@@ -41,6 +41,8 @@ class NextcloudCalDavService {
     }
 
     fun getRemoteCalendarsRaw(credentials: NextcloudCredentials): Mono<MutableMap<String, String>> {
+        logger.debug("Getting remote calendars raw data for user: ${credentials.username}.")
+
         return Mono.fromCallable {
             val calendarUrl = "${credentials.host}/remote.php/dav/calendars/${credentials.username}/"
             val client = OkHttpClient()

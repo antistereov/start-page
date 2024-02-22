@@ -122,6 +122,8 @@ class CalDavEntityService(
     }
 
     private fun filterActiveAndFutureEntities(entity: Component): Boolean {
+        logger.debug("Filtering active and future entities.")
+
         val threeMonthsAgo = LocalDateTime.now().minusMonths(3)
         val oneYearFromNow = LocalDateTime.now().plusYears(1)
 
@@ -149,6 +151,7 @@ class CalDavEntityService(
     }
 
     private fun mapEntityToCalDavEntity(entity: Component): CalDavEntity? {
+        logger.debug("Mapping entity to CalDavEntity.")
         return when (entity) {
             is VEvent -> {
                 CalDavEntity(
