@@ -20,13 +20,13 @@ class CalDavService(
     fun addResources(userId: String, resources: List<CalDavResource>): Mono<List<CalDavResource>> {
         logger.debug("Adding resources for user: $userId.")
 
-        return calDavWidgetService.findOrSaveCalDavWidgetByUser(userId).flatMap { widget ->
+        return calDavWidgetService.findOrCreateCalDavWidgetByUserId(userId).flatMap { widget ->
             checkForDuplicates(userId, resources)
 
             val encryptedResources = resources.map { encryptResource(it) }
             widget.resources.addAll(encryptedResources)
 
-            calDavWidgetService.saveOrUpdateCalDavWidget(userId, widget)
+            calDavWidgetService.saveCalDavWidgetForUserId(userId, widget)
                 .thenReturn(resources)
         }
     }
@@ -41,12 +41,15 @@ class CalDavService(
                 updatedResources.addAll(
                     widget.resources.filter { aesEncryption.decrypt(it.icsLink) !in icsLinks }
                 )
+
+
+                widget.resources = updatedResources
+
+                calDavWidgetService.saveCalDavWidgetForUserId(userId, widget)
+                    .thenReturn(updatedResources)
+            } else {
+                calDavWidgetService.deleteCalDavWidget(userId).thenReturn(emptyList())
             }
-
-            widget.resources = updatedResources
-
-            calDavWidgetService.saveOrUpdateCalDavWidget(userId, widget)
-                .thenReturn(updatedResources)
         }
     }
 
@@ -54,9 +57,7 @@ class CalDavService(
         logger.debug("Getting user resources for user: $userId.")
 
         return calDavWidgetService.findCalDavWidgetByUserId(userId).map { widget ->
-            widget.resources.map { resource ->
-                decryptResource(resource)
-            }
+            widget.resources
         }
     }
 
@@ -84,7 +85,7 @@ class CalDavService(
             widget.resources = widget.resources.map {
                 if (aesEncryption.decrypt(it.icsLink) == resource.icsLink) encryptResource(resource) else it
             }.toMutableList()
-            calDavWidgetService.saveOrUpdateCalDavWidget(userId, widget).thenReturn(resource)
+            calDavWidgetService.saveCalDavWidgetForUserId(userId, widget).thenReturn(resource)
         }
     }
 

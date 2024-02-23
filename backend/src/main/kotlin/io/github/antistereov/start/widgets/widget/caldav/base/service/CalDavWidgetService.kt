@@ -17,7 +17,7 @@ class CalDavWidgetService(
 
     private val logger = LoggerFactory.getLogger(CalDavWidgetService::class.java)
 
-    fun saveOrUpdateCalDavWidget(userId: String, widget: CalDavWidget): Mono<CalDavWidget> {
+    fun saveCalDavWidgetForUserId(userId: String, widget: CalDavWidget): Mono<CalDavWidget> {
         logger.debug("Saving CalDavWidget for user: $userId.")
 
 
@@ -30,23 +30,9 @@ class CalDavWidgetService(
                     userService.save(user).thenReturn(widget)
                 }
             } else {
-                findCalDavWidgetById(calDavId).flatMap { widget ->
-                    widget.resources = widget.resources
-                    saveCalDavWidget(widget)
-                }
+                saveCalDavWidget(widget)
             }
         }
-    }
-
-    private fun findCalDavWidgetById(widgetId: Long?): Mono<CalDavWidget> {
-        logger.debug("Finding CalDavWidget by ID: $widgetId.")
-
-        if (widgetId == null) {
-            return Mono.error(IllegalArgumentException("No CalDavWidget ID provided."))
-        }
-
-        return calDavRepository.findById(widgetId)
-            .switchIfEmpty(Mono.error(IllegalArgumentException("CalDavWidget not found with ID: $widgetId")))
     }
 
     fun findCalDavWidgetByUserId(userId: String): Mono<CalDavWidget> {
@@ -59,7 +45,7 @@ class CalDavWidgetService(
         }
     }
 
-    fun findOrSaveCalDavWidgetByUser(userId: String): Mono<CalDavWidget> {
+    fun findOrCreateCalDavWidgetByUserId(userId: String): Mono<CalDavWidget> {
         return userService.findById(userId).flatMap { user ->
             val calDavId = user.widgets.calDavId
 
@@ -75,6 +61,35 @@ class CalDavWidgetService(
                 findCalDavWidgetById(calDavId)
             }
         }
+    }
+
+    fun deleteCalDavWidget(userId: String): Mono<String> {
+        logger.debug("Deleting CalDav widget for user: $userId.")
+
+        return userService.findById(userId).flatMap { user ->
+            if (user.widgets.calDavId == null) {
+                return@flatMap Mono.just("CalDav widget cleared for user: $userId.")
+            }
+            findCalDavWidgetById(user.widgets.calDavId).flatMap { widget ->
+                calDavRepository.delete(widget)
+                    .doOnError { error ->
+                        logger.error("Error deleting CalDav widget for user: $userId.", error)
+                    }
+                    .then(userService.save(user.apply { this.widgets.calDavId = null }))
+                    .map {"CalDav widget cleared for user: $userId." }
+            }
+        }
+    }
+
+    private fun findCalDavWidgetById(widgetId: Long?): Mono<CalDavWidget> {
+        logger.debug("Finding CalDavWidget by ID: $widgetId.")
+
+        if (widgetId == null) {
+            return Mono.error(IllegalArgumentException("No CalDavWidget ID provided."))
+        }
+
+        return calDavRepository.findById(widgetId)
+            .switchIfEmpty(Mono.error(IllegalArgumentException("CalDavWidget not found with ID: $widgetId")))
     }
 
     private fun saveCalDavWidget(calDavWidget: CalDavWidget): Mono<CalDavWidget> {
