@@ -66,7 +66,7 @@ class ChatController(
     @DeleteMapping("/history")
     fun deleteHistory(
         authentication: Authentication,
-    ): Mono<ChatHistory> {
+    ): Mono<String> {
         logger.info("Executing ChatController deleteHistory method.")
 
         return principalExtractor.getUserId(authentication)
