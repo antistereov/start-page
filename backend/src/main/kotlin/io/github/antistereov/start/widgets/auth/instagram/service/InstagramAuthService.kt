@@ -2,7 +2,7 @@ package io.github.antistereov.start.widgets.auth.instagram.service
 
 import io.github.antistereov.start.security.AESEncryption
 import io.github.antistereov.start.user.model.User
-import io.github.antistereov.start.global.component.StateValidation
+import io.github.antistereov.start.user.service.StateValidation
 import io.github.antistereov.start.global.model.exception.*
 import io.github.antistereov.start.user.service.UserService
 import io.github.antistereov.start.widgets.auth.instagram.model.InstagramAuthDetails

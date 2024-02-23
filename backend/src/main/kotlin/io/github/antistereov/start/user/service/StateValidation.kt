@@ -1,17 +1,17 @@
-package io.github.antistereov.start.global.component
+package io.github.antistereov.start.user.service
 
 import io.github.antistereov.start.global.model.exception.InvalidStateParameterException
 import io.github.antistereov.start.security.AESEncryption
-import io.github.antistereov.start.global.model.StateParameter
+import io.github.antistereov.start.user.model.StateParameter
 import io.github.antistereov.start.user.repository.StateRepository
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.scheduling.annotation.Scheduled
-import org.springframework.stereotype.Component
+import org.springframework.stereotype.Service
 import reactor.core.publisher.Mono
 import java.time.Instant
 
-@Component
+@Service
 class StateValidation(
     private val aesEncryption: AESEncryption,
     private val stateRepository: StateRepository,

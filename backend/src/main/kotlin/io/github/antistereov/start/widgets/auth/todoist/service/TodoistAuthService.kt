@@ -1,6 +1,6 @@
 package io.github.antistereov.start.widgets.auth.todoist.service
 
-import io.github.antistereov.start.global.component.StateValidation
+import io.github.antistereov.start.user.service.StateValidation
 import io.github.antistereov.start.global.model.exception.*
 import io.github.antistereov.start.security.AESEncryption
 import io.github.antistereov.start.widgets.auth.todoist.model.TodoistAuthDetails
