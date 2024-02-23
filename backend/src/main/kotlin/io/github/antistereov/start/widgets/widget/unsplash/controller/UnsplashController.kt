@@ -7,7 +7,6 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.*
-import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
 @RestController
@@ -46,11 +45,11 @@ class UnsplashController(
     }
 
     @GetMapping("/photo/recent")
-    fun getRecentPhotos(authentication: Authentication): Flux<Photo> {
+    fun getRecentPhotos(authentication: Authentication): Mono<List<Photo>> {
         logger.info("Executing Unsplash getRecentPhotos method.")
 
         return principalExtractor.getUserId(authentication)
-            .flatMapMany { userId ->
+            .flatMap { userId ->
                 service.getRecentPhotos(userId)
             }
     }
