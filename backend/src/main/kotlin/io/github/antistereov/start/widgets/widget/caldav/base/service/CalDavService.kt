@@ -1,11 +1,8 @@
 package io.github.antistereov.start.widgets.widget.caldav.base.service
 
 import io.github.antistereov.start.security.AESEncryption
-import io.github.antistereov.start.user.model.User
-import io.github.antistereov.start.user.service.UserService
 import io.github.antistereov.start.widgets.widget.caldav.base.model.CalDavResource
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
@@ -13,9 +10,9 @@ import java.time.Instant
 
 @Service
 class CalDavService(
-    private val userService: UserService,
     private val aesEncryption: AESEncryption,
-    @Qualifier("calDavEntityService") private val entityService: CalDavEntityService,
+    private val calDavWidgetService: CalDavWidgetService,
+    private val entityService: CalDavEntityService,
 ) {
     
     private val logger = LoggerFactory.getLogger(CalDavService::class.java)
@@ -23,41 +20,41 @@ class CalDavService(
     fun addResources(userId: String, resources: List<CalDavResource>): Mono<List<CalDavResource>> {
         logger.debug("Adding resources for user: $userId.")
 
-        return userService.findById(userId).flatMap { user ->
-            checkForDuplicates(user, resources)
+        return calDavWidgetService.findOrSaveCalDavWidgetByUser(userId).flatMap { widget ->
+            checkForDuplicates(userId, resources)
 
             val encryptedResources = resources.map { encryptResource(it) }
-            user.widgets.calDav.resources.addAll(encryptedResources)
+            widget.resources.addAll(encryptedResources)
 
-            userService.save(user).map { resources }
+            calDavWidgetService.saveOrUpdateCalDavWidget(userId, widget)
+                .thenReturn(resources)
         }
     }
 
     fun deleteResources(userId: String, icsLinks: List<String>): Mono<List<CalDavResource>> {
         logger.debug("Deleting resources for user: $userId.")
 
-        return userService.findById(userId).flatMap { user ->
+        return calDavWidgetService.findCalDavWidgetByUserId(userId).flatMap { widget ->
             val updatedResources = mutableListOf<CalDavResource>()
 
             if (icsLinks.isNotEmpty()) {
                 updatedResources.addAll(
-                    user.widgets.calDav.resources.filter { aesEncryption.decrypt(it.icsLink) !in icsLinks }
+                    widget.resources.filter { aesEncryption.decrypt(it.icsLink) !in icsLinks }
                 )
             }
 
-            user.widgets.calDav.resources = updatedResources
+            widget.resources = updatedResources
 
-            userService.save(user).map { updatedUser ->
-                updatedUser.widgets.calDav.resources
-            }
+            calDavWidgetService.saveOrUpdateCalDavWidget(userId, widget)
+                .thenReturn(updatedResources)
         }
     }
 
     fun getUserResources(userId: String): Mono<List<CalDavResource>> {
         logger.debug("Getting user resources for user: $userId.")
 
-        return userService.findById(userId).map { user ->
-            user.widgets.calDav.resources.map { resource ->
+        return calDavWidgetService.findCalDavWidgetByUserId(userId).map { widget ->
+            widget.resources.map { resource ->
                 decryptResource(resource)
             }
         }
@@ -66,8 +63,8 @@ class CalDavService(
     fun updateResourceEntities(userId: String, icsLinks: List<String>): Flux<CalDavResource> {
         logger.debug("Getting resource events of resources: {} for user: {}.", icsLinks.ifEmpty { "all" }, userId)
 
-        return userService.findById(userId).flatMapIterable { user ->
-            val resources = user.widgets.calDav.resources
+        return calDavWidgetService.findCalDavWidgetByUserId(userId).flatMapIterable { widget ->
+            val resources = widget.resources
                 .map { decryptResource(it) }.toMutableList()
             if (icsLinks.isNotEmpty()) resources.removeIf { it.icsLink !in icsLinks }
 
@@ -83,11 +80,11 @@ class CalDavService(
     private fun saveUpdatedResource(userId: String, resource: CalDavResource): Mono<CalDavResource> {
         logger.debug("Saving updated resource: ${resource.name} for user: $userId.")
 
-        return userService.findById(userId).flatMap { user ->
-            user.widgets.calDav.resources = user.widgets.calDav.resources.map {
+        return calDavWidgetService.findCalDavWidgetByUserId(userId).flatMap { widget ->
+            widget.resources = widget.resources.map {
                 if (aesEncryption.decrypt(it.icsLink) == resource.icsLink) encryptResource(resource) else it
             }.toMutableList()
-            userService.save(user).map { resource }
+            calDavWidgetService.saveOrUpdateCalDavWidget(userId, widget).thenReturn(resource)
         }
     }
 
@@ -123,14 +120,16 @@ class CalDavService(
         )
     }
 
-    private fun checkForDuplicates(user: User, resources: List<CalDavResource>) {
+    private fun checkForDuplicates(userId: String, resources: List<CalDavResource>) {
         logger.debug("Checking for duplicates.")
 
-        val existingIcsLinks = user.widgets.calDav.resources.map { it.icsLink }
-        val decryptedIcsLinks = existingIcsLinks.map { aesEncryption.decrypt(it) }
-        val duplicates = resources.find { it.icsLink in decryptedIcsLinks }
-        if (duplicates != null) {
-            throw IllegalArgumentException("Trying to add existing resources: $duplicates")
+        calDavWidgetService.findCalDavWidgetByUserId(userId).subscribe { widget ->
+            val existingIcsLinks = widget.resources.map { it.icsLink }
+            val decryptedIcsLinks = existingIcsLinks.map { aesEncryption.decrypt(it) }
+            val duplicates = resources.find { it.icsLink in decryptedIcsLinks }
+            if (duplicates != null) {
+                throw IllegalArgumentException("Trying to add existing resources: $duplicates")
+            }
         }
     }
 }
