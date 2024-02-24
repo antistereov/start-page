@@ -23,7 +23,7 @@ class ChatService(
 
     private val logger = LoggerFactory.getLogger(ChatService::class.java)
 
-    fun chat(userId: String, content: String): Mono<ChatHistory> {
+    fun chat(userId: String, content: String): Mono<Message> {
         logger.debug("Chatting with user: $userId.")
 
         return widgetService.fetchAndValidateChat(userId).flatMap { widget ->
@@ -75,7 +75,12 @@ class ChatService(
         }
     }
 
-    private fun updateChatHistory(userId: String, widget: ChatWidget, response: ChatResponse, newMessage: Message): Mono<ChatHistory> {
+    private fun updateChatHistory(
+        userId: String,
+        widget: ChatWidget,
+        response: ChatResponse,
+        newMessage: Message
+    ): Mono<Message> {
         logger.debug("Updating chat history.")
 
         val chatHistory = widget.chatHistory.history
@@ -84,7 +89,10 @@ class ChatService(
         chatHistory[entryNumber + 1] = encryptMessage(response.choices.first().message)
         widget.chatHistory.totalTokens = response.usage.totalTokens
 
-        return widgetService.saveChatWidgetForUser(userId, widget).thenReturn(widget.chatHistory)
+
+
+        return widgetService.saveChatWidgetForUser(userId, widget)
+            .thenReturn(response.choices.first().message)
     }
 
     fun deleteHistoryEntry(userId: String, entryNumber: Int): Mono<Message> {

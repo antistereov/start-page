@@ -23,7 +23,7 @@ class ChatController(
     fun chat(
         authentication: Authentication,
         @RequestBody message: String
-    ): Mono<ChatHistory> {
+    ): Mono<Message> {
         logger.info("Executing ChatController chat method.")
 
         return principalExtractor.getUserId(authentication)
