@@ -134,7 +134,5 @@ class CalDavService(
 
             duplicates == null
         }
-
-        // TODO fix this method
     }
 }
