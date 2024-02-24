@@ -2,7 +2,6 @@ package io.github.antistereov.start.widgets.widget.chat.controller
 
 import io.github.antistereov.start.security.AuthenticationPrincipalExtractor
 import io.github.antistereov.start.widgets.widget.chat.model.ChatHistory
-import io.github.antistereov.start.widgets.widget.chat.model.ChatResponse
 import io.github.antistereov.start.widgets.widget.chat.model.Message
 import io.github.antistereov.start.widgets.widget.chat.service.ChatService
 import org.slf4j.Logger
@@ -24,7 +23,7 @@ class ChatController(
     fun chat(
         authentication: Authentication,
         @RequestBody message: String
-    ): Mono<ChatResponse> {
+    ): Mono<ChatHistory> {
         logger.info("Executing ChatController chat method.")
 
         return principalExtractor.getUserId(authentication)

@@ -23,7 +23,7 @@ class ChatService(
 
     private val logger = LoggerFactory.getLogger(ChatService::class.java)
 
-    fun chat(userId: String, content: String): Mono<ChatResponse> {
+    fun chat(userId: String, content: String): Mono<ChatHistory> {
         logger.debug("Chatting with user: $userId.")
 
         return widgetService.fetchAndValidateChat(userId).flatMap { widget ->
@@ -75,7 +75,7 @@ class ChatService(
         }
     }
 
-    private fun updateChatHistory(userId: String, widget: ChatWidget, response: ChatResponse, newMessage: Message): Mono<ChatResponse> {
+    private fun updateChatHistory(userId: String, widget: ChatWidget, response: ChatResponse, newMessage: Message): Mono<ChatHistory> {
         logger.debug("Updating chat history.")
 
         val chatHistory = widget.chatHistory.history
@@ -84,7 +84,7 @@ class ChatService(
         chatHistory[entryNumber + 1] = encryptMessage(response.choices.first().message)
         widget.chatHistory.totalTokens = response.usage.totalTokens
 
-        return widgetService.saveChatWidgetForUser(userId, widget).thenReturn(response)
+        return widgetService.saveChatWidgetForUser(userId, widget).thenReturn(widget.chatHistory)
     }
 
     fun deleteHistoryEntry(userId: String, entryNumber: Int): Mono<Message> {
@@ -103,8 +103,8 @@ class ChatService(
                     updatedHistory[key] = value
                 }
             }
-            widget.chatHistory.history = updatedHistory
-            widgetService.saveChatWidgetForUser(userId, widget).thenReturn(entryToRemove)
+            widgetService.saveChatWidgetForUser(userId, widget)
+                .thenReturn(decryptMessage(entryToRemove))
         }
     }
 
@@ -117,13 +117,11 @@ class ChatService(
     fun getHistoryEntry(userId: String, entryNumber: Int): Mono<Message> {
         logger.debug("Getting history entry.")
 
-        return widgetService.findChatWidgetByUserId(userId).handle { widget, sink ->
+        return widgetService.findChatWidgetByUserId(userId).flatMap { widget ->
             val history = widget.chatHistory.history
-            if (history.size <= entryNumber) {
-                sink.error(IndexOutOfBoundsException("No history entry at index $entryNumber"))
-                return@handle
-            }
-            sink.next(history.values.elementAt(entryNumber))
+            val encryptedMessage = history[entryNumber]
+                ?: return@flatMap Mono.error(IndexOutOfBoundsException("No history entry at index $entryNumber"))
+            Mono.just(decryptMessage(encryptedMessage))
         }
     }
 
@@ -131,11 +129,16 @@ class ChatService(
         logger.debug("Getting chat history.")
 
         return widgetService.findChatWidgetByUserId(userId).map { widget ->
-            widget.chatHistory
+            ChatHistory(
+                widget.chatHistory.history.mapValues { (_, message) -> decryptMessage(message) }.toMutableMap(),
+                widget.chatHistory.totalTokens
+            )
         }
     }
 
     private fun encryptMessage(message: Message): Message = message.copy(content = aesEncryption.encrypt(message.content))
+
+    private fun decryptMessage(message: Message): Message = message.copy(content = aesEncryption.decrypt(message.content))
 
     private fun decryptMessages(history: MutableMap<Int, Message>): MutableMap<Int, Message> {
         logger.debug("Decrypting messages.")
