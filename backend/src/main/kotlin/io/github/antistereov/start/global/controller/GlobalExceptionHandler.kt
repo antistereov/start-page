@@ -1,6 +1,7 @@
 package io.github.antistereov.start.global.controller
 
 import io.github.antistereov.start.global.model.exception.*
+import io.netty.resolver.dns.DnsNameResolverException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
@@ -34,11 +35,13 @@ class GlobalExceptionHandler {
         TimeoutException::class.java to HttpStatus.REQUEST_TIMEOUT,
         UnexpectedErrorException::class.java to HttpStatus.INTERNAL_SERVER_ERROR,
         UserNotFoundException::class.java to HttpStatus.NOT_FOUND,
+        JwtDecoderInitializationException::class.java to HttpStatus.INTERNAL_SERVER_ERROR,
 
         // Spring exceptions
         IndexOutOfBoundsException::class.java to HttpStatus.BAD_REQUEST,
         IllegalArgumentException::class.java to HttpStatus.BAD_REQUEST,
         TimeoutException::class.java to HttpStatus.REQUEST_TIMEOUT,
+        DnsNameResolverException::class.java to HttpStatus.REQUEST_TIMEOUT,
 
         // ical4j exceptions
         NetworkErrorException::class.java to HttpStatus.INTERNAL_SERVER_ERROR,
