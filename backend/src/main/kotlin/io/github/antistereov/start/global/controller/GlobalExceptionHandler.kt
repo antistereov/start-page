@@ -1,6 +1,7 @@
 package io.github.antistereov.start.global.controller
 
 import io.github.antistereov.start.global.model.exception.*
+import io.netty.handler.ssl.SslHandshakeTimeoutException
 import io.netty.resolver.dns.DnsNameResolverException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -42,6 +43,7 @@ class GlobalExceptionHandler {
         IllegalArgumentException::class.java to HttpStatus.BAD_REQUEST,
         TimeoutException::class.java to HttpStatus.REQUEST_TIMEOUT,
         DnsNameResolverException::class.java to HttpStatus.REQUEST_TIMEOUT,
+        SslHandshakeTimeoutException::class.java to HttpStatus.REQUEST_TIMEOUT,
 
         // ical4j exceptions
         NetworkErrorException::class.java to HttpStatus.INTERNAL_SERVER_ERROR,
@@ -51,10 +53,6 @@ class GlobalExceptionHandler {
     @ExceptionHandler
     fun handleException(ex: Exception): ResponseEntity<Map<String, Any?>> {
         logger.error(ex.message)
-
-        if (ex::class.java !in exceptionToHttpStatus.keys) {
-            throw ex
-        }
 
         val status = exceptionToHttpStatus[ex::class.java]
             ?: HttpStatus.INTERNAL_SERVER_ERROR
