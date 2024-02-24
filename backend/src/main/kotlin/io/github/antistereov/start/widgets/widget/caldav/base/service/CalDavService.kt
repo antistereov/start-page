@@ -21,13 +21,16 @@ class CalDavService(
         logger.debug("Adding resources for user: $userId.")
 
         return calDavWidgetService.findOrCreateCalDavWidgetByUserId(userId).flatMap { widget ->
-            checkForDuplicates(userId, resources)
+            checkForDuplicates(userId, resources).flatMap { noDuplicates ->
+                if (noDuplicates) {
+                    val encryptedResources = resources.map { encryptResource(it) }
+                    widget.resources.addAll(encryptedResources)
 
-            val encryptedResources = resources.map { encryptResource(it) }
-            widget.resources.addAll(encryptedResources)
-
-            calDavWidgetService.saveCalDavWidgetForUserId(userId, widget)
-                .thenReturn(resources)
+                    calDavWidgetService.saveCalDavWidgetForUserId(userId, widget).map { resources }
+                } else {
+                    Mono.error(IllegalArgumentException("Duplicate resources found."))
+                }
+            }
         }
     }
 
@@ -57,7 +60,7 @@ class CalDavService(
         logger.debug("Getting user resources for user: $userId.")
 
         return calDavWidgetService.findCalDavWidgetByUserId(userId).map { widget ->
-            widget.resources
+            widget.resources.map { decryptResource(it) }
         }
     }
 
@@ -121,16 +124,17 @@ class CalDavService(
         )
     }
 
-    private fun checkForDuplicates(userId: String, resources: List<CalDavResource>) {
+    private fun checkForDuplicates(userId: String, resources: List<CalDavResource>): Mono<Boolean> {
         logger.debug("Checking for duplicates.")
 
-        calDavWidgetService.findCalDavWidgetByUserId(userId).subscribe { widget ->
+        return calDavWidgetService.findCalDavWidgetByUserId(userId).map { widget ->
             val existingIcsLinks = widget.resources.map { it.icsLink }
             val decryptedIcsLinks = existingIcsLinks.map { aesEncryption.decrypt(it) }
             val duplicates = resources.find { it.icsLink in decryptedIcsLinks }
-            if (duplicates != null) {
-                throw IllegalArgumentException("Trying to add existing resources: $duplicates")
-            }
+
+            duplicates == null
         }
+
+        // TODO fix this method
     }
 }
