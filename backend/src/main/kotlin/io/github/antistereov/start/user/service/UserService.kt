@@ -1,8 +1,8 @@
 package io.github.antistereov.start.user.service
 
-import io.github.antistereov.start.global.model.exception.CannotSaveUserException
-import io.github.antistereov.start.global.model.exception.ServiceException
-import io.github.antistereov.start.global.model.exception.UserNotFoundException
+import io.github.antistereov.start.global.exception.CannotSaveUserException
+import io.github.antistereov.start.global.exception.ServiceException
+import io.github.antistereov.start.global.exception.UserNotFoundException
 import io.github.antistereov.start.user.model.User
 import io.github.antistereov.start.user.repository.UserRepository
 import org.slf4j.LoggerFactory
@@ -24,7 +24,10 @@ class UserService(
             .switchIfEmpty(
                 userRepository.save(User(userId))
                     .onErrorMap(DataAccessException::class.java) { ex ->
-                        ServiceException("Error creating user: $userId", ex)
+                        io.github.antistereov.start.global.exception.ServiceException(
+                            "Error creating user: $userId",
+                            ex
+                        )
                     }
             )
     }
@@ -33,7 +36,7 @@ class UserService(
         logger.debug("Finding user by ID: $userId")
 
         return userRepository.findById(userId)
-            .switchIfEmpty(Mono.error(UserNotFoundException(userId)))
+            .switchIfEmpty(Mono.error(io.github.antistereov.start.global.exception.UserNotFoundException(userId)))
     }
 
     fun save(user: User): Mono<User> {
@@ -41,7 +44,7 @@ class UserService(
 
         return userRepository.save(user)
             .onErrorMap(DataAccessException::class.java) { ex ->
-                CannotSaveUserException(ex)
+                io.github.antistereov.start.global.exception.CannotSaveUserException(ex)
             }
     }
 }

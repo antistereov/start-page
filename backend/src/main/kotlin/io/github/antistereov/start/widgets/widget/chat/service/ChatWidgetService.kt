@@ -1,6 +1,6 @@
 package io.github.antistereov.start.widgets.widget.chat.service
 
-import io.github.antistereov.start.global.model.exception.MessageLimitExceededException
+import io.github.antistereov.start.global.exception.MessageLimitExceededException
 import io.github.antistereov.start.user.service.UserService
 import io.github.antistereov.start.widgets.auth.openai.config.OpenAIProperties
 import io.github.antistereov.start.widgets.widget.chat.model.ChatWidget
@@ -63,7 +63,7 @@ class ChatWidgetService(
             val chatHistory = chatWidget.chatHistory.history
 
             if (chatHistory.size >= properties.messageLimit) {
-                Mono.error(MessageLimitExceededException())
+                Mono.error(io.github.antistereov.start.global.exception.MessageLimitExceededException())
             } else {
                 Mono.just(chatWidget)
             }

@@ -1,6 +1,6 @@
 package io.github.antistereov.start.widgets.widget.chat.service
 
-import io.github.antistereov.start.global.model.exception.MissingCredentialsException
+import io.github.antistereov.start.global.exception.MissingCredentialsException
 import io.github.antistereov.start.security.AESEncryption
 import io.github.antistereov.start.user.service.UserService
 import io.github.antistereov.start.widgets.auth.openai.config.OpenAIProperties
@@ -61,7 +61,13 @@ class ChatService(
 
         return userService.findById(userId).flatMap { user ->
             val encryptedApiKey = user.auth.openAi.apiKey
-                ?: return@flatMap Mono.error<ChatResponse>(MissingCredentialsException(properties.serviceName, "API key", user.id))
+                ?: return@flatMap Mono.error<ChatResponse>(
+                    io.github.antistereov.start.global.exception.MissingCredentialsException(
+                        properties.serviceName,
+                        "API key",
+                        user.id
+                    )
+                )
             val uri = "${properties.apiBaseUrl}/chat/completions"
             val apiKey = aesEncryption.decrypt(encryptedApiKey)
 

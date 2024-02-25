@@ -1,7 +1,7 @@
 package io.github.antistereov.start.config
 
 import io.github.antistereov.start.config.properties.Auth0Properties
-import io.github.antistereov.start.global.model.exception.JwtDecoderInitializationException
+import io.github.antistereov.start.global.exception.JwtDecoderInitializationException
 import io.github.antistereov.start.security.AudienceValidator
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Bean
@@ -30,7 +30,7 @@ class JwtDecoderConfig(
             jwtDecoder
         } catch (e: Exception) {
             logger.error("Error creating JwtDecoder", e)
-            throw JwtDecoderInitializationException(e)
+            throw io.github.antistereov.start.global.exception.JwtDecoderInitializationException(e)
         }
     }
 }

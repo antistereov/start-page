@@ -1,4 +1,4 @@
-package io.github.antistereov.start.global.model.exception
+package io.github.antistereov.start.global.exception
 
 class InvalidCallbackException(
     serviceName: String,

@@ -54,10 +54,21 @@ class UnsplashAuthService(
         }
 
         if (error != null && errorDescription != null) {
-            return Mono.error(ThirdPartyAuthorizationCanceledException(properties.serviceName, error, errorDescription))
+            return Mono.error(
+                io.github.antistereov.start.global.exception.ThirdPartyAuthorizationCanceledException(
+                    properties.serviceName,
+                    error,
+                    errorDescription
+                )
+            )
         }
 
-        return Mono.error(InvalidCallbackException(properties.serviceName, "Invalid request parameters."))
+        return Mono.error(
+            io.github.antistereov.start.global.exception.InvalidCallbackException(
+                properties.serviceName,
+                "Invalid request parameters."
+            )
+        )
     }
 
     fun logout(userId: String): Mono<Void> {
@@ -109,7 +120,13 @@ class UnsplashAuthService(
 
         return userService.findById(userId).flatMap { user ->
             val encryptedAccessToken = user.auth.unsplash.accessToken
-                ?: return@flatMap Mono.error(MissingCredentialsException(properties.serviceName, "access token", userId))
+                ?: return@flatMap Mono.error(
+                    io.github.antistereov.start.global.exception.MissingCredentialsException(
+                        properties.serviceName,
+                        "access token",
+                        userId
+                    )
+                )
             Mono.just(aesEncryption.decrypt(encryptedAccessToken))
         }
     }

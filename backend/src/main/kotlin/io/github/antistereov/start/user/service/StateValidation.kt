@@ -1,6 +1,6 @@
 package io.github.antistereov.start.user.service
 
-import io.github.antistereov.start.global.model.exception.InvalidStateParameterException
+import io.github.antistereov.start.global.exception.InvalidStateParameterException
 import io.github.antistereov.start.security.AESEncryption
 import io.github.antistereov.start.user.model.StateParameter
 import io.github.antistereov.start.user.repository.StateRepository
@@ -30,7 +30,7 @@ class StateValidation(
     fun getUserId(state: String): Mono<String> {
         val decryptedState = aesEncryption.decrypt(state)
         return stateRepository.findById(state)
-            .switchIfEmpty(Mono.error(InvalidStateParameterException()))
+            .switchIfEmpty(Mono.error(io.github.antistereov.start.global.exception.InvalidStateParameterException()))
             .flatMap { storedState ->
                 validateState(decryptedState, storedState)
 
@@ -66,19 +66,19 @@ class StateValidation(
     private fun validateState(decryptedState: String, storedStateParameter: StateParameter) {
         val parts = decryptedState.split(":")
         if (parts.size != 2 || decryptedState != "${storedStateParameter.userId}:${storedStateParameter.timestamp}") {
-            throw InvalidStateParameterException()
+            throw io.github.antistereov.start.global.exception.InvalidStateParameterException()
         }
     }
 
     private fun getStateTime(decryptedState: String): Instant {
-        val timestamp = decryptedState.split(":")[1].toLongOrNull() ?: throw InvalidStateParameterException()
+        val timestamp = decryptedState.split(":")[1].toLongOrNull() ?: throw io.github.antistereov.start.global.exception.InvalidStateParameterException()
         return Instant.ofEpochMilli(timestamp)
     }
 
     private fun validateTime(stateTime: Instant) {
         val currentTime = Instant.now()
         if (currentTime.isAfter(stateTime.plusSeconds(validityPeriodMinutes * 60))) {
-            throw InvalidStateParameterException()
+            throw io.github.antistereov.start.global.exception.InvalidStateParameterException()
         }
     }
 

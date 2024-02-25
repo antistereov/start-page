@@ -47,10 +47,21 @@ class TodoistAuthService(
         }
 
         if (error != null) {
-            return Mono.error(ThirdPartyAuthorizationCanceledException(properties.serviceName, error, error))
+            return Mono.error(
+                io.github.antistereov.start.global.exception.ThirdPartyAuthorizationCanceledException(
+                    properties.serviceName,
+                    error,
+                    error
+                )
+            )
         }
 
-        return Mono.error(InvalidCallbackException(properties.serviceName, "Invalid request parameters."))
+        return Mono.error(
+            io.github.antistereov.start.global.exception.InvalidCallbackException(
+                properties.serviceName,
+                "Invalid request parameters."
+            )
+        )
     }
 
     fun logout(userId: String): Mono<Void> {
@@ -101,7 +112,13 @@ class TodoistAuthService(
 
         return userService.findById(userId).flatMap { user ->
             val encryptedAccessToken = user.auth.todoist.accessToken
-                ?: return@flatMap Mono.error(MissingCredentialsException("Todoist", "access token", userId))
+                ?: return@flatMap Mono.error(
+                    io.github.antistereov.start.global.exception.MissingCredentialsException(
+                        "Todoist",
+                        "access token",
+                        userId
+                    )
+                )
             Mono.just(aesEncryption.decrypt(encryptedAccessToken))
         }
     }

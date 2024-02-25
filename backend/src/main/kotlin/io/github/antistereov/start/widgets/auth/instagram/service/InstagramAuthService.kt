@@ -55,17 +55,34 @@ class InstagramAuthService(
             return handleShortLivedToken(code, state).flatMap { user ->
                 val userId = user.id
                 val accessToken = user.auth.instagram.accessToken
-                    ?: return@flatMap Mono.error(MissingCredentialsException(properties.serviceName, "access token", userId))
+                    ?: return@flatMap Mono.error(
+                        io.github.antistereov.start.global.exception.MissingCredentialsException(
+                            properties.serviceName,
+                            "access token",
+                            userId
+                        )
+                    )
 
                 handleLongLivedToken(userId, accessToken)
             }
         }
 
         if (error != null && errorCode != null && errorReason != null) {
-            return Mono.error(ThirdPartyAuthorizationCanceledException(properties.serviceName, errorCode, errorReason))
+            return Mono.error(
+                io.github.antistereov.start.global.exception.ThirdPartyAuthorizationCanceledException(
+                    properties.serviceName,
+                    errorCode,
+                    errorReason
+                )
+            )
         }
 
-        return Mono.error(InvalidCallbackException(properties.serviceName, "Invalid request parameters."))
+        return Mono.error(
+            io.github.antistereov.start.global.exception.InvalidCallbackException(
+                properties.serviceName,
+                "Invalid request parameters."
+            )
+        )
     }
 
     fun getAccessToken(userId: String): Mono<String> {
@@ -76,7 +93,13 @@ class InstagramAuthService(
             if (accessToken != null) {
                 Mono.just(aesEncryption.decrypt(accessToken))
             } else {
-                Mono.error(MissingCredentialsException(properties.serviceName, "access token", userId))
+                Mono.error(
+                    io.github.antistereov.start.global.exception.MissingCredentialsException(
+                        properties.serviceName,
+                        "access token",
+                        userId
+                    )
+                )
             }
         }
     }
@@ -88,13 +111,30 @@ class InstagramAuthService(
 
         return userService.findById(userId).flatMap { user ->
             val expirationDate = user.auth.instagram.expirationDate
-                ?: return@flatMap Mono.error(MissingCredentialsException(properties.serviceName, "expirationDate", userId))
+                ?: return@flatMap Mono.error(
+                    io.github.antistereov.start.global.exception.MissingCredentialsException(
+                        properties.serviceName,
+                        "expirationDate",
+                        userId
+                    )
+                )
             if (currentTime.isAfter(expirationDate)) {
-                return@flatMap Mono.error(ExpiredTokenException(properties.serviceName, userId))
+                return@flatMap Mono.error(
+                    io.github.antistereov.start.global.exception.ExpiredTokenException(
+                        properties.serviceName,
+                        userId
+                    )
+                )
             }
 
             val encryptedAccessToken = user.auth.instagram.accessToken
-                ?: return@flatMap Mono.error(MissingCredentialsException(properties.serviceName, "access token", userId))
+                ?: return@flatMap Mono.error(
+                    io.github.antistereov.start.global.exception.MissingCredentialsException(
+                        properties.serviceName,
+                        "access token",
+                        userId
+                    )
+                )
             val accessToken = aesEncryption.decrypt(encryptedAccessToken)
 
             val uri = UriComponentsBuilder.fromHttpUrl("${properties.apiBaseUrl}/refresh_access_token")

@@ -1,9 +1,9 @@
 package io.github.antistereov.start.config
 
-import io.github.antistereov.start.global.model.exception.NetworkErrorException
-import io.github.antistereov.start.global.model.exception.ParsingErrorException
-import io.github.antistereov.start.global.model.exception.ThirdPartyAPIException
-import io.github.antistereov.start.global.model.exception.TimeoutException
+import io.github.antistereov.start.global.exception.NetworkErrorException
+import io.github.antistereov.start.global.exception.ParsingErrorException
+import io.github.antistereov.start.global.exception.ThirdPartyAPIException
+import io.github.antistereov.start.global.exception.TimeoutException
 import io.netty.handler.codec.DecoderException
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -31,7 +31,11 @@ class WebClientConfig {
                         clientResponse.bodyToMono(String::class.java)
                             .flatMap { errorMessage ->
                                 Mono.error(
-                                    ThirdPartyAPIException(request.url(), clientResponse.statusCode(), errorMessage)
+                                    io.github.antistereov.start.global.exception.ThirdPartyAPIException(
+                                        request.url(),
+                                        clientResponse.statusCode(),
+                                        errorMessage
+                                    )
                                 )
                             }
                     } else {
@@ -41,17 +45,17 @@ class WebClientConfig {
                 .onErrorResume(WebClientResponseException::class.java) { e ->
                     if (e.statusCode == HttpStatus.REQUEST_TIMEOUT) {
                         Mono.error(
-                            TimeoutException("Timeout occurred while calling ${request.url()}: ${e.message}")
+                            io.github.antistereov.start.global.exception.TimeoutException("Timeout occurred while calling ${request.url()}: ${e.message}")
                         )
                     } else {
                         Mono.error(
-                            NetworkErrorException("Network error occurred while calling ${request.url()}: ${e.message}")
+                            io.github.antistereov.start.global.exception.NetworkErrorException("Network error occurred while calling ${request.url()}: ${e.message}")
                         )
                     }
                 }
                 .onErrorResume(DecoderException::class.java) { e ->
                     Mono.error(
-                        ParsingErrorException("Error parsing response from ${request.url()}: ${e.message}")
+                        io.github.antistereov.start.global.exception.ParsingErrorException("Error parsing response from ${request.url()}: ${e.message}")
                     )
                 }
             }

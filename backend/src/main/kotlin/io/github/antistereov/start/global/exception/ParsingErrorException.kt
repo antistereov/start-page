@@ -1,3 +1,3 @@
-package io.github.antistereov.start.global.model.exception
+package io.github.antistereov.start.global.exception
 
 class ParsingErrorException(message: String) : RuntimeException(message)
