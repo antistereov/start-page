@@ -42,7 +42,7 @@ class CalDavController(
     @DeleteMapping
     fun deleteResources(
         authentication: Authentication,
-        @RequestBody icsLinks: List<String> = emptyList(),
+        @RequestParam icsLinks: List<String> = emptyList(),
     ): Mono<List<CalDavResource>> {
         logger.info("Deleting resources.")
 
