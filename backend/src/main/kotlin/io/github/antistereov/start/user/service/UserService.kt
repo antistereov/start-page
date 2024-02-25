@@ -62,9 +62,9 @@ class UserService(
         logger.debug("Deleting user: {}", userId)
 
         return findById(userId).flatMap { user ->
-            deleteCalDavWidget(user.widgets.calDavId)
-                .then(deleteChatWidget(user.widgets.chatId))
-                .then(deleteUnsplashWidget(user.widgets.unsplashId))
+            deleteCalDavWidget(userId)
+                .then(deleteChatWidget(userId))
+                .then(deleteUnsplashWidget(userId))
                 .then(Mono.defer { userRepository.delete(user) })
                 .then(Mono.just("User deleted."))
                 .onErrorMap(DataAccessException::class.java) { ex ->
@@ -94,54 +94,66 @@ class UserService(
             }
     }
 
-    fun deleteCalDavWidget(calDavId: String?): Mono<String> {
-        logger.debug("Deleting CalDav widget: {}", calDavId)
+    fun deleteCalDavWidget(userId: String): Mono<String> {
+        logger.debug("Deleting CalDav widget for user: {}", userId)
 
-        if (calDavId == null) {
-            return Mono.just("CalDav widget cleared.")
-        }
+        return findById(userId).flatMap { user ->
+            val calDavId = user.widgets.calDavId
+                ?: return@flatMap Mono.just("CalDav widget cleared.")
 
-        return calDavRepository.findById(calDavId)
-            .flatMap { widget ->
+            calDavRepository.findById(calDavId).flatMap { widget ->
                 calDavRepository.delete(widget)
                     .doOnError { error ->
                         logger.error("Error deleting CalDav widget: $calDavId", error)
                     }
                     .then(Mono.just("CalDav widget cleared."))
+                    .flatMap {
+                        user.widgets.calDavId = null
+                        save(user).thenReturn("CalDav widget cleared.")
+                    }
             }
+        }
     }
 
-    fun deleteChatWidget(chatId: String?): Mono<String> {
-        logger.debug("Deleting Chat widget: {}", chatId)
+    fun deleteChatWidget(userId: String): Mono<String> {
+        logger.debug("Deleting Chat widget for user: {}", userId)
 
-        if (chatId == null) {
-            return Mono.just("Chat widget cleared.")
-        }
+        return findById(userId).flatMap { user ->
+            val chatId = user.widgets.chatId
+                ?: return@flatMap Mono.just("Chat widget cleared.")
 
-        return chatRepository.findById(chatId)
-            .flatMap { widget ->
+            chatRepository.findById(chatId).flatMap { widget ->
                 chatRepository.delete(widget)
                     .doOnError { error ->
                         logger.error("Error deleting Chat widget: $chatId", error)
                     }
                     .then(Mono.just("Chat widget cleared."))
+                    .flatMap {
+                        user.widgets.chatId = null
+                        save(user).thenReturn("Chat widget cleared.")
+                    }
             }
+        }
     }
 
-    fun deleteUnsplashWidget(unsplashId: String?): Mono<String> {
-        logger.debug("Deleting Unsplash widget: {}", unsplashId)
+    fun deleteUnsplashWidget(userId: String): Mono<String> {
+        logger.debug("Deleting Unsplash widget for user: {}", userId)
 
-        if (unsplashId == null) {
-            return Mono.just("Unsplash widget cleared.")
-        }
+        return findById(userId).flatMap { user ->
+            val unsplashId = user.widgets.unsplashId
+                ?: return@flatMap Mono.just("Unsplash widget cleared.")
 
-        return unsplashRepository.findById(unsplashId)
-            .flatMap { widget ->
+            unsplashRepository.findById(unsplashId).flatMap { widget ->
                 unsplashRepository.delete(widget)
                     .doOnError { error ->
                         logger.error("Error deleting Unsplash widget: $unsplashId", error)
                     }
                     .then(Mono.just("Unsplash widget cleared."))
+                    .flatMap {
+                        user.widgets.unsplashId = null
+                        save(user).thenReturn("Unsplash widget cleared.")
+                    }
             }
+        }
     }
 }
