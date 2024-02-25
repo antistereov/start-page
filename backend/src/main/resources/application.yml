@@ -58,6 +58,11 @@ open-ai:
   api-base-url: https://api.openai.com/v1
   message-limit: 20
 
+open-weather-map:
+  service-name: OpenWeather
+  api-key: ${OPEN_WEATHER_MAP_API_KEY}
+  api-base-url: https://api.openweathermap.org/data/2.5
+
 nextcloud:
   service-name: Nextcloud
 
