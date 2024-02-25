@@ -1,7 +1,6 @@
 package io.github.antistereov.start.widgets.auth.spotify.service
 
 import io.github.antistereov.start.user.service.StateValidation
-import io.github.antistereov.start.global.model.exception.*
 import io.github.antistereov.start.security.AESEncryption
 import io.github.antistereov.start.widgets.auth.spotify.model.SpotifyAuthDetails
 import io.github.antistereov.start.widgets.auth.spotify.model.SpotifyTokenResponse

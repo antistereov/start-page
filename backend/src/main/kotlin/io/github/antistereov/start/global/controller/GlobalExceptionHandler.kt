@@ -1,6 +1,5 @@
 package io.github.antistereov.start.global.controller
 
-import io.github.antistereov.start.global.model.exception.*
 import io.netty.handler.ssl.SslHandshakeTimeoutException
 import io.netty.resolver.dns.DnsNameResolverException
 import org.slf4j.Logger
