@@ -18,7 +18,7 @@ class AuthenticationPrincipalExtractor {
 
         return Mono.justOrEmpty(authentication.principal)
             .cast(Jwt::class.java)
-            .switchIfEmpty(Mono.error(io.github.antistereov.start.global.exception.InvalidPrincipalException("Invalid authentication principal.")))
+            .switchIfEmpty(Mono.error(InvalidPrincipalException("Invalid authentication principal.")))
     }
 
     fun getUserId(authentication: Authentication): Mono<String> {
@@ -26,6 +26,6 @@ class AuthenticationPrincipalExtractor {
 
         return getJwt(authentication)
             .map { it.claims["sub"] as String }
-            .switchIfEmpty(Mono.error(io.github.antistereov.start.global.exception.MissingClaimException("Missing 'sub' claim.")))
+            .switchIfEmpty(Mono.error(MissingClaimException("Missing 'sub' claim.")))
     }
 }

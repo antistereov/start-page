@@ -30,7 +30,7 @@ class JwtDecoderConfig(
             jwtDecoder
         } catch (e: Exception) {
             logger.error("Error creating JwtDecoder", e)
-            throw io.github.antistereov.start.global.exception.JwtDecoderInitializationException(e)
+            throw JwtDecoderInitializationException(e)
         }
     }
 }

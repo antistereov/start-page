@@ -62,7 +62,7 @@ class ChatService(
         return userService.findById(userId).flatMap { user ->
             val encryptedApiKey = user.auth.openAi.apiKey
                 ?: return@flatMap Mono.error<ChatResponse>(
-                    io.github.antistereov.start.global.exception.MissingCredentialsException(
+                    MissingCredentialsException(
                         properties.serviceName,
                         "API key",
                         user.id

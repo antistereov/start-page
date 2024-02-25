@@ -1,13 +1,13 @@
 package io.github.antistereov.start.widgets.auth.nextcloud.service
 
+import io.github.antistereov.start.global.component.UrlHandler
 import io.github.antistereov.start.global.exception.InvalidNextcloudCredentialsException
 import io.github.antistereov.start.global.exception.MissingCredentialsException
 import io.github.antistereov.start.security.AESEncryption
-import io.github.antistereov.start.widgets.auth.nextcloud.model.NextcloudCredentials
-import io.github.antistereov.start.global.component.UrlHandler
 import io.github.antistereov.start.user.service.UserService
 import io.github.antistereov.start.widgets.auth.nextcloud.config.NextcloudProperties
 import io.github.antistereov.start.widgets.auth.nextcloud.model.NextcloudAuthCredentials
+import io.github.antistereov.start.widgets.auth.nextcloud.model.NextcloudCredentials
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
@@ -35,7 +35,7 @@ class NextcloudAuthService(
 
             if (host == null) {
                 sink.error(
-                    io.github.antistereov.start.global.exception.MissingCredentialsException(
+                    MissingCredentialsException(
                         properties.serviceName,
                         "host URL",
                         userId
@@ -46,7 +46,7 @@ class NextcloudAuthService(
 
             if (username == null) {
                 sink.error(
-                    io.github.antistereov.start.global.exception.MissingCredentialsException(
+                    MissingCredentialsException(
                         properties.serviceName,
                         "username",
                         userId
@@ -57,7 +57,7 @@ class NextcloudAuthService(
 
             if (password == null) {
                 sink.error(
-                    io.github.antistereov.start.global.exception.MissingCredentialsException(
+                    MissingCredentialsException(
                         properties.serviceName,
                         "password",
                         userId
@@ -105,7 +105,7 @@ class NextcloudAuthService(
 
         return webClient.get()
             .retrieve()
-            .onStatus({ it != HttpStatus.OK }, { Mono.just(io.github.antistereov.start.global.exception.InvalidNextcloudCredentialsException()) })
+            .onStatus({ it != HttpStatus.OK }, { Mono.just(InvalidNextcloudCredentialsException()) })
             .bodyToMono(String::class.java)
             .flatMap { Mono.just("Nextcloud credentials are valid.") }
     }

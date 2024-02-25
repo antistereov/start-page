@@ -31,7 +31,7 @@ class WebClientConfig {
                         clientResponse.bodyToMono(String::class.java)
                             .flatMap { errorMessage ->
                                 Mono.error(
-                                    io.github.antistereov.start.global.exception.ThirdPartyAPIException(
+                                    ThirdPartyAPIException(
                                         request.url(),
                                         clientResponse.statusCode(),
                                         errorMessage
@@ -45,17 +45,17 @@ class WebClientConfig {
                 .onErrorResume(WebClientResponseException::class.java) { e ->
                     if (e.statusCode == HttpStatus.REQUEST_TIMEOUT) {
                         Mono.error(
-                            io.github.antistereov.start.global.exception.TimeoutException("Timeout occurred while calling ${request.url()}: ${e.message}")
+                            TimeoutException("Timeout occurred while calling ${request.url()}: ${e.message}")
                         )
                     } else {
                         Mono.error(
-                            io.github.antistereov.start.global.exception.NetworkErrorException("Network error occurred while calling ${request.url()}: ${e.message}")
+                            NetworkErrorException("Network error occurred while calling ${request.url()}: ${e.message}")
                         )
                     }
                 }
                 .onErrorResume(DecoderException::class.java) { e ->
                     Mono.error(
-                        io.github.antistereov.start.global.exception.ParsingErrorException("Error parsing response from ${request.url()}: ${e.message}")
+                        ParsingErrorException("Error parsing response from ${request.url()}: ${e.message}")
                     )
                 }
             }
