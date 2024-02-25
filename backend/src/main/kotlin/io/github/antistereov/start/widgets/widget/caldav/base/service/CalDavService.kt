@@ -36,7 +36,9 @@ class CalDavService(
 
     fun deleteResources(userId: String, icsLinks: List<String>): Mono<List<CalDavResource>> {
         logger.debug("Deleting resources for user: $userId.")
-        return calDavWidgetService.deleteCalDavResources(userId, icsLinks)
+        return calDavWidgetService.deleteCalDavResources(userId, icsLinks).map { resources ->
+            resources.map { decryptResource(it) }
+        }
     }
 
     fun getUserResources(userId: String): Mono<List<CalDavResource>> {

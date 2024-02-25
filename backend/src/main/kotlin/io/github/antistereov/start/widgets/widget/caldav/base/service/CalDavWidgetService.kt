@@ -67,13 +67,16 @@ class CalDavWidgetService(
             val widgetId = user.widgets.calDavId
                 ?: return@flatMap Mono.just(emptyList<CalDavResource>())
 
-            findCalDavWidgetById(widgetId).flatMap { widget ->
+            findCalDavWidgetById(widgetId).flatMap Widget@{ widget ->
                 val updatedResources = mutableListOf<CalDavResource>()
 
                 if (icsLinks.isNotEmpty()) {
-                    updatedResources.addAll(
-                        widget.resources.filter { aesEncryption.decrypt(it.icsLink) !in icsLinks }
-                    )
+                    val decryptedExistingIcsLinks = widget.resources.map { aesEncryption.decrypt(it.icsLink) }
+                    if (decryptedExistingIcsLinks.containsAll(icsLinks)) {
+                        updatedResources.addAll(widget.resources.filter { aesEncryption.decrypt(it.icsLink) !in icsLinks })
+                    } else {
+                        throw IllegalArgumentException("Not all provided ics links found in user resources.")
+                    }
 
                     widget.resources = updatedResources
 
