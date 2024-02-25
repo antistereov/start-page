@@ -62,20 +62,7 @@ class UnsplashWidgetService(
     fun deleteUnsplashWidget(userId: String): Mono<String> {
         logger.debug("Deleting Unsplash widget for user: $userId.")
 
-        return userService.findById(userId).flatMap { user ->
-            if (user.widgets.unsplashId == null) {
-                return@flatMap Mono.just("Unsplash widget cleared for user: $userId")
-            }
-
-            findUnsplashWidgetById(user.widgets.unsplashId).flatMap { widget ->
-                unsplashRepository.delete(widget)
-                    .doOnError { error ->
-                        logger.error("Error deleting Unsplash widget for user: $userId.", error)
-                    }
-                    .then(userService.save(user.apply { this.widgets.unsplashId = null }))
-                    .map {"Unsplash widget cleared for user: $userId" }
-            }
-        }
+        return userService.deleteUnsplashWidget(userId)
     }
 
     private fun findUnsplashWidgetById(widgetId: String?): Mono<UnsplashWidget> {

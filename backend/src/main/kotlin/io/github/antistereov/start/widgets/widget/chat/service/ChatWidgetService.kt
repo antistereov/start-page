@@ -1,6 +1,5 @@
 package io.github.antistereov.start.widgets.widget.chat.service
 
-import io.github.antistereov.start.global.exception.MessageLimitExceededException
 import io.github.antistereov.start.user.service.UserService
 import io.github.antistereov.start.widgets.auth.openai.config.OpenAIProperties
 import io.github.antistereov.start.widgets.widget.chat.model.ChatWidget
@@ -73,19 +72,7 @@ class ChatWidgetService(
     fun deleteChatWidget(userId: String): Mono<String> {
         logger.debug("Deleting ChatWidget for user: $userId.")
 
-        return userService.findById(userId).flatMap { user ->
-            if (user.widgets.chatId == null) {
-                return@flatMap Mono.just("Chat history cleared for user: $userId.")
-            }
-            findChatWidgetById(user.widgets.chatId).flatMap { widget ->
-                chatRepository.delete(widget)
-                    .doOnError { error ->
-                        logger.error("Error deleting ChatWidget for user: $userId.", error)
-                    }
-                    .then(userService.save(user.apply { this.widgets.chatId = null }))
-                    .map {"Chat history cleared for user: $userId." }
-            }
-        }
+        return userService.deleteChatWidget(userId)
     }
 
     private fun findOrCreateChatWidgetByUserId(userId: String): Mono<ChatWidget> {

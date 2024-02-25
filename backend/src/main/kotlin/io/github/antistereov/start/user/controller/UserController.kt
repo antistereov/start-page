@@ -25,4 +25,16 @@ class UserController(
         return principalExtractor.getJwt(authentication)
             .map { it.claims }
     }
+
+    @DeleteMapping("/me")
+    fun deleteUser(authentication: Authentication): Mono<String> {
+        return principalExtractor.getUserId(authentication)
+            .flatMap { userService.delete(it) }
+    }
+
+    @DeleteMapping("/{userId}")
+    fun deleteAuth0User(@PathVariable userId: String): Mono<Void> {
+        return userService.deleteAuth0User(userId)
+    }
+
 }

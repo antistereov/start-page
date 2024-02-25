@@ -83,26 +83,8 @@ class CalDavWidgetService(
                     saveCalDavWidgetForUserId(userId, widget)
                         .thenReturn(updatedResources)
                 } else {
-                    deleteCalDavWidget(userId).thenReturn(emptyList())
+                    userService.deleteCalDavWidget(userId).thenReturn(emptyList())
                 }
-            }
-        }
-    }
-
-    private fun deleteCalDavWidget(userId: String): Mono<String> {
-        logger.debug("Deleting CalDav widget for user: $userId.")
-
-        return userService.findById(userId).flatMap { user ->
-            if (user.widgets.calDavId == null) {
-                return@flatMap Mono.just("CalDav widget cleared for user: $userId.")
-            }
-            findCalDavWidgetById(user.widgets.calDavId).flatMap { widget ->
-                calDavRepository.delete(widget)
-                    .doOnError { error ->
-                        logger.error("Error deleting CalDav widget for user: $userId.", error)
-                    }
-                    .then(userService.save(user.apply { this.widgets.calDavId = null }))
-                    .map {"CalDav widget cleared for user: $userId." }
             }
         }
     }
