@@ -1,11 +1,14 @@
 package io.github.antistereov.start.widgets.auth.todoist.service
 
-import io.github.antistereov.start.user.service.StateValidation
+import io.github.antistereov.start.global.exception.InvalidCallbackException
+import io.github.antistereov.start.global.exception.MissingCredentialsException
+import io.github.antistereov.start.global.exception.ThirdPartyAuthorizationCanceledException
 import io.github.antistereov.start.security.AESEncryption
-import io.github.antistereov.start.widgets.auth.todoist.model.TodoistAuthDetails
-import io.github.antistereov.start.widgets.auth.todoist.model.TodoistTokenResponse
+import io.github.antistereov.start.user.service.StateValidation
 import io.github.antistereov.start.user.service.UserService
 import io.github.antistereov.start.widgets.auth.todoist.config.TodoistProperties
+import io.github.antistereov.start.widgets.auth.todoist.model.TodoistAuthDetails
+import io.github.antistereov.start.widgets.auth.todoist.model.TodoistTokenResponse
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
@@ -47,7 +50,7 @@ class TodoistAuthService(
 
         if (error != null) {
             return Mono.error(
-                io.github.antistereov.start.global.exception.ThirdPartyAuthorizationCanceledException(
+                ThirdPartyAuthorizationCanceledException(
                     properties.serviceName,
                     error,
                     error
@@ -56,7 +59,7 @@ class TodoistAuthService(
         }
 
         return Mono.error(
-            io.github.antistereov.start.global.exception.InvalidCallbackException(
+            InvalidCallbackException(
                 properties.serviceName,
                 "Invalid request parameters."
             )
@@ -112,7 +115,7 @@ class TodoistAuthService(
         return userService.findById(userId).flatMap { user ->
             val encryptedAccessToken = user.auth.todoist.accessToken
                 ?: return@flatMap Mono.error(
-                    io.github.antistereov.start.global.exception.MissingCredentialsException(
+                    MissingCredentialsException(
                         "Todoist",
                         "access token",
                         userId

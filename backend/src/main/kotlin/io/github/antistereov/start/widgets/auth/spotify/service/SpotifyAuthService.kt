@@ -1,11 +1,14 @@
 package io.github.antistereov.start.widgets.auth.spotify.service
 
-import io.github.antistereov.start.user.service.StateValidation
+import io.github.antistereov.start.global.exception.InvalidCallbackException
+import io.github.antistereov.start.global.exception.MissingCredentialsException
+import io.github.antistereov.start.global.exception.ThirdPartyAuthorizationCanceledException
 import io.github.antistereov.start.security.AESEncryption
-import io.github.antistereov.start.widgets.auth.spotify.model.SpotifyAuthDetails
-import io.github.antistereov.start.widgets.auth.spotify.model.SpotifyTokenResponse
+import io.github.antistereov.start.user.service.StateValidation
 import io.github.antistereov.start.user.service.UserService
 import io.github.antistereov.start.widgets.auth.spotify.config.SpotifyProperties
+import io.github.antistereov.start.widgets.auth.spotify.model.SpotifyAuthDetails
+import io.github.antistereov.start.widgets.auth.spotify.model.SpotifyTokenResponse
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.BodyInserters
@@ -50,7 +53,7 @@ class SpotifyAuthService(
 
         if (error != null) {
             return Mono.error(
-                io.github.antistereov.start.global.exception.ThirdPartyAuthorizationCanceledException(
+                ThirdPartyAuthorizationCanceledException(
                     properties.serviceName,
                     error,
                     error
@@ -59,7 +62,7 @@ class SpotifyAuthService(
         }
 
         return Mono.error(
-            io.github.antistereov.start.global.exception.InvalidCallbackException(
+            InvalidCallbackException(
                 properties.serviceName,
                 "Invalid request parameters."
             )
@@ -113,7 +116,7 @@ class SpotifyAuthService(
         return userService  .findById(userId).flatMap { user ->
             val refreshToken = response.refreshToken
                 ?: return@flatMap Mono.error(
-                    io.github.antistereov.start.global.exception.MissingCredentialsException(
+                    MissingCredentialsException(
                         properties.serviceName,
                         "refresh token",
                         userId
@@ -137,7 +140,7 @@ class SpotifyAuthService(
         return userService.findById(userId).flatMap { user ->
             val encryptedRefreshToken = user.auth.spotify.refreshToken
                 ?: return@flatMap Mono.error(
-                    io.github.antistereov.start.global.exception.MissingCredentialsException(
+                    MissingCredentialsException(
                         properties.serviceName,
                         "refresh token",
                         userId
@@ -176,7 +179,7 @@ class SpotifyAuthService(
         return userService.findById(userId).flatMap { user ->
             val expirationDate = user.auth.spotify.expirationDate
                 ?: return@flatMap Mono.error(
-                    io.github.antistereov.start.global.exception.MissingCredentialsException(
+                    MissingCredentialsException(
                         properties.serviceName,
                         "expiration date",
                         userId
@@ -188,7 +191,7 @@ class SpotifyAuthService(
             } else {
                 val encryptedSpotifyAccessToken = user.auth.spotify.accessToken
                     ?: return@flatMap Mono.error(
-                        io.github.antistereov.start.global.exception.MissingCredentialsException(
+                        MissingCredentialsException(
                             properties.serviceName,
                             "access token",
                             userId

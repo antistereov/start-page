@@ -1,10 +1,13 @@
 package io.github.antistereov.start.widgets.auth.unsplash.service
 
-import io.github.antistereov.start.user.service.StateValidation
+import io.github.antistereov.start.global.exception.InvalidCallbackException
+import io.github.antistereov.start.global.exception.MissingCredentialsException
+import io.github.antistereov.start.global.exception.ThirdPartyAuthorizationCanceledException
 import io.github.antistereov.start.security.AESEncryption
-import io.github.antistereov.start.widgets.auth.unsplash.model.UnsplashAuthDetails
+import io.github.antistereov.start.user.service.StateValidation
 import io.github.antistereov.start.user.service.UserService
 import io.github.antistereov.start.widgets.auth.unsplash.config.UnsplashProperties
+import io.github.antistereov.start.widgets.auth.unsplash.model.UnsplashAuthDetails
 import io.github.antistereov.start.widgets.auth.unsplash.model.UnsplashTokenResponse
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpHeaders
@@ -54,7 +57,7 @@ class UnsplashAuthService(
 
         if (error != null && errorDescription != null) {
             return Mono.error(
-                io.github.antistereov.start.global.exception.ThirdPartyAuthorizationCanceledException(
+                ThirdPartyAuthorizationCanceledException(
                     properties.serviceName,
                     error,
                     errorDescription
@@ -63,7 +66,7 @@ class UnsplashAuthService(
         }
 
         return Mono.error(
-            io.github.antistereov.start.global.exception.InvalidCallbackException(
+            InvalidCallbackException(
                 properties.serviceName,
                 "Invalid request parameters."
             )
@@ -120,7 +123,7 @@ class UnsplashAuthService(
         return userService.findById(userId).flatMap { user ->
             val encryptedAccessToken = user.auth.unsplash.accessToken
                 ?: return@flatMap Mono.error(
-                    io.github.antistereov.start.global.exception.MissingCredentialsException(
+                    MissingCredentialsException(
                         properties.serviceName,
                         "access token",
                         userId

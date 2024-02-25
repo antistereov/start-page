@@ -1,11 +1,15 @@
 package io.github.antistereov.start.widgets.auth.instagram.service
 
+import io.github.antistereov.start.global.exception.ExpiredTokenException
+import io.github.antistereov.start.global.exception.InvalidCallbackException
+import io.github.antistereov.start.global.exception.MissingCredentialsException
+import io.github.antistereov.start.global.exception.ThirdPartyAuthorizationCanceledException
 import io.github.antistereov.start.security.AESEncryption
 import io.github.antistereov.start.user.model.User
 import io.github.antistereov.start.user.service.StateValidation
 import io.github.antistereov.start.user.service.UserService
-import io.github.antistereov.start.widgets.auth.instagram.model.InstagramAuthDetails
 import io.github.antistereov.start.widgets.auth.instagram.config.InstagramProperties
+import io.github.antistereov.start.widgets.auth.instagram.model.InstagramAuthDetails
 import io.github.antistereov.start.widgets.auth.instagram.model.InstagramLongLivedTokenResponse
 import io.github.antistereov.start.widgets.auth.instagram.model.InstagramShortLivedTokenResponse
 import org.slf4j.LoggerFactory
@@ -55,7 +59,7 @@ class InstagramAuthService(
                 val userId = user.id
                 val accessToken = user.auth.instagram.accessToken
                     ?: return@flatMap Mono.error(
-                        io.github.antistereov.start.global.exception.MissingCredentialsException(
+                        MissingCredentialsException(
                             properties.serviceName,
                             "access token",
                             userId
@@ -68,7 +72,7 @@ class InstagramAuthService(
 
         if (error != null && errorCode != null && errorReason != null) {
             return Mono.error(
-                io.github.antistereov.start.global.exception.ThirdPartyAuthorizationCanceledException(
+                ThirdPartyAuthorizationCanceledException(
                     properties.serviceName,
                     errorCode,
                     errorReason
@@ -77,7 +81,7 @@ class InstagramAuthService(
         }
 
         return Mono.error(
-            io.github.antistereov.start.global.exception.InvalidCallbackException(
+            InvalidCallbackException(
                 properties.serviceName,
                 "Invalid request parameters."
             )
@@ -93,7 +97,7 @@ class InstagramAuthService(
                 Mono.just(aesEncryption.decrypt(accessToken))
             } else {
                 Mono.error(
-                    io.github.antistereov.start.global.exception.MissingCredentialsException(
+                    MissingCredentialsException(
                         properties.serviceName,
                         "access token",
                         userId
@@ -111,7 +115,7 @@ class InstagramAuthService(
         return userService.findById(userId).flatMap { user ->
             val expirationDate = user.auth.instagram.expirationDate
                 ?: return@flatMap Mono.error(
-                    io.github.antistereov.start.global.exception.MissingCredentialsException(
+                    MissingCredentialsException(
                         properties.serviceName,
                         "expirationDate",
                         userId
@@ -119,7 +123,7 @@ class InstagramAuthService(
                 )
             if (currentTime.isAfter(expirationDate)) {
                 return@flatMap Mono.error(
-                    io.github.antistereov.start.global.exception.ExpiredTokenException(
+                    ExpiredTokenException(
                         properties.serviceName,
                         userId
                     )
@@ -128,7 +132,7 @@ class InstagramAuthService(
 
             val encryptedAccessToken = user.auth.instagram.accessToken
                 ?: return@flatMap Mono.error(
-                    io.github.antistereov.start.global.exception.MissingCredentialsException(
+                    MissingCredentialsException(
                         properties.serviceName,
                         "access token",
                         userId
