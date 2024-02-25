@@ -73,7 +73,7 @@ class UnsplashWidgetService(
                         logger.error("Error deleting Unsplash widget for user: $userId.", error)
                     }
                     .then(userService.save(user.apply { this.widgets.unsplashId = null }))
-                    .map {"Unsplash widget cleared for use: $userId" }
+                    .map {"Unsplash widget cleared for user: $userId" }
             }
         }
     }

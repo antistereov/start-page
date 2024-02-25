@@ -96,4 +96,14 @@ class UnsplashController(
                 service.unlikePhoto(accessToken, id)
             }
     }
+
+    @DeleteMapping
+    fun deleteUnsplashWidget(authentication: Authentication): Mono<String> {
+        logger.info("Executing Unsplash deleteUnsplashWidget method.")
+
+        return principalExtractor.getUserId(authentication)
+            .flatMap { userId ->
+                service.clearUnsplashWidget(userId)
+            }
+    }
 }

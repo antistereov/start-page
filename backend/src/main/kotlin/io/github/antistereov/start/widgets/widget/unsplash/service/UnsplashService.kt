@@ -105,6 +105,12 @@ class UnsplashService(
         }
     }
 
+    fun clearUnsplashWidget(userId: String): Mono<String> {
+        logger.debug("Clearing Unsplash widget for user $userId")
+
+        return widgetService.deleteUnsplashWidget(userId)
+    }
+
     private fun saveRecentPicture(userId: String, response: String): Mono<Photo> {
         logger.debug("Saving recent picture for user $userId")
 
