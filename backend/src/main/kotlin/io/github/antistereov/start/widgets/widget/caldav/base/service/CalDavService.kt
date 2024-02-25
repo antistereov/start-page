@@ -36,24 +36,7 @@ class CalDavService(
 
     fun deleteResources(userId: String, icsLinks: List<String>): Mono<List<CalDavResource>> {
         logger.debug("Deleting resources for user: $userId.")
-
-        return calDavWidgetService.findCalDavWidgetByUserId(userId).flatMap { widget ->
-            val updatedResources = mutableListOf<CalDavResource>()
-
-            if (icsLinks.isNotEmpty()) {
-                updatedResources.addAll(
-                    widget.resources.filter { aesEncryption.decrypt(it.icsLink) !in icsLinks }
-                )
-
-
-                widget.resources = updatedResources
-
-                calDavWidgetService.saveCalDavWidgetForUserId(userId, widget)
-                    .thenReturn(updatedResources)
-            } else {
-                calDavWidgetService.deleteCalDavWidget(userId).thenReturn(emptyList())
-            }
-        }
+        return calDavWidgetService.deleteCalDavResources(userId, icsLinks)
     }
 
     fun getUserResources(userId: String): Mono<List<CalDavResource>> {

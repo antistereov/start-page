@@ -1,7 +1,8 @@
 package io.github.antistereov.start.widgets.widget.caldav.base.service
 
-import io.github.antistereov.start.global.service.LastUsedIdService
+import io.github.antistereov.start.security.AESEncryption
 import io.github.antistereov.start.user.service.UserService
+import io.github.antistereov.start.widgets.widget.caldav.base.model.CalDavResource
 import io.github.antistereov.start.widgets.widget.caldav.model.CalDavWidget
 import io.github.antistereov.start.widgets.widget.caldav.repository.CalDavRepository
 import org.slf4j.LoggerFactory
@@ -12,7 +13,7 @@ import reactor.core.publisher.Mono
 class CalDavWidgetService(
     private val calDavRepository: CalDavRepository,
     private val userService: UserService,
-    private val idService: LastUsedIdService,
+    private val aesEncryption: AESEncryption,
 ) {
 
     private val logger = LoggerFactory.getLogger(CalDavWidgetService::class.java)
@@ -50,12 +51,10 @@ class CalDavWidgetService(
             val calDavId = user.widgets.calDavId
 
             if (calDavId == null) {
-                generateId().flatMap { id ->
-                    val newWidget = CalDavWidget(id)
-                    saveCalDavWidget(newWidget).flatMap { widget ->
-                        user.widgets.calDavId = widget.id
-                        userService.save(user).thenReturn(widget)
-                    }
+                val newWidget = CalDavWidget()
+                saveCalDavWidget(newWidget).flatMap { widget ->
+                    user.widgets.calDavId = widget.id
+                    userService.save(user).thenReturn(widget)
                 }
             } else {
                 findCalDavWidgetById(calDavId)
@@ -63,7 +62,31 @@ class CalDavWidgetService(
         }
     }
 
-    fun deleteCalDavWidget(userId: String): Mono<String> {
+    fun deleteCalDavResources(userId: String, icsLinks: List<String>): Mono<List<CalDavResource>> {
+        return userService.findById(userId).flatMap { user ->
+            val widgetId = user.widgets.calDavId
+                ?: return@flatMap Mono.just(emptyList<CalDavResource>())
+
+            findCalDavWidgetById(widgetId).flatMap { widget ->
+                val updatedResources = mutableListOf<CalDavResource>()
+
+                if (icsLinks.isNotEmpty()) {
+                    updatedResources.addAll(
+                        widget.resources.filter { aesEncryption.decrypt(it.icsLink) !in icsLinks }
+                    )
+
+                    widget.resources = updatedResources
+
+                    saveCalDavWidgetForUserId(userId, widget)
+                        .thenReturn(updatedResources)
+                } else {
+                    deleteCalDavWidget(userId).thenReturn(emptyList())
+                }
+            }
+        }
+    }
+
+    private fun deleteCalDavWidget(userId: String): Mono<String> {
         logger.debug("Deleting CalDav widget for user: $userId.")
 
         return userService.findById(userId).flatMap { user ->
@@ -81,7 +104,7 @@ class CalDavWidgetService(
         }
     }
 
-    private fun findCalDavWidgetById(widgetId: Long?): Mono<CalDavWidget> {
+    private fun findCalDavWidgetById(widgetId: String?): Mono<CalDavWidget> {
         logger.debug("Finding CalDavWidget by ID: $widgetId.")
 
         if (widgetId == null) {
@@ -100,9 +123,5 @@ class CalDavWidgetService(
                 logger.error("Error saving CalDavWidget for user.", error)
                 error
             }
-    }
-
-    private fun generateId(): Mono<Long> {
-        return idService.getAndUpdateLastUsedId("caldav")
     }
 }

@@ -1,7 +1,6 @@
 package io.github.antistereov.start.widgets.widget.chat.service
 
 import io.github.antistereov.start.global.model.exception.MessageLimitExceededException
-import io.github.antistereov.start.global.service.LastUsedIdService
 import io.github.antistereov.start.user.service.UserService
 import io.github.antistereov.start.widgets.auth.openai.config.OpenAIProperties
 import io.github.antistereov.start.widgets.widget.chat.model.ChatWidget
@@ -14,7 +13,6 @@ import reactor.core.publisher.Mono
 class ChatWidgetService(
     private val chatRepository: ChatRepository,
     private val userService: UserService,
-    private val idService: LastUsedIdService,
     private val properties: OpenAIProperties,
 ) {
 
@@ -38,7 +36,7 @@ class ChatWidgetService(
         }
     }
 
-    fun findChatWidgetById(widgetId: Long?): Mono<ChatWidget> {
+    fun findChatWidgetById(widgetId: String?): Mono<ChatWidget> {
         logger.debug("Finding ChatWidget by ID: $widgetId.")
 
         if (widgetId == null) {
@@ -95,12 +93,10 @@ class ChatWidgetService(
             val chatId = user.widgets.chatId
 
             if (chatId == null) {
-                generateId().flatMap { id ->
-                    val newWidget = ChatWidget(id)
-                    saveChatWidget(newWidget).flatMap { widget ->
-                        user.widgets.calDavId = widget.id
-                        userService.save(user).thenReturn(widget)
-                    }
+                val newWidget = ChatWidget()
+                saveChatWidget(newWidget).flatMap { widget ->
+                    user.widgets.chatId = widget.id
+                    userService.save(user).thenReturn(widget)
                 }
             } else {
                 findChatWidgetById(chatId)
@@ -116,11 +112,5 @@ class ChatWidgetService(
                 logger.error("Error saving ChatWidget for user.", error)
                 error
             }
-    }
-
-
-
-    private fun generateId(): Mono<Long> {
-        return idService.getAndUpdateLastUsedId("chat")
     }
 }

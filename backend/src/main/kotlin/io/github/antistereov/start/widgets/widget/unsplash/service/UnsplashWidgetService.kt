@@ -1,6 +1,5 @@
 package io.github.antistereov.start.widgets.widget.unsplash.service
 
-import io.github.antistereov.start.global.service.LastUsedIdService
 import io.github.antistereov.start.user.service.UserService
 import io.github.antistereov.start.widgets.widget.unsplash.model.UnsplashWidget
 import io.github.antistereov.start.widgets.widget.unsplash.repository.UnsplashRepository
@@ -12,7 +11,6 @@ import reactor.core.publisher.Mono
 class UnsplashWidgetService(
     private val unsplashRepository: UnsplashRepository,
     private val userService: UserService,
-    private val idService: LastUsedIdService,
 ) {
 
     private val logger = LoggerFactory.getLogger(UnsplashWidgetService::class.java)
@@ -50,12 +48,10 @@ class UnsplashWidgetService(
             val unsplashId = user.widgets.unsplashId
 
             if (unsplashId == null) {
-                generateId().flatMap { id ->
-                    val newWidget = UnsplashWidget(id)
-                    saveUnsplashWidget(newWidget).flatMap { widget ->
-                        user.widgets.unsplashId = widget.id
-                        userService.save(user).thenReturn(widget)
-                    }
+                val newWidget = UnsplashWidget()
+                saveUnsplashWidget(newWidget).flatMap { widget ->
+                    user.widgets.unsplashId = widget.id
+                    userService.save(user).thenReturn(widget)
                 }
             } else {
                 findUnsplashWidgetById(unsplashId)
@@ -82,7 +78,7 @@ class UnsplashWidgetService(
         }
     }
 
-    private fun findUnsplashWidgetById(widgetId: Long?): Mono<UnsplashWidget> {
+    private fun findUnsplashWidgetById(widgetId: String?): Mono<UnsplashWidget> {
         logger.debug("Finding UnsplashWidget by ID: $widgetId.")
 
         if (widgetId == null) {
@@ -101,9 +97,5 @@ class UnsplashWidgetService(
                 logger.error("Error saving UnsplashWidget for user.", error)
                 error
             }
-    }
-
-    private fun generateId(): Mono<Long> {
-        return idService.getAndUpdateLastUsedId("unsplash")
     }
 }
