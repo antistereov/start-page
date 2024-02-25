@@ -21,9 +21,10 @@ class UserController(
     }
 
     @GetMapping("/me")
-    fun getUserProfile(authentication: Authentication): Mono<Map<String, Any>> {
-        return principalExtractor.getJwt(authentication)
-            .map { it.claims }
+    fun getUserProfile(authentication: Authentication): Mono<User> {
+        return principalExtractor.getUserId(authentication).flatMap { userId ->
+            userService.findById(userId)
+        }
     }
 
     @DeleteMapping("/me")
