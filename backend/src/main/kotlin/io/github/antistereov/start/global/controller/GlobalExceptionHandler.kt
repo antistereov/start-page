@@ -17,7 +17,9 @@ class GlobalExceptionHandler {
 
     private val exceptionToHttpStatus = mapOf(
         // Custom exceptions
-        CannotSaveUserException::class.java to HttpStatus.BAD_REQUEST,
+        CannotSaveDocumentException::class.java to HttpStatus.BAD_REQUEST,
+        CannotDeleteDocumentException::class.java to HttpStatus.BAD_REQUEST,
+        DocumentNotFoundException::class.java to HttpStatus.NOT_FOUND,
         ExpiredTokenException::class.java to HttpStatus.BAD_REQUEST,
         InvalidCallbackException::class.java to HttpStatus.BAD_REQUEST,
         InvalidNextcloudCredentialsException::class.java to HttpStatus.UNAUTHORIZED,
@@ -35,7 +37,6 @@ class GlobalExceptionHandler {
         ThirdPartyAuthorizationCanceledException::class.java to HttpStatus.UNAUTHORIZED,
         TimeoutException::class.java to HttpStatus.REQUEST_TIMEOUT,
         UnexpectedErrorException::class.java to HttpStatus.INTERNAL_SERVER_ERROR,
-        UserNotFoundException::class.java to HttpStatus.NOT_FOUND,
         JwtDecoderInitializationException::class.java to HttpStatus.INTERNAL_SERVER_ERROR,
 
         // Spring exceptions
