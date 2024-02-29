@@ -8,12 +8,12 @@ import org.springframework.web.util.UriComponentsBuilder
 import reactor.core.publisher.Mono
 
 @Service
-class WeatherService(
+class OpenWeatherMapService(
     private val baseService: BaseService,
     private val properties: OpenWeatherMapProperties
 ) {
 
-    private val logger = LoggerFactory.getLogger(WeatherService::class.java)
+    private val logger = LoggerFactory.getLogger(OpenWeatherMapService::class.java)
 
 
     fun getCurrentWeather(lat: Double, lon: Double, unit: String): Mono<String> {

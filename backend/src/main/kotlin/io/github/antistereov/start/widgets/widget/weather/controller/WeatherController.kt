@@ -2,8 +2,8 @@ package io.github.antistereov.start.widgets.widget.weather.controller
 
 import io.github.antistereov.start.security.AuthenticationPrincipalExtractor
 import io.github.antistereov.start.widgets.widget.weather.model.WeatherLocation
-import io.github.antistereov.start.widgets.widget.weather.model.WeatherWidget
-import io.github.antistereov.start.widgets.widget.weather.service.WeatherService
+import io.github.antistereov.start.widgets.widget.weather.model.WeatherWidgetData
+import io.github.antistereov.start.widgets.widget.weather.service.OpenWeatherMapService
 import io.github.antistereov.start.widgets.widget.weather.service.WeatherWidgetService
 import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.*
@@ -12,7 +12,7 @@ import reactor.core.publisher.Mono
 @RestController
 @RequestMapping("/weather")
 class WeatherController(
-    private val weatherService: WeatherService,
+    private val openWeatherMapService: OpenWeatherMapService,
     private val widgetService: WeatherWidgetService,
     private val principalExtractor: AuthenticationPrincipalExtractor,
 ) {
@@ -46,13 +46,13 @@ class WeatherController(
         @RequestParam(required = false) countryCode: String?,
         @RequestParam(defaultValue = "5") limit: Int
     ): Mono<String> {
-        return weatherService.getCoordinatesByLocationName(cityName, stateCode, countryCode, limit)
+        return openWeatherMapService.getCoordinatesByLocationName(cityName, stateCode, countryCode, limit)
     }
 
     @GetMapping
     fun getWeatherWidget(
         authentication: Authentication,
-    ): Mono<WeatherWidget> {
+    ): Mono<WeatherWidgetData> {
         return principalExtractor.getUserId(authentication).flatMap { userId ->
             widgetService.getWeatherWidgetSettings(userId)
         }

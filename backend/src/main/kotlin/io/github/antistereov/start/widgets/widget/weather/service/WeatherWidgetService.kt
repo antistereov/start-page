@@ -2,7 +2,7 @@ package io.github.antistereov.start.widgets.widget.weather.service
 
 import io.github.antistereov.start.user.service.UserService
 import io.github.antistereov.start.widgets.widget.weather.model.WeatherLocation
-import io.github.antistereov.start.widgets.widget.weather.model.WeatherWidget
+import io.github.antistereov.start.widgets.widget.weather.model.WeatherWidgetData
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Mono
@@ -10,7 +10,7 @@ import reactor.core.publisher.Mono
 @Service
 class WeatherWidgetService(
     private val userService: UserService,
-    private val weatherService: WeatherService,
+    private val openWeatherMapService: OpenWeatherMapService,
 ) {
 
     private val logger = LoggerFactory.getLogger(WeatherWidgetService::class.java)
@@ -26,9 +26,9 @@ class WeatherWidgetService(
                 val primaryLat = primaryLocation.lat
                 val primaryLon = primaryLocation.lon
 
-                weatherService.getCurrentWeather(primaryLat, primaryLon, user.widgets.weather.units)
+                openWeatherMapService.getCurrentWeather(primaryLat, primaryLon, user.widgets.weather.units)
             } else {
-                weatherService.getCurrentWeather(lat, lon, user.widgets.weather.units)
+                openWeatherMapService.getCurrentWeather(lat, lon, user.widgets.weather.units)
             }
         }
     }
@@ -44,9 +44,9 @@ class WeatherWidgetService(
                 val primaryLat = primaryLocation.lat
                 val primaryLon = primaryLocation.lon
 
-                weatherService.getWeatherForecast(primaryLat, primaryLon, user.widgets.weather.units)
+                openWeatherMapService.getWeatherForecast(primaryLat, primaryLon, user.widgets.weather.units)
             } else {
-                weatherService.getWeatherForecast(lat, lon, user.widgets.weather.units)
+                openWeatherMapService.getWeatherForecast(lat, lon, user.widgets.weather.units)
             }
         }
     }
@@ -92,7 +92,7 @@ class WeatherWidgetService(
         }
     }
 
-    fun getWeatherWidgetSettings(userId: String): Mono<WeatherWidget> {
+    fun getWeatherWidgetSettings(userId: String): Mono<WeatherWidgetData> {
         logger.debug("Get weather widget settings for user: $userId")
 
         return userService.findById(userId).map { user ->
