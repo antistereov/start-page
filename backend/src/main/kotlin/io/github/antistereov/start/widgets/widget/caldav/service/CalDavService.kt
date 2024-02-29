@@ -1,10 +1,10 @@
-package io.github.antistereov.start.widgets.widget.caldav.base.service
+package io.github.antistereov.start.widgets.widget.caldav.service
 
 import io.github.antistereov.start.global.exception.DocumentExistsException
 import io.github.antistereov.start.user.service.UserService
-import io.github.antistereov.start.widgets.widget.caldav.base.dto.CreateCalDavResourceDTO
-import io.github.antistereov.start.widgets.widget.caldav.base.dto.UpdateCalDavResourceDTO
-import io.github.antistereov.start.widgets.widget.caldav.base.model.CalDavResource
+import io.github.antistereov.start.widgets.widget.caldav.dto.CreateCalDavResourceDTO
+import io.github.antistereov.start.widgets.widget.caldav.dto.UpdateCalDavResourceDTO
+import io.github.antistereov.start.widgets.widget.caldav.model.CalDavResource
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux

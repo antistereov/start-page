@@ -1,11 +1,11 @@
-package io.github.antistereov.start.widgets.widget.caldav.base.service
+package io.github.antistereov.start.widgets.widget.caldav.service
 
 import io.github.antistereov.start.global.exception.CannotDeleteDocumentException
 import io.github.antistereov.start.global.exception.CannotSaveDocumentException
 import io.github.antistereov.start.global.exception.DocumentNotFoundException
 import io.github.antistereov.start.security.AESEncryption
-import io.github.antistereov.start.widgets.widget.caldav.base.model.CalDavEntity
-import io.github.antistereov.start.widgets.widget.caldav.base.model.CalDavResource
+import io.github.antistereov.start.widgets.widget.caldav.model.CalDavEntity
+import io.github.antistereov.start.widgets.widget.caldav.model.CalDavResource
 import io.github.antistereov.start.widgets.widget.caldav.repository.CalDavResourceRepository
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service

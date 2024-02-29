@@ -1,8 +1,8 @@
-package io.github.antistereov.start.widgets.widget.caldav.base.dto
+package io.github.antistereov.start.widgets.widget.caldav.dto
 
-import io.github.antistereov.start.widgets.widget.caldav.base.model.CalDavAuthType
-import io.github.antistereov.start.widgets.widget.caldav.base.model.CalDavResource
-import io.github.antistereov.start.widgets.widget.caldav.base.model.CalDavResourceType
+import io.github.antistereov.start.widgets.widget.caldav.model.CalDavAuthType
+import io.github.antistereov.start.widgets.widget.caldav.model.CalDavResource
+import io.github.antistereov.start.widgets.widget.caldav.model.CalDavResourceType
 
 class UpdateCalDavResourceDTO(
     val id: String,

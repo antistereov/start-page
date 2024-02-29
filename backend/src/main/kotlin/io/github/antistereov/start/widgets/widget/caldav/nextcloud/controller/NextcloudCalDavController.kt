@@ -2,7 +2,7 @@ package io.github.antistereov.start.widgets.widget.caldav.nextcloud.controller
 
 import io.github.antistereov.start.security.AuthenticationPrincipalExtractor
 import io.github.antistereov.start.widgets.auth.nextcloud.service.NextcloudAuthService
-import io.github.antistereov.start.widgets.widget.caldav.base.model.CalDavResource
+import io.github.antistereov.start.widgets.widget.caldav.model.CalDavResource
 import io.github.antistereov.start.widgets.widget.caldav.nextcloud.service.NextcloudCalDavService
 import org.slf4j.LoggerFactory
 import org.springframework.security.core.Authentication

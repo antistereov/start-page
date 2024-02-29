@@ -1,10 +1,10 @@
-package io.github.antistereov.start.widgets.widget.caldav.base.controller
+package io.github.antistereov.start.widgets.widget.caldav.controller
 
 import io.github.antistereov.start.security.AuthenticationPrincipalExtractor
-import io.github.antistereov.start.widgets.widget.caldav.base.dto.CreateCalDavResourceDTO
-import io.github.antistereov.start.widgets.widget.caldav.base.dto.UpdateCalDavResourceDTO
-import io.github.antistereov.start.widgets.widget.caldav.base.model.CalDavResource
-import io.github.antistereov.start.widgets.widget.caldav.base.service.CalDavService
+import io.github.antistereov.start.widgets.widget.caldav.dto.CreateCalDavResourceDTO
+import io.github.antistereov.start.widgets.widget.caldav.dto.UpdateCalDavResourceDTO
+import io.github.antistereov.start.widgets.widget.caldav.model.CalDavResource
+import io.github.antistereov.start.widgets.widget.caldav.service.CalDavService
 import org.slf4j.LoggerFactory
 import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.*

@@ -1,4 +1,4 @@
-package io.github.antistereov.start.widgets.widget.caldav.base.model
+package io.github.antistereov.start.widgets.widget.caldav.model
 
 import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.mapping.Document

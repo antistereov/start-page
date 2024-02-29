@@ -2,9 +2,9 @@ package io.github.antistereov.start.widgets.widget.caldav.nextcloud.service
 
 
 import io.github.antistereov.start.widgets.auth.nextcloud.model.NextcloudCredentials
-import io.github.antistereov.start.widgets.widget.caldav.base.model.CalDavAuthType
-import io.github.antistereov.start.widgets.widget.caldav.base.model.CalDavResource
-import io.github.antistereov.start.widgets.widget.caldav.base.model.CalDavResourceType
+import io.github.antistereov.start.widgets.widget.caldav.model.CalDavAuthType
+import io.github.antistereov.start.widgets.widget.caldav.model.CalDavResource
+import io.github.antistereov.start.widgets.widget.caldav.model.CalDavResourceType
 import net.fortuna.ical4j.data.CalendarBuilder
 import net.fortuna.ical4j.data.ParserException
 import net.fortuna.ical4j.model.Component

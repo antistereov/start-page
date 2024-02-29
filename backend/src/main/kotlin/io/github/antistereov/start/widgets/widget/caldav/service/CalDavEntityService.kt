@@ -1,10 +1,10 @@
-package io.github.antistereov.start.widgets.widget.caldav.base.service
+package io.github.antistereov.start.widgets.widget.caldav.service
 
 import io.github.antistereov.start.widgets.auth.nextcloud.service.NextcloudAuthService
-import io.github.antistereov.start.widgets.widget.caldav.base.model.CalDavAuthType
-import io.github.antistereov.start.widgets.widget.caldav.base.model.CalDavEntity
-import io.github.antistereov.start.widgets.widget.caldav.base.model.CalDavResource
-import io.github.antistereov.start.widgets.widget.caldav.base.model.RRuleModel
+import io.github.antistereov.start.widgets.widget.caldav.model.CalDavAuthType
+import io.github.antistereov.start.widgets.widget.caldav.model.CalDavEntity
+import io.github.antistereov.start.widgets.widget.caldav.model.CalDavResource
+import io.github.antistereov.start.widgets.widget.caldav.model.RRuleModel
 import net.fortuna.ical4j.data.CalendarBuilder
 import net.fortuna.ical4j.model.Component
 import net.fortuna.ical4j.model.DateTime

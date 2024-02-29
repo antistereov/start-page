@@ -6,7 +6,7 @@ import io.github.antistereov.start.global.exception.CannotSaveDocumentException
 import io.github.antistereov.start.global.exception.DocumentNotFoundException
 import io.github.antistereov.start.user.model.UserDocument
 import io.github.antistereov.start.user.repository.UserRepository
-import io.github.antistereov.start.widgets.widget.caldav.base.service.CalDavResourceService
+import io.github.antistereov.start.widgets.widget.caldav.service.CalDavResourceService
 import io.github.antistereov.start.widgets.widget.chat.repository.ChatRepository
 import org.slf4j.LoggerFactory
 import org.springframework.dao.DataAccessException
