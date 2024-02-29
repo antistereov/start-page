@@ -5,7 +5,7 @@ import io.github.antistereov.start.user.service.UserService
 import io.github.antistereov.start.widgets.auth.unsplash.config.UnsplashProperties
 import io.github.antistereov.start.widgets.auth.unsplash.service.UnsplashAuthService
 import io.github.antistereov.start.widgets.widget.unsplash.model.Photo
-import io.github.antistereov.start.widgets.widget.unsplash.model.UnsplashWidget
+import io.github.antistereov.start.widgets.widget.unsplash.model.UnsplashWidgetData
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
@@ -111,7 +111,7 @@ class UnsplashService(
         logger.debug("Clearing Unsplash widget for user $userId")
 
         return userService.findById(userId).flatMap { user ->
-            user.widgets.unsplash = UnsplashWidget()
+            user.widgets.unsplash = UnsplashWidgetData()
             userService.save(user).thenReturn("Unsplash widget cleared.")
         }
     }
