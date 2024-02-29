@@ -19,6 +19,7 @@ class GlobalExceptionHandler {
         // Custom exceptions
         CannotSaveDocumentException::class.java to HttpStatus.BAD_REQUEST,
         CannotDeleteDocumentException::class.java to HttpStatus.BAD_REQUEST,
+        DocumentExistsException::class.java to HttpStatus.BAD_REQUEST,
         DocumentNotFoundException::class.java to HttpStatus.NOT_FOUND,
         ExpiredTokenException::class.java to HttpStatus.BAD_REQUEST,
         InvalidCallbackException::class.java to HttpStatus.BAD_REQUEST,
