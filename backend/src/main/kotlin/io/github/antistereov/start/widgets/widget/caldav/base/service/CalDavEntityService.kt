@@ -1,6 +1,5 @@
 package io.github.antistereov.start.widgets.widget.caldav.base.service
 
-import io.github.antistereov.start.security.AESEncryption
 import io.github.antistereov.start.widgets.auth.nextcloud.service.NextcloudAuthService
 import io.github.antistereov.start.widgets.widget.caldav.base.model.CalDavAuthType
 import io.github.antistereov.start.widgets.widget.caldav.base.model.CalDavEntity
@@ -30,7 +29,6 @@ import java.util.*
 class CalDavEntityService(
     private val nextcloudAuthService: NextcloudAuthService,
     private val webClientBuilder: WebClient.Builder,
-    private val aesEncryption: AESEncryption,
 ) {
 
     private val logger = LoggerFactory.getLogger(CalDavEntityService::class.java)
@@ -39,36 +37,6 @@ class CalDavEntityService(
         logger.debug("Updating resource entities for resource: ${resource.name} for user: $userId")
 
         return getEntities(userId, resource)
-    }
-
-    fun encryptEntity(entity: CalDavEntity): CalDavEntity {
-        logger.debug("Encrypting entity.")
-
-        return entity.copy(
-            summary = aesEncryption.encrypt(entity.summary),
-            description = entity.description?.let { aesEncryption.encrypt(it) },
-            location = entity.location?.let { aesEncryption.encrypt(it) },
-        )
-    }
-
-    fun encryptEntities(entities: MutableList<CalDavEntity>): MutableList<CalDavEntity> {
-        logger.debug("Encrypting entities.")
-
-        return entities.map { entity ->
-            encryptEntity(entity)
-        }.toMutableList()
-    }
-
-    fun decryptEntities(entities: List<CalDavEntity>): MutableList<CalDavEntity> {
-        logger.debug("Decrypting entities.")
-
-        return entities.map { entity ->
-            entity.copy(
-                summary = aesEncryption.decrypt(entity.summary),
-                description = entity.description?.let { aesEncryption.decrypt(it) },
-                location = entity.location?.let { aesEncryption.decrypt(it) },
-            )
-        }.toMutableList()
     }
 
     private fun getEntities(userId: String, resource: CalDavResource): Mono<CalDavResource> {
@@ -85,7 +53,11 @@ class CalDavEntityService(
         }
     }
 
-    private fun buildWebClient(userId: String, resource: CalDavResource, uid: String? = null): Mono<WebClient> {
+    private fun buildWebClient(
+        userId: String,
+        resource: CalDavResource,
+        uid: String? = null
+    ): Mono<WebClient> {
         logger.debug("Building web client for resource: ${resource.name} for user: $userId.")
 
         val url = if (uid != null) "${resource.icsLink}/$uid" else resource.icsLink
@@ -96,7 +68,10 @@ class CalDavEntityService(
                 nextcloudAuthService.getCredentials(userId).map { credentials ->
                     webClientBuilder.clone()
                         .baseUrl(url)
-                        .defaultHeader("Authorization", Credentials.basic(credentials.username, credentials.password))
+                        .defaultHeader(
+                            "Authorization",
+                            Credentials.basic(credentials.username, credentials.password)
+                        )
                         .build()
                 }
             }
@@ -138,9 +113,18 @@ class CalDavEntityService(
                     val rruleProperty = entity.getProperty<RRule>(RRule.RRULE)
                     if (rruleProperty != null) {
                         val seedDate = DateTime(Date.from(startDateTime.atZone(ZoneId.systemDefault()).toInstant()))
-                        val recurPeriod = Period(seedDate, DateTime(Date.from(oneYearFromNow.atZone(ZoneId.systemDefault()).toInstant())))
+                        val recurPeriod = Period(
+                            seedDate,
+                            DateTime(Date.from(oneYearFromNow.atZone(ZoneId.systemDefault()).toInstant()))
+                        )
                         val periods = rruleProperty.recur.getDates(seedDate, recurPeriod, Value.DATE_TIME)
-                        periods.any { DateTime(it).toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime().isAfter(threeMonthsAgo) }
+                        periods.any {
+                            DateTime(it)
+                                .toInstant()
+                                .atZone(ZoneId.systemDefault())
+                                .toLocalDateTime()
+                                .isAfter(threeMonthsAgo)
+                        }
                     } else {
                         startDateTime.isAfter(threeMonthsAgo) && startDateTime.isBefore(oneYearFromNow)
                     }
