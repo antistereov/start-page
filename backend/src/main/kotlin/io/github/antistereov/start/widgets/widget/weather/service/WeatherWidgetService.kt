@@ -73,8 +73,8 @@ class WeatherWidgetService(
         return userService.findById(userId).flatMap { user ->
             val locations = user.widgets.weather.locations
 
-            if (locations.size >= 4) {
-                return@flatMap Mono.error(IllegalArgumentException("Maximum of 4 locations allowed."))
+            if (locations.size >= 10) {
+                return@flatMap Mono.error(IllegalArgumentException("Maximum of 10 locations allowed."))
             }
 
             if (locations.any { it.lat == weatherLocation.lat && it.lon == weatherLocation.lon }) {
