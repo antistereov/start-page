@@ -4,7 +4,7 @@ import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.mapping.Document
 
 @Document(collection = "chat")
-data class ChatWidget(
+data class ChatWidgetData(
     @Id var id: String? = null,
     var chatHistory: ChatHistory = ChatHistory()
 )

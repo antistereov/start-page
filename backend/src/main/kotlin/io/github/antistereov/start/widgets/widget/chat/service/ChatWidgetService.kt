@@ -2,7 +2,7 @@ package io.github.antistereov.start.widgets.widget.chat.service
 
 import io.github.antistereov.start.user.service.UserService
 import io.github.antistereov.start.widgets.auth.openai.config.OpenAIProperties
-import io.github.antistereov.start.widgets.widget.chat.model.ChatWidget
+import io.github.antistereov.start.widgets.widget.chat.model.ChatWidgetData
 import io.github.antistereov.start.widgets.widget.chat.repository.ChatRepository
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
@@ -17,7 +17,7 @@ class ChatWidgetService(
 
     private val logger = LoggerFactory.getLogger(ChatWidgetService::class.java)
 
-    fun saveChatWidgetForUser(userId: String, widget: ChatWidget): Mono<ChatWidget> {
+    fun saveChatWidgetForUser(userId: String, widget: ChatWidgetData): Mono<ChatWidgetData> {
         logger.debug("Saving ChatWidget for user: $userId.")
 
 
@@ -35,7 +35,7 @@ class ChatWidgetService(
         }
     }
 
-    fun findChatWidgetById(widgetId: String?): Mono<ChatWidget> {
+    fun findChatWidgetById(widgetId: String?): Mono<ChatWidgetData> {
         logger.debug("Finding ChatWidget by ID: $widgetId.")
 
         if (widgetId == null) {
@@ -45,7 +45,7 @@ class ChatWidgetService(
             .switchIfEmpty(Mono.error(IllegalArgumentException("ChatWidget not found with ID: $widgetId")))
     }
 
-    fun findChatWidgetByUserId(userId: String): Mono<ChatWidget> {
+    fun findChatWidgetByUserId(userId: String): Mono<ChatWidgetData> {
         logger.debug("Finding ChatWidget by user ID: $userId.")
 
         return userService.findById(userId).flatMap { user ->
@@ -55,7 +55,7 @@ class ChatWidgetService(
         }
     }
 
-    fun fetchAndValidateChat(userId: String): Mono<ChatWidget> {
+    fun fetchAndValidateChat(userId: String): Mono<ChatWidgetData> {
         logger.debug("Fetching and validating user: $userId.")
 
         return findOrCreateChatWidgetByUserId(userId).flatMap { chatWidget ->
@@ -75,12 +75,12 @@ class ChatWidgetService(
         return userService.deleteChatWidget(userId)
     }
 
-    private fun findOrCreateChatWidgetByUserId(userId: String): Mono<ChatWidget> {
+    private fun findOrCreateChatWidgetByUserId(userId: String): Mono<ChatWidgetData> {
         return userService.findById(userId).flatMap { user ->
             val chatId = user.widgets.chatId
 
             if (chatId == null) {
-                val newWidget = ChatWidget()
+                val newWidget = ChatWidgetData()
                 saveChatWidget(newWidget).flatMap { widget ->
                     user.widgets.chatId = widget.id
                     userService.save(user).thenReturn(widget)
@@ -91,10 +91,10 @@ class ChatWidgetService(
         }
     }
 
-    private fun saveChatWidget(chatWidget: ChatWidget): Mono<ChatWidget> {
+    private fun saveChatWidget(chatWidgetData: ChatWidgetData): Mono<ChatWidgetData> {
         logger.debug("Saving ChatWidget.")
 
-        return chatRepository.save(chatWidget)
+        return chatRepository.save(chatWidgetData)
             .onErrorMap { error ->
                 logger.error("Error saving ChatWidget for user.", error)
                 error

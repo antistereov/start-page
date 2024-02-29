@@ -35,7 +35,7 @@ class ChatService(
         }
     }
 
-    private fun createChatRequest(widget: ChatWidget, content: String): Mono<ChatRequest> {
+    private fun createChatRequest(widget: ChatWidgetData, content: String): Mono<ChatRequest> {
         logger.debug("Creating chat request.")
 
         val newMessage = Message("user", content)
@@ -83,7 +83,7 @@ class ChatService(
 
     private fun updateChatHistory(
         userId: String,
-        widget: ChatWidget,
+        widget: ChatWidgetData,
         response: ChatResponse,
         newMessage: Message
     ): Mono<Message> {
