@@ -6,5 +6,7 @@ import org.springframework.data.mongodb.core.mapping.Document
 @Document(collection = "weather")
 data class WeatherWidget(
     @Id var id: String? = null,
-    var locations: MutableList<WeatherLocation> = mutableListOf()
+    var units: String = "metric",
+    var locations: MutableList<WeatherLocation> = mutableListOf(),
+    var primaryLocation: WeatherLocation? = null,
 )

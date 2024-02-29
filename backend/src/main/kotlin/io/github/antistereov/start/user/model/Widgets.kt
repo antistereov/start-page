@@ -2,9 +2,11 @@ package io.github.antistereov.start.user.model
 
 import io.github.antistereov.start.widgets.widget.caldav.model.CalDavWidget
 import io.github.antistereov.start.widgets.widget.unsplash.model.UnsplashWidget
+import io.github.antistereov.start.widgets.widget.weather.model.WeatherWidget
 
 data class Widgets(
     var calDav: CalDavWidget = CalDavWidget(),
     var chatId: String? = null,
     var unsplash: UnsplashWidget = UnsplashWidget(),
+    var weather: WeatherWidget = WeatherWidget()
 )
