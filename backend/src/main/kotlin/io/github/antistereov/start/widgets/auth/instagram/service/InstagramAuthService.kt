@@ -5,7 +5,7 @@ import io.github.antistereov.start.global.exception.InvalidCallbackException
 import io.github.antistereov.start.global.exception.MissingCredentialsException
 import io.github.antistereov.start.global.exception.ThirdPartyAuthorizationCanceledException
 import io.github.antistereov.start.security.AESEncryption
-import io.github.antistereov.start.user.model.User
+import io.github.antistereov.start.user.model.UserDocument
 import io.github.antistereov.start.user.service.StateValidation
 import io.github.antistereov.start.user.service.UserService
 import io.github.antistereov.start.widgets.auth.instagram.config.InstagramProperties
@@ -107,7 +107,7 @@ class InstagramAuthService(
         }
     }
 
-    fun refreshAccessToken(userId: String): Mono<User> {
+    fun refreshAccessToken(userId: String): Mono<UserDocument> {
         logger.debug("Refreshing access token for user $userId")
 
         val currentTime = LocalDateTime.now()
@@ -155,7 +155,7 @@ class InstagramAuthService(
             }
     }
 
-    fun saveAccessToken(userId: String, accessToken: String): Mono<User> {
+    fun saveAccessToken(userId: String, accessToken: String): Mono<UserDocument> {
         logger.debug("Saving access token for user $userId")
 
         return updateAuthDetails(userId, accessToken = accessToken, expiresIn = 90*24*60*60)
@@ -191,7 +191,7 @@ class InstagramAuthService(
         code: String,
         state: String,
         expiresIn: Long? = 3600L
-    ): Mono<User> {
+    ): Mono<UserDocument> {
         logger.debug("Handling short lived token.")
 
         return stateValidation.getUserId(state).flatMap { userId ->
@@ -239,7 +239,7 @@ class InstagramAuthService(
         instagramUserId: String? = null,
         accessToken: String? = null,
         expiresIn: Long? = null,
-    ): Mono<User> {
+    ): Mono<UserDocument> {
         logger.debug("Updating auth details for user $userId")
 
         return userService.findById(userId).flatMap { user ->

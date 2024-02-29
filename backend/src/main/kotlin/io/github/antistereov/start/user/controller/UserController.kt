@@ -1,7 +1,7 @@
 package io.github.antistereov.start.user.controller
 
 import io.github.antistereov.start.security.AuthenticationPrincipalExtractor
-import io.github.antistereov.start.user.model.User
+import io.github.antistereov.start.user.model.UserDocument
 import io.github.antistereov.start.user.service.UserService
 import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.*
@@ -15,13 +15,13 @@ class UserController(
 ) {
 
     @PostMapping("/auth")
-    fun handleAuth(authentication: Authentication): Mono<User> {
+    fun handleAuth(authentication: Authentication): Mono<UserDocument> {
         return principalExtractor.getUserId(authentication)
             .flatMap { userService.findOrCreateUser(it) }
     }
 
     @GetMapping("/me")
-    fun getUserProfile(authentication: Authentication): Mono<User> {
+    fun getUserProfile(authentication: Authentication): Mono<UserDocument> {
         return principalExtractor.getUserId(authentication).flatMap { userId ->
             userService.findById(userId)
         }

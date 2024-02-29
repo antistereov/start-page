@@ -4,7 +4,7 @@ import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.mapping.Document
 
 @Document(collection = "users")
-data class User(
+data class UserDocument(
     @Id val id: String,
     var auth: Auth = Auth(),
     var widgets: Widgets = Widgets(),

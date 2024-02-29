@@ -4,7 +4,7 @@ import io.github.antistereov.start.config.properties.Auth0Properties
 import io.github.antistereov.start.global.exception.CannotDeleteDocumentException
 import io.github.antistereov.start.global.exception.CannotSaveDocumentException
 import io.github.antistereov.start.global.exception.DocumentNotFoundException
-import io.github.antistereov.start.user.model.User
+import io.github.antistereov.start.user.model.UserDocument
 import io.github.antistereov.start.user.repository.UserRepository
 import io.github.antistereov.start.widgets.widget.caldav.base.service.CalDavResourceService
 import io.github.antistereov.start.widgets.widget.chat.repository.ChatRepository
@@ -27,12 +27,12 @@ class UserService(
 
     private val logger = LoggerFactory.getLogger(UserService::class.java)
 
-    fun findOrCreateUser(userId: String): Mono<User> {
+    fun findOrCreateUser(userId: String): Mono<UserDocument> {
         logger.debug("Finding or creating user: $userId")
 
         return userRepository.findById(userId)
             .switchIfEmpty(
-                userRepository.save(User(userId))
+                userRepository.save(UserDocument(userId))
                     .onErrorMap(DataAccessException::class.java) { ex ->
                         io.github.antistereov.start.global.exception.ServiceException(
                             "Error creating user: $userId",
@@ -42,19 +42,19 @@ class UserService(
             )
     }
 
-    fun findById(userId: String): Mono<User> {
+    fun findById(userId: String): Mono<UserDocument> {
         logger.debug("Finding user by ID: $userId")
 
         return userRepository.findById(userId)
-            .switchIfEmpty(Mono.error(DocumentNotFoundException(userId, User::class.java)))
+            .switchIfEmpty(Mono.error(DocumentNotFoundException(userId, UserDocument::class.java)))
     }
 
-    fun save(user: User): Mono<User> {
+    fun save(user: UserDocument): Mono<UserDocument> {
         logger.debug("Saving user: {}", user.id)
 
         return userRepository.save(user)
             .onErrorMap { ex ->
-                CannotSaveDocumentException(user.id, User::class.java, ex)
+                CannotSaveDocumentException(user.id, UserDocument::class.java, ex)
             }
     }
 
@@ -67,7 +67,7 @@ class UserService(
                 .then(Mono.defer { userRepository.delete(user) })
                 .then(Mono.just("User deleted."))
                 .onErrorMap(DataAccessException::class.java) { ex ->
-                    CannotDeleteDocumentException(user.id, User::class.java, ex)
+                    CannotDeleteDocumentException(user.id, UserDocument::class.java, ex)
                 }
         }
     }
