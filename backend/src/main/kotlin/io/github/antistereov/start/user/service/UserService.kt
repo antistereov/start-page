@@ -7,7 +7,6 @@ import io.github.antistereov.start.user.model.User
 import io.github.antistereov.start.user.repository.UserRepository
 import io.github.antistereov.start.widgets.widget.caldav.repository.CalDavRepository
 import io.github.antistereov.start.widgets.widget.chat.repository.ChatRepository
-import io.github.antistereov.start.widgets.widget.unsplash.repository.UnsplashRepository
 import org.slf4j.LoggerFactory
 import org.springframework.dao.DataAccessException
 import org.springframework.stereotype.Service
@@ -20,7 +19,6 @@ class UserService(
     private val userRepository: UserRepository,
     private val chatRepository: ChatRepository,
     private val calDavRepository: CalDavRepository,
-    private val unsplashRepository: UnsplashRepository,
     private val webClient: WebClient,
     private val auth0properties: Auth0Properties,
 ) {
@@ -64,7 +62,6 @@ class UserService(
         return findById(userId).flatMap { user ->
             deleteCalDavWidget(userId)
                 .then(deleteChatWidget(userId))
-                .then(deleteUnsplashWidget(userId))
                 .then(Mono.defer { userRepository.delete(user) })
                 .then(Mono.just("User deleted."))
                 .onErrorMap(DataAccessException::class.java) { ex ->
@@ -131,27 +128,6 @@ class UserService(
                     .flatMap {
                         user.widgets.chatId = null
                         save(user).thenReturn("Chat widget cleared.")
-                    }
-            }
-        }
-    }
-
-    fun deleteUnsplashWidget(userId: String): Mono<String> {
-        logger.debug("Deleting Unsplash widget for user: {}", userId)
-
-        return findById(userId).flatMap { user ->
-            val unsplashId = user.widgets.unsplashId
-                ?: return@flatMap Mono.just("Unsplash widget cleared.")
-
-            unsplashRepository.findById(unsplashId).flatMap { widget ->
-                unsplashRepository.delete(widget)
-                    .doOnError { error ->
-                        logger.error("Error deleting Unsplash widget: $unsplashId", error)
-                    }
-                    .then(Mono.just("Unsplash widget cleared."))
-                    .flatMap {
-                        user.widgets.unsplashId = null
-                        save(user).thenReturn("Unsplash widget cleared.")
                     }
             }
         }

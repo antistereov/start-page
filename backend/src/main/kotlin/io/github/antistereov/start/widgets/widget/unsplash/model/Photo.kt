@@ -5,5 +5,4 @@ class Photo(
     val imageUrl: String,
     val width: Int,
     val height: Int,
-
 )

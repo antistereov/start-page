@@ -1,9 +1,11 @@
 package io.github.antistereov.start.widgets.widget.unsplash.service
 
 import io.github.antistereov.start.global.service.BaseService
+import io.github.antistereov.start.user.service.UserService
 import io.github.antistereov.start.widgets.auth.unsplash.config.UnsplashProperties
 import io.github.antistereov.start.widgets.auth.unsplash.service.UnsplashAuthService
 import io.github.antistereov.start.widgets.widget.unsplash.model.Photo
+import io.github.antistereov.start.widgets.widget.unsplash.model.UnsplashWidget
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
@@ -15,7 +17,7 @@ class UnsplashService(
     private val tokenService: UnsplashAuthService,
     private val baseService: BaseService,
     private val properties: UnsplashProperties,
-    private val widgetService: UnsplashWidgetService,
+    private val userService: UserService,
 ) {
 
     private val logger: Logger = LoggerFactory.getLogger(UnsplashService::class.java)
@@ -65,8 +67,8 @@ class UnsplashService(
     fun getRecentPhotos(userId: String): Mono<List<Photo>> {
         logger.debug("Getting recent photos for user $userId")
 
-        return widgetService.findUnsplashWidgetByUserId(userId).map { widget ->
-            widget.recentPhotos
+        return userService.findById(userId).map { user ->
+            user.widgets.unsplash.recentPhotos
         }
     }
 
@@ -93,8 +95,8 @@ class UnsplashService(
     ): Mono<String> {
         logger.debug("Getting recent photo for user $userId at index $index")
 
-        return widgetService.findUnsplashWidgetByUserId(userId).map { widget ->
-            val photo = widget.recentPhotos.getOrElse(index) {
+        return userService.findById(userId).map { user ->
+            val photo = user.widgets.unsplash.recentPhotos.getOrElse(index) {
                 throw IllegalArgumentException("No recent pictures found for user $userId at index $index")
             }
             val width = calculateMinimumPictureWidth(photo.width, photo.height, screenWidth, screenHeight)
@@ -108,24 +110,27 @@ class UnsplashService(
     fun clearUnsplashWidget(userId: String): Mono<String> {
         logger.debug("Clearing Unsplash widget for user $userId")
 
-        return widgetService.deleteUnsplashWidget(userId)
+        return userService.findById(userId).flatMap { user ->
+            user.widgets.unsplash = UnsplashWidget()
+            userService.save(user).thenReturn("Unsplash widget cleared.")
+        }
     }
 
     private fun saveRecentPicture(userId: String, response: String): Mono<Photo> {
         logger.debug("Saving recent picture for user $userId")
 
-        return widgetService.findOrCreateUnsplashWidgetByUserId(userId).flatMap { widget ->
+        return userService.findById(userId).flatMap { user ->
             val photo = Photo(
                 baseService.extractField(response, "id"),
                 baseService.extractField(response, "urls", "raw"),
                 baseService.extractField(response, "width").toInt(),
                 baseService.extractField(response, "height").toInt()
             )
-            if (widget.recentPhotos.size >= 30) {
-                widget.recentPhotos.removeAt(widget.recentPhotos.size - 1)
+            if (user.widgets.unsplash.recentPhotos.size >= 30) {
+                user.widgets.unsplash.recentPhotos.removeAt(user.widgets.unsplash.recentPhotos.size - 1)
             }
-            widget.recentPhotos.add(0, photo)
-            widgetService.saveUnsplashWidgetForUserId(userId, widget).thenReturn(photo)
+            user.widgets.unsplash.recentPhotos.add(0, photo)
+            userService.save(user).thenReturn(photo)
         }
     }
 
