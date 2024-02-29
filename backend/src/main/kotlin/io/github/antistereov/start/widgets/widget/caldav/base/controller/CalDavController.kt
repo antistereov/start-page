@@ -1,10 +1,10 @@
 package io.github.antistereov.start.widgets.widget.caldav.base.controller
 
 import io.github.antistereov.start.security.AuthenticationPrincipalExtractor
-import io.github.antistereov.start.widgets.widget.caldav.base.model.CalDavResource
-import io.github.antistereov.start.widgets.widget.caldav.base.service.CalDavService
 import io.github.antistereov.start.widgets.widget.caldav.base.dto.CreateCalDavResourceDTO
 import io.github.antistereov.start.widgets.widget.caldav.base.dto.UpdateCalDavResourceDTO
+import io.github.antistereov.start.widgets.widget.caldav.base.model.CalDavResource
+import io.github.antistereov.start.widgets.widget.caldav.base.service.CalDavService
 import org.slf4j.LoggerFactory
 import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.*
@@ -56,12 +56,12 @@ class CalDavController(
     @DeleteMapping
     fun deleteResources(
         authentication: Authentication,
-        @RequestParam(required = true) resourceId: String,
+        @RequestParam(required = true) id: String,
     ): Mono<String> {
         logger.info("Deleting resources.")
 
         return principalExtractor.getUserId(authentication).flatMap { userId ->
-            calDavService.deleteResource(userId, resourceId)
+            calDavService.deleteResource(userId, id)
         }
     }
 
