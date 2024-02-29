@@ -25,7 +25,9 @@ class CalDavService(
         val icsLink = resourceDTO.icsLink
 
         return resourceWithIcsLinkExists(userId, icsLink).flatMap { exists ->
-            if (exists) return@flatMap Mono.error(DocumentExistsException(icsLink, CalDavResource::class.java))
+            if (exists) return@flatMap Mono.error(DocumentExistsException(
+                CalDavResource::class.java, "Resource with ICS link: $icsLink already exists.")
+            )
 
             saveResource(userId, resourceDTO.toCalDavResource())
         }
@@ -44,7 +46,7 @@ class CalDavService(
             userService.findById(userId).flatMap { user ->
                 user.widgets.calDav.resources.add(savedCalDavResource.id!!)
                 userService.save(user)
-                    .thenReturn(calDavResource)
+                    .thenReturn(savedCalDavResource)
             }
         }
     }
