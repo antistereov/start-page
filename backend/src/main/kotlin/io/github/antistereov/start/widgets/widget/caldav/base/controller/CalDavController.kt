@@ -3,6 +3,8 @@ package io.github.antistereov.start.widgets.widget.caldav.base.controller
 import io.github.antistereov.start.security.AuthenticationPrincipalExtractor
 import io.github.antistereov.start.widgets.widget.caldav.base.model.CalDavResource
 import io.github.antistereov.start.widgets.widget.caldav.base.service.CalDavService
+import io.github.antistereov.start.widgets.widget.caldav.base.dto.CreateCalDavResourceDTO
+import io.github.antistereov.start.widgets.widget.caldav.base.dto.UpdateCalDavResourceDTO
 import org.slf4j.LoggerFactory
 import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.*
@@ -19,47 +21,58 @@ class CalDavController(
     private val logger = LoggerFactory.getLogger(CalDavController::class.java)
 
     @GetMapping
-    fun getUserResources(authentication: Authentication): Mono<List<CalDavResource>> {
+    fun getUserResources(authentication: Authentication): Flux<CalDavResource> {
         logger.info("Getting user resources.")
 
-        return principalExtractor.getUserId(authentication).flatMap { userId ->
+        return principalExtractor.getUserId(authentication).flatMapMany { userId ->
             calDavService.getUserResources(userId)
         }
     }
 
     @PostMapping
-    fun addResources(
+    fun createResource(
         authentication: Authentication,
-        @RequestBody resources: MutableList<CalDavResource>,
-    ): Mono<List<CalDavResource>> {
-        logger.info("Updating resources.")
+        @RequestBody resource: CreateCalDavResourceDTO,
+    ): Mono<CalDavResource> {
+        logger.info("Creating resource: ${resource.icsLink}")
 
         return principalExtractor.getUserId(authentication).flatMap { userId ->
-            calDavService.addResources(userId, resources)
+            calDavService.createResource(userId, resource)
+        }
+    }
+
+    @PutMapping
+    fun updateResource(
+        authentication: Authentication,
+        @RequestBody resource: UpdateCalDavResourceDTO,
+    ): Mono<CalDavResource> {
+        logger.info("Updating resource: ${resource.id}")
+
+        return principalExtractor.getUserId(authentication).flatMap { userId ->
+            calDavService.updateResource(userId, resource)
         }
     }
 
     @DeleteMapping
     fun deleteResources(
         authentication: Authentication,
-        @RequestParam icsLinks: List<String> = emptyList(),
-    ): Mono<List<CalDavResource>> {
+        @RequestParam(required = true) resourceId: String,
+    ): Mono<String> {
         logger.info("Deleting resources.")
 
         return principalExtractor.getUserId(authentication).flatMap { userId ->
-            calDavService.deleteResources(userId, icsLinks)
+            calDavService.deleteResource(userId, resourceId)
         }
     }
 
-    @PostMapping("/update")
-    fun updateResourceEntities(
+    @PutMapping("/refresh")
+    fun refreshResourceEntities(
         authentication: Authentication,
-        @RequestBody icsLinks: List<String> = emptyList()
     ): Flux<CalDavResource> {
         logger.info("Updating resource entities.")
 
         return principalExtractor.getUserId(authentication).flatMapMany { userId ->
-            calDavService.updateResourceEntities(userId, icsLinks)
+            calDavService.refreshResourceEntities(userId)
         }
     }
 }

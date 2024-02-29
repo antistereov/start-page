@@ -34,7 +34,7 @@ class UserController(
     }
 
     @DeleteMapping("/{userId}")
-    fun deleteAuth0User(@PathVariable userId: String): Mono<Void> {
+    fun deleteAuth0User(@PathVariable userId: String): Mono<String> {
         return userService.deleteAuth0User(userId)
     }
 

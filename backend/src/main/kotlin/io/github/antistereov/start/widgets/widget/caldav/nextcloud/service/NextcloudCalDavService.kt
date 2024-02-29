@@ -147,6 +147,7 @@ class NextcloudCalDavService {
 
         return if (name != null && color != null) {
             CalDavResource(
+                null,
                 name,
                 color,
                 icsLink,

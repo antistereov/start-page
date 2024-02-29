@@ -1,15 +1,19 @@
 package io.github.antistereov.start.widgets.widget.caldav.base.model
 
+import org.springframework.data.annotation.Id
+import org.springframework.data.mongodb.core.mapping.Document
 import java.time.Instant
 
-open class CalDavResource(
-    open val name: String,
-    open val color: String,
-    open val icsLink: String,
-    open val description: String?,
-    open val type: CalDavResourceType,
-    open val auth: CalDavAuthType,
-    open var lastUpdated: Instant?,
-    open val readOnly: Boolean,
-    open var entities: MutableList<CalDavEntity> = mutableListOf(),
+@Document(collection = "caldav_resources")
+class CalDavResource(
+    @Id val id: String? = null,
+    val icsLink: String,
+    val name: String,
+    val color: String,
+    val description: String?,
+    val type: CalDavResourceType,
+    val auth: CalDavAuthType,
+    var lastUpdated: Instant? = null,
+    val readOnly: Boolean,
+    var entities: MutableList<CalDavEntity> = mutableListOf()
 )

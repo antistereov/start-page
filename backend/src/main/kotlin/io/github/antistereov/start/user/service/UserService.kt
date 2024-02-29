@@ -1,24 +1,26 @@
 package io.github.antistereov.start.user.service
 
 import io.github.antistereov.start.config.properties.Auth0Properties
-import io.github.antistereov.start.global.exception.CannotSaveUserException
-import io.github.antistereov.start.global.exception.UserNotFoundException
+import io.github.antistereov.start.global.exception.CannotDeleteDocumentException
+import io.github.antistereov.start.global.exception.CannotSaveDocumentException
+import io.github.antistereov.start.global.exception.DocumentNotFoundException
 import io.github.antistereov.start.user.model.User
 import io.github.antistereov.start.user.repository.UserRepository
-import io.github.antistereov.start.widgets.widget.caldav.repository.CalDavRepository
+import io.github.antistereov.start.widgets.widget.caldav.base.service.CalDavResourceService
 import io.github.antistereov.start.widgets.widget.chat.repository.ChatRepository
 import org.slf4j.LoggerFactory
 import org.springframework.dao.DataAccessException
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.bodyToMono
+import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
 @Service
 class UserService(
     private val userRepository: UserRepository,
     private val chatRepository: ChatRepository,
-    private val calDavRepository: CalDavRepository,
+    private val calDavResourceService: CalDavResourceService,
     private val webClient: WebClient,
     private val auth0properties: Auth0Properties,
 ) {
@@ -44,15 +46,15 @@ class UserService(
         logger.debug("Finding user by ID: $userId")
 
         return userRepository.findById(userId)
-            .switchIfEmpty(Mono.error(UserNotFoundException(userId)))
+            .switchIfEmpty(Mono.error(DocumentNotFoundException(userId, User::class.java)))
     }
 
     fun save(user: User): Mono<User> {
         logger.debug("Saving user: {}", user.id)
 
         return userRepository.save(user)
-            .onErrorMap(DataAccessException::class.java) { ex ->
-                CannotSaveUserException(ex)
+            .onErrorMap { ex ->
+                CannotSaveDocumentException(user.id, User::class.java, ex)
             }
     }
 
@@ -65,12 +67,12 @@ class UserService(
                 .then(Mono.defer { userRepository.delete(user) })
                 .then(Mono.just("User deleted."))
                 .onErrorMap(DataAccessException::class.java) { ex ->
-                    RuntimeException("Error deleting user: $userId, ${ex.message}", ex)
+                    CannotDeleteDocumentException(user.id, User::class.java, ex)
                 }
         }
     }
 
-    fun deleteAuth0User(userId: String): Mono<Void> {
+    fun deleteAuth0User(userId: String): Mono<String> {
         return webClient.post()
             .uri("https://${auth0properties.domain}/oauth/token")
             .bodyValue(mapOf(
@@ -89,26 +91,19 @@ class UserService(
                     .retrieve()
                     .bodyToMono(Void::class.java)
             }
+            .then(delete(userId))
+            .map { "User globally deleted." }
     }
 
-    fun deleteCalDavWidget(userId: String): Mono<String> {
-        logger.debug("Deleting CalDav widget for user: {}", userId)
+    private fun deleteCalDavWidget(userId: String): Mono<Void> {
+        logger.debug("Deleting CalDav widget for user {}", userId)
 
         return findById(userId).flatMap { user ->
-            val calDavId = user.widgets.calDavId
-                ?: return@flatMap Mono.just("CalDav widget cleared.")
+            val resourceIds = user.widgets.calDav.resources
 
-            calDavRepository.findById(calDavId).flatMap { widget ->
-                calDavRepository.delete(widget)
-                    .doOnError { error ->
-                        logger.error("Error deleting CalDav widget: $calDavId", error)
-                    }
-                    .then(Mono.just("CalDav widget cleared."))
-                    .flatMap {
-                        user.widgets.calDavId = null
-                        save(user).thenReturn("CalDav widget cleared.")
-                    }
-            }
+            Flux.fromIterable(resourceIds).flatMap { resourceId ->
+                calDavResourceService.deleteCalDavResourceById(resourceId)
+            }.then()
         }
     }
 
