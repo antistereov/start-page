@@ -9,7 +9,6 @@ import io.github.antistereov.start.widgets.widget.caldav.model.CalDavResource
 import io.github.antistereov.start.widgets.widget.caldav.repository.CalDavResourceRepository
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
-import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
 @Service
@@ -26,13 +25,6 @@ class CalDavResourceService(
             .map { encryptedResource ->
                 decryptResource(encryptedResource)
             }
-    }
-
-    fun saveCalDavResources(decryptedResources: List<CalDavResource>): Flux<CalDavResource> {
-        logger.debug("Adding resources: {}", decryptedResources.map { it.icsLink })
-
-        return Flux.fromIterable(decryptedResources)
-            .flatMap { resource -> saveCalDavResource(resource) }
     }
 
     fun saveCalDavResource(decryptedResource: CalDavResource): Mono<CalDavResource> {
