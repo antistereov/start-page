@@ -92,7 +92,7 @@ class WeatherWidgetService(
         }
     }
 
-    fun getWeatherWidgetSettingsData(userId: String): Mono<WeatherWidgetData> {
+    fun getWeatherWidgetData(userId: String): Mono<WeatherWidgetData> {
         logger.debug("Get weather widget settings for user: $userId")
 
         return userService.findById(userId).map { user ->
