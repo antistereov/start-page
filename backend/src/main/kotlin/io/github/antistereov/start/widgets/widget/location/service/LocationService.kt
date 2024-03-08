@@ -2,7 +2,7 @@ package io.github.antistereov.start.widgets.widget.location.service
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.github.antistereov.start.widgets.widget.location.model.LocationAddress
-import io.github.antistereov.start.widgets.widget.transport.dvb.model.NearbyStop
+import io.github.antistereov.start.widgets.widget.transport.company.vvo.model.NearbyStop
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service

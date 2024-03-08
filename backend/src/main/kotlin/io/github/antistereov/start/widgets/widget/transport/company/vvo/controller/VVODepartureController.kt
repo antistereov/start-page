@@ -1,8 +1,8 @@
-package io.github.antistereov.start.widgets.widget.transport.dvb.controller
+package io.github.antistereov.start.widgets.widget.transport.company.vvo.controller
 
-import io.github.antistereov.start.widgets.widget.transport.dvb.model.DepartureMonitor
-import io.github.antistereov.start.widgets.widget.transport.dvb.model.PointFinder
-import io.github.antistereov.start.widgets.widget.transport.dvb.service.DVBDepartureService
+import io.github.antistereov.start.widgets.widget.transport.company.vvo.model.DepartureMonitor
+import io.github.antistereov.start.widgets.widget.transport.company.vvo.model.PointFinder
+import io.github.antistereov.start.widgets.widget.transport.company.vvo.service.VVODepartureService
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.web.bind.annotation.*
@@ -10,12 +10,12 @@ import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
 @RestController
-@RequestMapping("/transport/dvb")
-class DVBDepartureController(
-    private val dvbDepartureService: DVBDepartureService
+@RequestMapping("/transport/vvo")
+class VVODepartureController(
+    private val vvoDepartureService: VVODepartureService
 ) {
 
-    private val logger: Logger = LoggerFactory.getLogger(DVBDepartureController::class.java)
+    private val logger: Logger = LoggerFactory.getLogger(VVODepartureController::class.java)
 
     @GetMapping("/departures/nearby")
     fun getNearbyDepartures(
@@ -26,7 +26,7 @@ class DVBDepartureController(
     ): Flux<DepartureMonitor> {
         logger.info("Getting nearby departures for lat: $lat, lon: $lon, radius: $radius, limit: $limit")
 
-        return dvbDepartureService.getNearbyDepartures(lat, lon, radius, limit)
+        return vvoDepartureService.getNearbyDepartures(lat, lon, radius, limit)
     }
 
     @GetMapping("/departures/stopName")
@@ -36,7 +36,7 @@ class DVBDepartureController(
     ): Flux<DepartureMonitor> {
         logger.info("Getting departures for stop name: $name, limit: $limit")
 
-        return dvbDepartureService.getDeparturesByStopName(name, limit)
+        return vvoDepartureService.getDeparturesByStopName(name, limit)
     }
 
     @GetMapping("/departures/{stopId}")
@@ -46,7 +46,7 @@ class DVBDepartureController(
     ): Flux<DepartureMonitor> {
         logger.info("Getting departures for stop id: $stopId, limit: $limit")
 
-        return dvbDepartureService.getDeparturesByStopId(stopId, limit)
+        return vvoDepartureService.getDeparturesByStopId(stopId, limit)
     }
 
     @GetMapping("/pointIdFinder")
@@ -56,7 +56,7 @@ class DVBDepartureController(
     ): Mono<String> {
         logger.info("Getting best point id finder for query: $query, stopsOnly: $stopsOnly")
 
-        return dvbDepartureService.bestPointIdFinder(query, stopsOnly)
+        return vvoDepartureService.bestPointIdFinder(query, stopsOnly)
     }
 
     @GetMapping("/pointFinder")
@@ -66,6 +66,6 @@ class DVBDepartureController(
     ): Mono<PointFinder> {
         logger.info("Getting point finder for query: $query, stopsOnly: $stopsOnly")
 
-        return dvbDepartureService.pointFinder(query, stopsOnly)
+        return vvoDepartureService.pointFinder(query, stopsOnly)
     }
 }

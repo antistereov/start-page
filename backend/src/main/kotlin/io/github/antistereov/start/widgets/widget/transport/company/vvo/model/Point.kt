@@ -1,4 +1,4 @@
-package io.github.antistereov.start.widgets.widget.transport.dvb.model
+package io.github.antistereov.start.widgets.widget.transport.company.vvo.model
 
 data class Point(
     val id: String,

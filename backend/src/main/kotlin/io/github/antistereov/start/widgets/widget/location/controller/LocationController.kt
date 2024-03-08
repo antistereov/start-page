@@ -1,6 +1,6 @@
 package io.github.antistereov.start.widgets.widget.location.controller
 
-import io.github.antistereov.start.widgets.widget.transport.dvb.model.NearbyStop
+import io.github.antistereov.start.widgets.widget.transport.company.vvo.model.NearbyStop
 import io.github.antistereov.start.widgets.widget.location.service.LocationService
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory

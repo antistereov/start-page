@@ -1,8 +1,8 @@
-package io.github.antistereov.start.widgets.widget.transport.dvb.service
+package io.github.antistereov.start.widgets.widget.transport.company.vvo.service
 
-import io.github.antistereov.start.widgets.widget.transport.dvb.model.DepartureMonitor
-import io.github.antistereov.start.widgets.widget.transport.dvb.model.Point
-import io.github.antistereov.start.widgets.widget.transport.dvb.model.PointFinder
+import io.github.antistereov.start.widgets.widget.transport.company.vvo.model.DepartureMonitor
+import io.github.antistereov.start.widgets.widget.transport.company.vvo.model.Point
+import io.github.antistereov.start.widgets.widget.transport.company.vvo.model.PointFinder
 import io.github.antistereov.start.widgets.widget.location.service.LocationService
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -15,12 +15,12 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 @Service
-class DVBDepartureService(
+class VVODepartureService(
     private val webClient: WebClient,
     private val locationService: LocationService,
 ) {
 
-    private val logger: Logger = LoggerFactory.getLogger(DVBDepartureService::class.java)
+    private val logger: Logger = LoggerFactory.getLogger(VVODepartureService::class.java)
 
     fun getNearbyDepartures(lat: Double, lon: Double, radius: Long, limit: Long): Flux<DepartureMonitor> {
         logger.debug("Getting nearby departures for $lat, $lon")
@@ -106,7 +106,8 @@ class DVBDepartureService(
             if (fields.getOrNull(0) == null || fields.getOrNull(3) == null) {
                 return@flatMap Flux.error<Point>(IllegalArgumentException("Point ID is missing"))
             }
-            Flux.just(Point(
+            Flux.just(
+                Point(
                 id = fields[0],
                 type = fields.getOrNull(1),
                 city = fields.getOrNull(2),

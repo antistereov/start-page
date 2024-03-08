@@ -1,4 +1,4 @@
-package io.github.antistereov.start.widgets.widget.transport.dvb.service
+package io.github.antistereov.start.widgets.widget.transport.company.vvo.service
 
 import io.github.antistereov.start.widgets.widget.location.service.LocationService
 import org.slf4j.Logger
@@ -10,13 +10,13 @@ import reactor.core.publisher.Mono
 import java.time.LocalDateTime
 
 @Service
-class DVBTripService(
+class VVOTripService(
     private val webClient: WebClient,
-    private val departureService: DVBDepartureService,
+    private val departureService: VVODepartureService,
     private val locationService: LocationService,
 ) {
 
-    private val logger: Logger = LoggerFactory.getLogger(DVBTripService::class.java)
+    private val logger: Logger = LoggerFactory.getLogger(VVOTripService::class.java)
 
     fun getTripsFromAddressToAddress(
         originName: String,

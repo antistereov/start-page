@@ -1,6 +1,6 @@
-package io.github.antistereov.start.widgets.widget.transport.dvb.controller
+package io.github.antistereov.start.widgets.widget.transport.company.vvo.controller
 
-import io.github.antistereov.start.widgets.widget.transport.dvb.service.DVBTripService
+import io.github.antistereov.start.widgets.widget.transport.company.vvo.service.VVOTripService
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.web.bind.annotation.GetMapping
@@ -11,12 +11,12 @@ import reactor.core.publisher.Mono
 import java.time.LocalDateTime
 
 @RestController
-@RequestMapping("/transport/dvb")
-class DVBTripController(
-    private val dvbTripService: DVBTripService,
+@RequestMapping("/transport/vvo")
+class VVOTripController(
+    private val vvoTripService: VVOTripService,
 ) {
 
-    private val logger: Logger = LoggerFactory.getLogger(DVBTripController::class.java)
+    private val logger: Logger = LoggerFactory.getLogger(VVOTripController::class.java)
 
     @GetMapping("/trips")
     fun getTrip(
@@ -38,7 +38,7 @@ class DVBTripController(
         ): Mono<String> {
         logger.info("Getting trip for originId: $origin, destinationId: $destination")
 
-        return dvbTripService.getTrip(
+        return vvoTripService.getTrip(
             origin,
             destination,
             time,
@@ -73,7 +73,7 @@ class DVBTripController(
         ): Mono<String> {
         logger.info("Getting trip for originAddress: $origin, destinationAddress: $destination")
 
-        return dvbTripService.getTripsFromAddressToAddress(
+        return vvoTripService.getTripsFromAddressToAddress(
             origin,
             destination,
             time,
@@ -109,7 +109,7 @@ class DVBTripController(
         ): Mono<String> {
         logger.info("Getting trip for originLat: $originLat, originLon: $originLon, destinationName: $destination")
 
-        return dvbTripService.getTripsFromLocationToAddress(
+        return vvoTripService.getTripsFromLocationToAddress(
             originLat,
             originLon,
             destination,
@@ -146,7 +146,7 @@ class DVBTripController(
         ): Mono<String> {
         logger.info("Getting trip for originName: $origin, destinationLat: $destinationLat, destinationLon: $destinationLon")
 
-        return dvbTripService.getTripsFromAddressToLocation(
+        return vvoTripService.getTripsFromAddressToLocation(
             origin,
             destinationLat,
             destinationLon,
