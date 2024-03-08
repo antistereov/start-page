@@ -54,7 +54,7 @@ class WeatherController(
         @RequestParam(defaultValue = "5") limit: Int
     ): Mono<String> {
         logger.info("Getting coordinates for location: $cityName" +
-                (if (stateCode != null) ", $stateCode" else "") +
+                if (stateCode != null) ", $stateCode" else "" +
                 if (countryCode != null) ", $countryCode" else ""
         )
 
