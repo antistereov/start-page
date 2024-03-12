@@ -9,9 +9,15 @@ services:
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
-      MONGO_INITDB_DATABASE: ${MONGO_DATABASE}
+
+      MONGO_READ_USERNAME: ${MONGO_READ_USERNAME}
+      MONGO_READ_PASSWORD: ${MONGO_READ_PASSWORD}
+
+      MONGO_READWRITE_USERNAME: ${MONGO_READWRITE_USERNAME}
+      MONGO_READWRITE_PASSWORD: ${MONGO_READWRITE_PASSWORD}
     volumes:
       - mongo-data:/data/db
+      - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
     command: >
       "--auth"
 volumes:
