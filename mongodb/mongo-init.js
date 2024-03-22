@@ -1,8 +1,8 @@
 var authDb = db.getSiblingDB('admin');
 
 authDb.createUser({
-    user: process.env.MONGO_READ_USERNAME,
-    pwd: process.env.MONGO_READ_PASSWORD,
+    user: process.env.MONGO_READONLY_USERNAME,
+    pwd: process.env.MONGO_READONLY_PASSWORD,
     roles: [
         { role: 'read', db: 'start' },
     ],
