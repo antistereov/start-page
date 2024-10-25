@@ -14,21 +14,10 @@ class PrincipalService {
     private val logger: KLogger
         get() = KotlinLogging.logger {}
 
-    private suspend fun getJwt(authentication: Authentication): Jwt {
-        logger.debug { "Extracting JWT from authentication principal." }
-
-        return authentication.principal as? Jwt
-            ?: throw InvalidPrincipalException("Invalid authentication principal.")
-    }
-
     suspend fun getUserId(authentication: Authentication): String {
         logger.debug {"Extracting user ID from JWT." }
 
-        val principal = getJwt(authentication)
-        return try {
-            principal.claims["sub"] as String
-        } catch (e: NoSuchElementException) {
-            throw MissingClaimException("Missing 'sub' claim.")
-        }
+        return authentication.principal as? String
+            ?: throw InvalidPrincipalException("Invalid authentication principal.")
     }
 }

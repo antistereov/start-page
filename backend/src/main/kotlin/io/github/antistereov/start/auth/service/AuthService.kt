@@ -2,7 +2,7 @@ package io.github.antistereov.start.auth.service
 
 import io.github.antistereov.start.auth.dto.LoginResponseDto
 import io.github.antistereov.start.auth.exception.AuthServiceException
-import io.github.antistereov.start.auth.exception.LoginFailedException
+import io.github.antistereov.start.auth.exception.InvalidCredentialsException
 import io.github.antistereov.start.auth.properties.JwtProperties
 import io.github.antistereov.start.user.dto.LoginUserDto
 import io.github.antistereov.start.user.dto.RegisterUserDto
@@ -27,10 +27,10 @@ class AuthService(
     suspend fun login(payload: LoginUserDto): LoginResponseDto {
         logger.debug { "Logging in user ${payload.username}" }
         val user = userService.findByUsername(payload.username)
-            ?: throw LoginFailedException()
+            ?: throw InvalidCredentialsException()
 
         if (!hashService.checkBcrypt(payload.password, user.password)) {
-            throw LoginFailedException()
+            throw InvalidCredentialsException()
         }
 
         if (user.id == null) {
@@ -41,7 +41,7 @@ class AuthService(
 
         return LoginResponseDto(
             accessToken = tokenService.createToken(user.id),
-            expiresIn = jwtProperties.expiresInSeconds,
+            expiresIn = jwtProperties.expiresIn,
         )
     }
 
@@ -67,8 +67,7 @@ class AuthService(
 
         return LoginResponseDto(
             accessToken = tokenService.createToken(savedUserDocument.id),
-            expiresIn = jwtProperties.expiresInSeconds,
+            expiresIn = jwtProperties.expiresIn,
         )
-
     }
 }

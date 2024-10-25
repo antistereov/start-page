@@ -12,6 +12,4 @@ data class UserDocument(
     @Indexed(unique = true) val username: String,
     val password: String,
     val roles: List<Role> = listOf(Role.USER),
-    var widgetAuthenticationDetails: WidgetAuthenticationDetails = WidgetAuthenticationDetails(),
-    var widgets: Widgets = Widgets(),
 )

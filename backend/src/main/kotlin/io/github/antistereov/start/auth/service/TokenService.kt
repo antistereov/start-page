@@ -1,7 +1,6 @@
 package io.github.antistereov.start.auth.service
 
 import io.github.antistereov.start.auth.properties.JwtProperties
-import io.github.antistereov.start.user.service.UserService
 import org.springframework.security.oauth2.jwt.JwsHeader
 import org.springframework.security.oauth2.jwt.JwtClaimsSet
 import org.springframework.security.oauth2.jwt.JwtDecoder
@@ -17,7 +16,7 @@ class TokenService(
     jwtProperties: JwtProperties
 ) {
 
-    private val tokenExpiresInSeconds = jwtProperties.expiresInSeconds
+    private val tokenExpiresInSeconds = jwtProperties.expiresIn
 
     suspend fun createToken(userId: String): String {
         val jwsHeader = JwsHeader.with { "HS256" }.build()
