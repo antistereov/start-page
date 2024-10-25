@@ -1,6 +1,6 @@
 package io.github.antistereov.start.widgets.widget.caldav.controller
 
-import io.github.antistereov.start.security.AuthenticationPrincipalExtractor
+import io.github.antistereov.start.auth.service.PrincipalService
 import io.github.antistereov.start.widgets.widget.caldav.dto.CreateCalDavResourceDTO
 import io.github.antistereov.start.widgets.widget.caldav.dto.UpdateCalDavResourceDTO
 import io.github.antistereov.start.widgets.widget.caldav.model.CalDavResource
@@ -15,7 +15,7 @@ import reactor.core.publisher.Mono
 @RequestMapping("/caldav")
 class CalDavController(
     private val calDavService: CalDavService,
-    private val principalExtractor: AuthenticationPrincipalExtractor,
+    private val principalExtractor: PrincipalService,
 ) {
 
     private val logger = LoggerFactory.getLogger(CalDavController::class.java)

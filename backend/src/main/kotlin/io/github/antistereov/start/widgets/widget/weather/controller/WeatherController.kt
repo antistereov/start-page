@@ -1,6 +1,6 @@
 package io.github.antistereov.start.widgets.widget.weather.controller
 
-import io.github.antistereov.start.security.AuthenticationPrincipalExtractor
+import io.github.antistereov.start.auth.service.PrincipalService
 import io.github.antistereov.start.widgets.widget.weather.model.WeatherLocation
 import io.github.antistereov.start.widgets.widget.weather.model.WeatherWidgetData
 import io.github.antistereov.start.widgets.widget.weather.service.OpenWeatherMapService
@@ -15,7 +15,7 @@ import reactor.core.publisher.Mono
 class WeatherController(
     private val openWeatherMapService: OpenWeatherMapService,
     private val widgetService: WeatherWidgetService,
-    private val principalExtractor: AuthenticationPrincipalExtractor,
+    private val principalExtractor: PrincipalService,
 ) {
 
     private val logger = LoggerFactory.getLogger(WeatherController::class.java)

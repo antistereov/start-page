@@ -70,7 +70,7 @@ class TodoistAuthService(
         logger.debug("Deleting Todoist user information for user $userId.")
 
         return userService.findById(userId).flatMap { user ->
-            user.auth.todoist = TodoistAuthDetails()
+            user.widgetAuthenticationDetails.todoist = TodoistAuthDetails()
 
             userService.save(user).then()
         }
@@ -104,7 +104,7 @@ class TodoistAuthService(
         logger.debug("Handling Todoist user {}.", userId)
 
         return userService.findById(userId).flatMap { user ->
-            user.auth.todoist.accessToken = aesEncryption.encrypt(response.accessToken)
+            user.widgetAuthenticationDetails.todoist.accessToken = aesEncryption.encrypt(response.accessToken)
             userService.save(user).thenReturn(response)
         }
     }
@@ -113,7 +113,7 @@ class TodoistAuthService(
         logger.debug("Getting Todoist access token for user $userId.")
 
         return userService.findById(userId).flatMap { user ->
-            val encryptedAccessToken = user.auth.todoist.accessToken
+            val encryptedAccessToken = user.widgetAuthenticationDetails.todoist.accessToken
                 ?: return@flatMap Mono.error(
                     MissingCredentialsException(
                         "Todoist",

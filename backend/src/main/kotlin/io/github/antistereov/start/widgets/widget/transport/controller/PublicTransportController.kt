@@ -1,6 +1,6 @@
 package io.github.antistereov.start.widgets.widget.transport.controller
 
-import io.github.antistereov.start.security.AuthenticationPrincipalExtractor
+import io.github.antistereov.start.auth.service.PrincipalService
 import io.github.antistereov.start.widgets.widget.location.model.PublicTransportCompany
 import io.github.antistereov.start.widgets.widget.transport.model.PublicTransportStop
 import io.github.antistereov.start.widgets.widget.transport.model.PublicTransportWidgetData
@@ -13,7 +13,7 @@ import reactor.core.publisher.Mono
 @RestController
 @RequestMapping("/transport")
 class PublicTransportController(
-    private val principalExtractor: AuthenticationPrincipalExtractor,
+    private val principalExtractor: PrincipalService,
     private val publicTransportService: PublicTransportService,
 ) {
 

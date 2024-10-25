@@ -29,9 +29,9 @@ class NextcloudAuthService(
         logger.debug("Getting credentials for user: $userId.")
 
         return userService .findById(userId).handle { user, sink ->
-            val host = user.auth.nextcloud.host
-            val username = user.auth.nextcloud.username
-            val password = user.auth.nextcloud.password
+            val host = user.widgetAuthenticationDetails.nextcloud.host
+            val username = user.widgetAuthenticationDetails.nextcloud.username
+            val password = user.widgetAuthenticationDetails.nextcloud.password
 
             if (host == null) {
                 sink.error(
@@ -80,9 +80,9 @@ class NextcloudAuthService(
         logger.debug("Authenticating user: $userId.")
 
         return userService.findById(userId).map { user ->
-            user.auth.nextcloud.host = aesEncryption.encrypt(urlHandler.normalizeBaseUrl(credentials.host))
-            user.auth.nextcloud.username = aesEncryption.encrypt(credentials.username)
-            user.auth.nextcloud.password = aesEncryption.encrypt(credentials.password)
+            user.widgetAuthenticationDetails.nextcloud.host = aesEncryption.encrypt(urlHandler.normalizeBaseUrl(credentials.host))
+            user.widgetAuthenticationDetails.nextcloud.username = aesEncryption.encrypt(credentials.username)
+            user.widgetAuthenticationDetails.nextcloud.password = aesEncryption.encrypt(credentials.password)
 
             user
         }
@@ -114,7 +114,7 @@ class NextcloudAuthService(
         logger.debug("Logging out user: $userId.")
 
         return userService.findById(userId).flatMap { user ->
-            user.auth.nextcloud = NextcloudAuthCredentials()
+            user.widgetAuthenticationDetails.nextcloud = NextcloudAuthCredentials()
 
             userService.save(user).then()
         }

@@ -1,6 +1,6 @@
 package io.github.antistereov.start.widgets.widget.chat.controller
 
-import io.github.antistereov.start.security.AuthenticationPrincipalExtractor
+import io.github.antistereov.start.auth.service.PrincipalService
 import io.github.antistereov.start.widgets.widget.chat.model.ChatHistory
 import io.github.antistereov.start.widgets.widget.chat.model.Message
 import io.github.antistereov.start.widgets.widget.chat.service.ChatService
@@ -14,7 +14,7 @@ import reactor.core.publisher.Mono
 @RequestMapping("/chat")
 class ChatController(
     private val chatService: ChatService,
-    private val principalExtractor: AuthenticationPrincipalExtractor,
+    private val principalExtractor: PrincipalService,
 ) {
 
     private val logger: Logger = LoggerFactory.getLogger(ChatController::class.java)

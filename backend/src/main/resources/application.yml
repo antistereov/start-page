@@ -5,16 +5,10 @@ spring:
   data:
     mongodb:
       uri: mongodb://${MONGO_DB_USER}:${MONGO_DB_PASSWORD}@localhost:27017/start?authSource=admin
-  security:
-    oauth2:
-      client:
-        registration:
-          auth0:
-            client-id: ${auth0.clientId}
-            client-secret: ${auth0.clientSecret}
-      resourceserver:
-        jwt:
-          issuer-uri: https://${auth0.domain}/
+
+jwt:
+  secret-key: ${JWT_SECRET_KEY}
+  expires-in: ${JWT_EXPIRATION}
 
 logging:
   level:

@@ -1,6 +1,6 @@
 package io.github.antistereov.start.widgets.widget.news.nextcloud.controller
 
-import io.github.antistereov.start.security.AuthenticationPrincipalExtractor
+import io.github.antistereov.start.auth.service.PrincipalService
 import io.github.antistereov.start.widgets.auth.nextcloud.service.NextcloudAuthService
 import io.github.antistereov.start.widgets.widget.news.nextcloud.service.NewsService
 import org.slf4j.Logger
@@ -16,7 +16,7 @@ import reactor.core.publisher.Mono
 @RequestMapping("/news/nextcloud")
 class NewsController(
     private val newsService: NewsService,
-    private val principalExtractor: AuthenticationPrincipalExtractor,
+    private val principalExtractor: PrincipalService,
     private val nextcloudAuthService: NextcloudAuthService,
 ) {
 

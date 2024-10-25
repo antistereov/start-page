@@ -1,6 +1,6 @@
 package io.github.antistereov.start.config
 
-import io.github.antistereov.start.config.properties.Auth0Properties
+import io.github.antistereov.start.auth.properties.JwtProperties
 import io.github.antistereov.start.config.properties.EncryptionProperties
 import io.github.antistereov.start.widgets.auth.instagram.config.InstagramProperties
 import io.github.antistereov.start.widgets.auth.nextcloud.config.NextcloudProperties
@@ -16,7 +16,7 @@ import org.springframework.scheduling.annotation.EnableScheduling
 @Configuration
 @EnableScheduling
 @EnableConfigurationProperties(
-    Auth0Properties::class,
+    JwtProperties::class,
     EncryptionProperties::class,
     InstagramProperties::class,
     NextcloudProperties::class,

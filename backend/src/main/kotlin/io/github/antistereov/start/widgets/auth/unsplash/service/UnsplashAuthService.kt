@@ -77,7 +77,7 @@ class UnsplashAuthService(
         logger.debug("Deleting Unsplash user information for user $userId.")
 
         return userService.findById(userId).flatMap { user ->
-            user.auth.unsplash = UnsplashAuthDetails()
+            user.widgetAuthenticationDetails.unsplash = UnsplashAuthDetails()
 
             userService.save(user).then()
         }
@@ -111,7 +111,7 @@ class UnsplashAuthService(
         logger.debug("Handling Unsplash user $userId")
 
         return userService.findById(userId).flatMap { user ->
-            user.auth.unsplash.accessToken = aesEncryption.encrypt(response.accessToken)
+            user.widgetAuthenticationDetails.unsplash.accessToken = aesEncryption.encrypt(response.accessToken)
 
             userService.save(user).thenReturn(response)
         }
@@ -121,7 +121,7 @@ class UnsplashAuthService(
         logger.debug("Getting Unsplash access token for user $userId.")
 
         return userService.findById(userId).flatMap { user ->
-            val encryptedAccessToken = user.auth.unsplash.accessToken
+            val encryptedAccessToken = user.widgetAuthenticationDetails.unsplash.accessToken
                 ?: return@flatMap Mono.error(
                     MissingCredentialsException(
                         properties.serviceName,

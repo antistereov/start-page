@@ -1,6 +1,6 @@
 package io.github.antistereov.start.widgets.auth.unsplash.controller
 
-import io.github.antistereov.start.security.AuthenticationPrincipalExtractor
+import io.github.antistereov.start.auth.service.PrincipalService
 import io.github.antistereov.start.widgets.auth.unsplash.service.UnsplashAuthService
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -12,7 +12,7 @@ import reactor.core.publisher.Mono
 @RequestMapping("/auth/unsplash")
 class UnsplashAuthController(
     private val tokenService: UnsplashAuthService,
-    private val principalExtractor: AuthenticationPrincipalExtractor,
+    private val principalExtractor: PrincipalService,
 ) {
 
     private val logger: Logger = LoggerFactory.getLogger(UnsplashAuthController::class.java)

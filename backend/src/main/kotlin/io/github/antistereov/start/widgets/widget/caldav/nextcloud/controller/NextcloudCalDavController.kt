@@ -1,6 +1,6 @@
 package io.github.antistereov.start.widgets.widget.caldav.nextcloud.controller
 
-import io.github.antistereov.start.security.AuthenticationPrincipalExtractor
+import io.github.antistereov.start.auth.service.PrincipalService
 import io.github.antistereov.start.widgets.auth.nextcloud.service.NextcloudAuthService
 import io.github.antistereov.start.widgets.widget.caldav.model.CalDavResource
 import io.github.antistereov.start.widgets.widget.caldav.nextcloud.service.NextcloudCalDavService
@@ -17,7 +17,7 @@ import reactor.core.publisher.Mono
 class NextcloudCalDavController(
     private val remoteService: NextcloudCalDavService,
     private val nextcloudAuthService: NextcloudAuthService,
-    private val principalExtractor: AuthenticationPrincipalExtractor,
+    private val principalExtractor: PrincipalService,
 ) {
 
     private val logger = LoggerFactory.getLogger(NextcloudCalDavController::class.java)

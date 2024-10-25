@@ -60,7 +60,7 @@ class ChatService(
         logger.debug("Sending chat request and handling response.")
 
         return userService.findById(userId).flatMap { user ->
-            val encryptedApiKey = user.auth.openAi.apiKey
+            val encryptedApiKey = user.widgetAuthenticationDetails.openAi.apiKey
                 ?: return@flatMap Mono.error<ChatResponse>(
                     MissingCredentialsException(
                         properties.serviceName,

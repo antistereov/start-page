@@ -1,6 +1,11 @@
 package io.github.antistereov.start.user.repository
 
 import io.github.antistereov.start.user.model.UserDocument
-import org.springframework.data.mongodb.repository.ReactiveMongoRepository
+import org.springframework.data.repository.kotlin.CoroutineCrudRepository
 
-interface UserRepository : ReactiveMongoRepository<UserDocument, String>
+interface UserRepository : CoroutineCrudRepository<UserDocument, String> {
+
+    suspend fun existsByUsername(username: String): Boolean
+
+    suspend fun findByUsername(username: String): UserDocument?
+}

@@ -26,7 +26,7 @@ class OpenAIAuthService(
         logger.debug("Authenticating user: $userId.")
 
         return userService.findById(userId).map { user ->
-            user.auth.openAi.apiKey = aesEncryption.encrypt(apiKey)
+            user.widgetAuthenticationDetails.openAi.apiKey = aesEncryption.encrypt(apiKey)
             user
         }
         .flatMap { user ->
@@ -55,7 +55,7 @@ class OpenAIAuthService(
         logger.debug("Logging out user: $userId.")
 
         return userService.findById(userId).flatMap { user ->
-            user.auth.openAi = OpenAIAuthDetails()
+            user.widgetAuthenticationDetails.openAi = OpenAIAuthDetails()
 
             userService.save(user).then()
         }

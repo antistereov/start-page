@@ -1,6 +1,6 @@
 package io.github.antistereov.start.widgets.auth.todoist.controller
 
-import io.github.antistereov.start.security.AuthenticationPrincipalExtractor
+import io.github.antistereov.start.auth.service.PrincipalService
 import io.github.antistereov.start.widgets.auth.todoist.service.TodoistAuthService
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -12,7 +12,7 @@ import reactor.core.publisher.Mono
 @RequestMapping("/auth/todoist")
 class TodoistAuthController(
     private val tokenService: TodoistAuthService,
-    private val principalExtractor: AuthenticationPrincipalExtractor,
+    private val principalExtractor: PrincipalService,
     ) {
 
     private val logger: Logger = LoggerFactory.getLogger(TodoistAuthController::class.java)

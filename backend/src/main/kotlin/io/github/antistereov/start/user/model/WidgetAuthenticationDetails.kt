@@ -7,7 +7,7 @@ import io.github.antistereov.start.widgets.auth.spotify.model.SpotifyAuthDetails
 import io.github.antistereov.start.widgets.auth.todoist.model.TodoistAuthDetails
 import io.github.antistereov.start.widgets.auth.unsplash.model.UnsplashAuthDetails
 
-data class Auth(
+data class WidgetAuthenticationDetails(
     var spotify: SpotifyAuthDetails = SpotifyAuthDetails(),
     var todoist: TodoistAuthDetails = TodoistAuthDetails(),
     var unsplash: UnsplashAuthDetails = UnsplashAuthDetails(),

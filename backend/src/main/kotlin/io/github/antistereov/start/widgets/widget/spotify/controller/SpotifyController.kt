@@ -1,6 +1,6 @@
 package io.github.antistereov.start.widgets.widget.spotify.controller
 
-import io.github.antistereov.start.security.AuthenticationPrincipalExtractor
+import io.github.antistereov.start.auth.service.PrincipalService
 import io.github.antistereov.start.widgets.widget.spotify.service.SpotifyService
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -14,7 +14,7 @@ import reactor.core.publisher.Mono
 @RequestMapping("/spotify")
 class SpotifyController(
     private val service: SpotifyService,
-    private val principalExtractor: AuthenticationPrincipalExtractor,
+    private val principalExtractor: PrincipalService,
 ) {
 
     private val logger: Logger = LoggerFactory.getLogger(SpotifyController::class.java)

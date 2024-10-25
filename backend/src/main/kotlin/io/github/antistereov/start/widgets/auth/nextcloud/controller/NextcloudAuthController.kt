@@ -1,6 +1,6 @@
 package io.github.antistereov.start.widgets.auth.nextcloud.controller
 
-import io.github.antistereov.start.security.AuthenticationPrincipalExtractor
+import io.github.antistereov.start.auth.service.PrincipalService
 import io.github.antistereov.start.widgets.auth.nextcloud.model.NextcloudCredentials
 import io.github.antistereov.start.widgets.auth.nextcloud.service.NextcloudAuthService
 import jakarta.validation.Valid
@@ -18,7 +18,7 @@ import reactor.core.publisher.Mono
 @RequestMapping("/auth/nextcloud")
 class NextcloudAuthController(
     private val nextcloudAuthService: NextcloudAuthService,
-    private val principalExtractor: AuthenticationPrincipalExtractor,
+    private val principalExtractor: PrincipalService,
 ) {
 
     private val logger: Logger = LoggerFactory.getLogger(NextcloudAuthController::class.java)

@@ -1,6 +1,11 @@
 package io.github.antistereov.start.global.controller
 
+import io.github.antistereov.start.auth.exception.AuthServiceException
+import io.github.antistereov.start.auth.exception.LoginFailedException
+import io.github.antistereov.start.auth.exception.MissingClaimException
 import io.github.antistereov.start.global.exception.*
+import io.github.antistereov.start.user.exception.UserServiceException
+import io.github.antistereov.start.user.exception.UsernameAlreadyExistsException
 import io.netty.handler.ssl.SslHandshakeTimeoutException
 import io.netty.resolver.dns.DnsNameResolverException
 import org.slf4j.Logger
@@ -16,6 +21,14 @@ class GlobalExceptionHandler {
     private val logger: Logger = LoggerFactory.getLogger(GlobalExceptionHandler::class.java)
 
     private val exceptionToHttpStatus = mapOf(
+        // AuthService
+        LoginFailedException::class.java to HttpStatus.UNAUTHORIZED,
+        AuthServiceException::class.java to HttpStatus.INTERNAL_SERVER_ERROR,
+
+        // UserService
+        UsernameAlreadyExistsException::class.java to HttpStatus.BAD_REQUEST,
+        UserServiceException::class.java to HttpStatus.INTERNAL_SERVER_ERROR,
+
         // Custom exceptions
         CannotSaveDocumentException::class.java to HttpStatus.BAD_REQUEST,
         CannotDeleteDocumentException::class.java to HttpStatus.BAD_REQUEST,

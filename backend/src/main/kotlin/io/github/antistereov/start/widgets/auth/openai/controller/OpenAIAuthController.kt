@@ -1,6 +1,6 @@
 package io.github.antistereov.start.widgets.auth.openai.controller
 
-import io.github.antistereov.start.security.AuthenticationPrincipalExtractor
+import io.github.antistereov.start.auth.service.PrincipalService
 import io.github.antistereov.start.widgets.auth.openai.service.OpenAIAuthService
 import jakarta.validation.Valid
 import org.slf4j.Logger
@@ -13,7 +13,7 @@ import reactor.core.publisher.Mono
 @RequestMapping("/auth/openai")
 class OpenAIAuthController(
     private val authService: OpenAIAuthService,
-    private val principalExtractor: AuthenticationPrincipalExtractor,
+    private val principalExtractor: PrincipalService,
 ) {
 
     private val logger: Logger = LoggerFactory.getLogger(OpenAIAuthService::class.java)
