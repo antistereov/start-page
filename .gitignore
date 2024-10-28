@@ -84,3 +84,5 @@ Thumbs.db
 /mongodb/data/
 
 node_modules/
+dist/
+.angular/

@@ -1,0 +1,12 @@
+<div *ngIf="userProfile">
+    <h2>User Profile</h2>
+    <p><strong>Username:</strong> {{ userProfile.username }}</p>
+    <p><strong>Roles:</strong></p>
+    <ul>
+        <li *ngFor="let role of userProfile.roles">{{ role }}</li>
+    </ul>
+</div>
+
+<button (click)="fetchUserProfile()">Fetch User Profile</button>
+
+<button (click)="logout()">Logout</button>
