@@ -1,0 +1,28 @@
+@import "primeicons/primeicons.css";
+@import url('https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,100..900;1,100..900&display=swap');
+
+@layer tailwind-base, primeng, tailwind-utilities;
+
+@layer tailwind-base {
+    @tailwind base;
+}
+
+@layer tailwind-utilities {
+    @tailwind components;
+    @tailwind utilities;
+}
+
+body {
+    font-family: "Jost", sans-serif;
+}
+
+body {
+    background-color: var(--p-surface-ground);
+    color: var(--p-text-color);
+    transition: background-color 0.3s, color 0.3s;
+}
+
+body.p-dark {
+    background-color: var(--p-surface-ground);
+    color: var(--p-text-color);
+}

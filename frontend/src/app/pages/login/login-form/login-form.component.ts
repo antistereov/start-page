@@ -49,7 +49,7 @@ export class LoginFormComponent {
                         this.router.navigate(['/admin']).then();
                         console.log(data);
                     },
-                    error: (error) => {
+                    error: () => {
                         this.form.setErrors({'invalid': true});
                     }
                 })

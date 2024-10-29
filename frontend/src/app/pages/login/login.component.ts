@@ -3,13 +3,14 @@ import {FormControl, FormGroup, ReactiveFormsModule, Validators} from '@angular/
 import {RouterModule} from '@angular/router';
 import {AuthService} from '../../auth/auth.service';
 import {Router} from '@angular/router';
+import {LoginFormComponent} from './login-form/login-form.component';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterModule],
+    imports: [ReactiveFormsModule, RouterModule, LoginFormComponent],
   templateUrl: './login.component.html',
-  styleUrl: './login.component.css'
+  styleUrl: './login.component.scss'
 })
 export class LoginComponent {
     authService = inject(AuthService);
