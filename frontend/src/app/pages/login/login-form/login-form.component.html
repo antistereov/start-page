@@ -1,0 +1,16 @@
+<form [formGroup]="form" (ngSubmit)="onSubmit()">
+    <p-inputgroup class="mb-3">
+        <p-inputgroup-addon>
+            <i class="pi pi-user"></i>
+        </p-inputgroup-addon>
+        <input pInputText formControlName="username" placeholder="Username" [ngClass]="{'ng-invalid ng-dirty': form.getError('invalid')}" />
+    </p-inputgroup>
+    <p-inputgroup class="mb-3">
+        <p-inputgroup-addon>
+            <i class="pi pi-lock"></i>
+        </p-inputgroup-addon>
+        <input pInputText formControlName="password" type="password" placeholder="Password" [ngClass]="{'ng-invalid ng-dirty': form.getError('invalid')}" />
+    </p-inputgroup>
+    <p class="invalid-password" *ngIf="form.getError('invalid')">Wrong credentials.</p>
+    <p-button type="submit">Submit</p-button>
+</form>
