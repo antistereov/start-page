@@ -8,6 +8,7 @@ import {AuthService} from '../../../auth/auth.service';
 import {Router} from '@angular/router';
 import {ButtonModule} from 'primeng/button';
 import {NgClass, NgIf} from '@angular/common';
+import {CardModule} from 'primeng/card';
 
 @Component({
   selector: 'app-login-form',
@@ -21,7 +22,8 @@ import {NgClass, NgIf} from '@angular/common';
         ReactiveFormsModule,
         ButtonModule,
         NgClass,
-        NgIf
+        NgIf,
+        CardModule
     ],
   templateUrl: './login-form.component.html',
   styleUrl: './login-form.component.scss'
