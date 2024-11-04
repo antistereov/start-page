@@ -8,6 +8,8 @@ import {AuthService} from '../../../auth/auth.service';
 import {Router} from '@angular/router';
 import {ButtonModule} from 'primeng/button';
 import {NgClass, NgIf} from '@angular/common';
+import {CardModule} from 'primeng/card';
+import {ProgressSpinnerModule} from 'primeng/progressspinner';
 
 @Component({
   selector: 'app-login-form',
@@ -21,13 +23,16 @@ import {NgClass, NgIf} from '@angular/common';
         ReactiveFormsModule,
         ButtonModule,
         NgClass,
-        NgIf
+        NgIf,
+        CardModule,
+        ProgressSpinnerModule
     ],
   templateUrl: './login-form.component.html',
   styleUrl: './login-form.component.scss'
 })
 export class LoginFormComponent {
     protected form: FormGroup;
+    protected loading: boolean = false;
 
     constructor(
         private fb: FormBuilder,
@@ -42,15 +47,16 @@ export class LoginFormComponent {
 
     onSubmit() {
         if (this.form.valid) {
-            console.log(this.form.value);
+            this.loading = true;
             this.authService.login(this.form.value)
                 .subscribe({
                     next: (data: any) => {
                         this.router.navigate(['/admin']).then();
-                        console.log(data);
+                        this.loading = false;
                     },
                     error: () => {
                         this.form.setErrors({'invalid': true});
+                        this.loading = false;
                     }
                 })
         }
