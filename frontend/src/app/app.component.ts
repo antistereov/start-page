@@ -20,7 +20,7 @@ export class AppComponent implements OnInit {
             preset: DefaultTheme,
             options: {
                 prefix: 'p',
-                darkModeSelector: '.my-app-dark',
+                darkModeSelector: '.dark-mode',
                 cssLayer: {
                     name: 'primeng',
                     order: 'tailwind-base, primeng, tailwind-utilities'
@@ -35,7 +35,8 @@ export class AppComponent implements OnInit {
 
     toggleDarkMode() {
         const element = document.querySelector('html');
-        element!!.classList.toggle('my-app-dark');
+        element!!.classList.toggle('dark-mode');
+        document.body.classList.toggle('dark-mode');
     }
 
 }

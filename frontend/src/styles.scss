@@ -14,15 +14,9 @@
 
 body {
     font-family: "Jost", sans-serif;
+    background-color: var(--p-surface-100);
 }
 
-body {
-    background-color: var(--p-surface-ground);
-    color: var(--p-text-color);
-    transition: background-color 0.3s, color 0.3s;
-}
-
-body.p-dark {
-    background-color: var(--p-surface-ground);
-    color: var(--p-text-color);
+body.dark-mode {
+    background-color: var(--p-surface-800);
 }
