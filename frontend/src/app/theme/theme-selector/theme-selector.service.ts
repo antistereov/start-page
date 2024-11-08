@@ -5,7 +5,7 @@ import {Theme} from './theme.enum';
 @Injectable({
     providedIn: 'root'
 })
-export class ThemeService {
+export class ThemeSelectorService {
     private themeSubject = new BehaviorSubject<Theme>(this.getInitialTheme());
     theme$ = this.themeSubject.asObservable();
 

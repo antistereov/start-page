@@ -1,20 +1,20 @@
 import {Component, OnInit} from '@angular/core';
 import {Theme} from './theme.enum';
-import {ThemeService} from './theme.service';
-import {DropdownModule} from 'primeng/dropdown';
+import {ThemeSelectorService} from './theme-selector.service';
 import {FormsModule} from '@angular/forms';
+import {Select} from 'primeng/select';
 
 @Component({
-  selector: 'app-theme',
+  selector: 'app-theme-selector',
   standalone: true,
     imports: [
-        DropdownModule,
-        FormsModule
+        FormsModule,
+        Select
     ],
-  templateUrl: './theme.component.html',
-  styleUrl: './theme.component.css'
+  templateUrl: './theme-selector.component.html',
+  styleUrl: './theme-selector.component.css'
 })
-export class ThemeComponent implements OnInit {
+export class ThemeSelectorComponent implements OnInit {
     themeOptions = [
         { label: 'System', value: Theme.System },
         { label: 'Light', value: Theme.Light },
@@ -22,7 +22,7 @@ export class ThemeComponent implements OnInit {
     ];
     selectedTheme: Theme = Theme.System;
 
-    constructor(private themeService: ThemeService) {}
+    constructor(private themeService: ThemeSelectorService) {}
 
     ngOnInit() {
         this.themeService.theme$.subscribe((theme) => (this.selectedTheme = theme));
