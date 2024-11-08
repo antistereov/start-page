@@ -1,0 +1,11 @@
+<p-card class="inline-flex w-auto h-auto">
+    <div class="inline-grid grid-cols-5 gap-2 w-auto h-auto max-w-max">
+        <div *ngFor="let color of accentColorOptions">
+            <app-accent-color-selector-component
+                [color]="color.value"
+                [selected]="color.value === this.selectedAccentColor"
+                (click)="accentColorSelectorService.setAccentColor(color.value)"
+            ></app-accent-color-selector-component>
+        </div>
+    </div>
+</p-card>
