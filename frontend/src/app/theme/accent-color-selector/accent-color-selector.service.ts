@@ -17,6 +17,11 @@ export class AccentColorSelectorService {
         this.applyAccentColor(accentColor);
     }
 
+    setCurrentAccentColor() {
+        const accentColor = (localStorage.getItem('accent-color') as AccentColor) || AccentColor.Indigo;
+        this.applyAccentColor(accentColor);
+    }
+
     private getInitialAccentColor(): AccentColor {
         return (localStorage.getItem('accent-color') as AccentColor) || AccentColor.Indigo;
     }

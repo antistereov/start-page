@@ -53,9 +53,6 @@ export class AccentColorSelectorComponent implements OnInit {
             .subscribe((accentColor) => {
                 this.selectedAccentColor = accentColor;
             });
-        setTimeout(() => {
-            this.accentColorSelectorService.setAccentColor(this.selectedAccentColor);
-        }, 0);
 
     }
 
