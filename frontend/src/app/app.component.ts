@@ -4,11 +4,12 @@ import {PrimeNGConfig} from 'primeng/api';
 import {ButtonModule} from 'primeng/button';
 import {ToggleButton} from 'primeng/togglebutton'
 import {DefaultTheme} from '../themes/default-theme';
+import {ThemeComponent} from './theme/theme.component';
 
 @Component({
     selector: 'app-root',
     standalone: true,
-    imports: [RouterOutlet, ButtonModule, ToggleButton],
+    imports: [RouterOutlet, ButtonModule, ToggleButton, ThemeComponent],
     templateUrl: './app.component.html',
     styleUrl: './app.component.css'
 })
@@ -32,12 +33,5 @@ export class AppComponent implements OnInit {
     ngOnInit() {
         this.primeConfig.ripple.set(true);
     }
-
-    toggleDarkMode() {
-        const element = document.querySelector('html');
-        element!!.classList.toggle('dark-mode');
-        document.body.classList.toggle('dark-mode');
-    }
-
 }
 

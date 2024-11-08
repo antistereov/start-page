@@ -25,8 +25,8 @@ export class AuthService {
 
     public logout(): void {
         if (typeof localStorage !== 'undefined') {
-            localStorage.removeItem('token');
-            localStorage.removeItem('expiration');
+            localStorage.removeItem('accessToken');
+            localStorage.removeItem('expiresAt');
         }
     }
 
@@ -39,9 +39,9 @@ export class AuthService {
 
     isLoggedIn(): boolean {
         if (typeof localStorage !== 'undefined') {
-            const expiration = this.getExpiration();
-            if (expiration) {
-                return Date.now() < expiration;
+            const expiresAt = this.getExpiration();
+            if (expiresAt) {
+                return Date.now() < expiresAt;
             }
         }
         return false;
@@ -49,8 +49,8 @@ export class AuthService {
 
     getExpiration(): number | null {
         if (typeof localStorage !== 'undefined') {
-            const expiration = localStorage.getItem('expiresAt');
-            return expiration ? parseInt(expiration, 10) : null;
+            const expiresAt = localStorage.getItem('expiresAt');
+            return expiresAt ? parseInt(expiresAt, 10) : null;
         }
         return null;
     }
