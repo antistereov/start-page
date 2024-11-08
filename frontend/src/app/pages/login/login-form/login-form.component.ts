@@ -51,7 +51,7 @@ export class LoginFormComponent {
             this.authService.login(this.form.value)
                 .subscribe({
                     next: (data: any) => {
-                        this.router.navigate(['/admin']).then();
+                        this.router.navigate(['/']).then();
                         this.loading = false;
                     },
                     error: () => {

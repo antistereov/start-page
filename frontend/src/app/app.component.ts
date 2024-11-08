@@ -6,11 +6,12 @@ import {ToggleButton} from 'primeng/togglebutton'
 import { DefaultTheme } from '../themes/default-theme';
 import {ThemeSelectorComponent} from './theme/theme-selector/theme-selector.component';
 import {AccentColorSelectorComponent} from './theme/accent-color-selector/accent-color-selector.component';
+import {SettingsComponent} from './settings/settings.component';
 
 @Component({
     selector: 'app-root',
     standalone: true,
-    imports: [RouterOutlet, ButtonModule, ToggleButton, ThemeSelectorComponent, AccentColorSelectorComponent],
+    imports: [RouterOutlet, ButtonModule, ToggleButton, ThemeSelectorComponent, AccentColorSelectorComponent, SettingsComponent],
     templateUrl: './app.component.html',
     styleUrl: './app.component.css'
 })
