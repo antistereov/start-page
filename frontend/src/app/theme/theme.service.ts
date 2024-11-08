@@ -43,19 +43,19 @@ export class ThemeService {
         const bodyElement = document.body;
 
         htmlElement?.classList.remove('dark-mode');
-        bodyElement?.classList.remove('dark-mode');
+        bodyElement.classList.remove('dark-mode');
 
         switch (theme) {
             case Theme.Light: break;
             case Theme.Dark:
                 htmlElement?.classList.add('dark-mode');
-                bodyElement?.classList.add('dark-mode');
+                bodyElement.classList.add('dark-mode');
                 break;
             case Theme.System:
                 const systemTheme = this.getSystemTheme();
                 if (systemTheme === Theme.Dark) {
                     htmlElement?.classList.add('dark-mode');
-                    bodyElement?.classList.add('dark-mode');
+                    bodyElement.classList.add('dark-mode');
                 }
         }
     }
