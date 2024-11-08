@@ -1,4 +1,4 @@
-import {Component, inject, OnInit} from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import {PrimeNGConfig} from 'primeng/api';
 import {ButtonModule} from 'primeng/button';

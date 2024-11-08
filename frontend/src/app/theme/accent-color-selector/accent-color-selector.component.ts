@@ -1,4 +1,4 @@
-import {AfterContentChecked, AfterViewInit, Component, OnInit} from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 import {AccentColorSelectorService} from './accent-color-selector.service';
 import {AccentColor} from './accent-color.enum';
 import {FormsModule} from '@angular/forms';

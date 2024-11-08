@@ -1,4 +1,4 @@
-import {AfterContentChecked, AfterViewInit, Injectable, OnInit} from '@angular/core';
+import {Injectable} from '@angular/core';
 import {AccentColor} from './accent-color.enum';
 import {updatePrimaryPalette} from 'primeng/themes'
 import {BehaviorSubject} from 'rxjs';
