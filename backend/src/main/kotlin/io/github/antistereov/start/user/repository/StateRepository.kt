@@ -2,5 +2,6 @@ package io.github.antistereov.start.user.repository
 
 import io.github.antistereov.start.user.model.StateParameter
 import org.springframework.data.mongodb.repository.ReactiveMongoRepository
+import org.springframework.data.repository.kotlin.CoroutineCrudRepository
 
-interface StateRepository : ReactiveMongoRepository<StateParameter, String>
+interface StateRepository : CoroutineCrudRepository<StateParameter, String>

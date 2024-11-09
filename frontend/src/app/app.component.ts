@@ -3,10 +3,10 @@ import { RouterOutlet } from '@angular/router';
 import {PrimeNGConfig} from 'primeng/api';
 import {ButtonModule} from 'primeng/button';
 import {ToggleButton} from 'primeng/togglebutton'
-import { DefaultTheme } from '../themes/default-theme';
 import {ThemeSelectorComponent} from './theme/theme-selector/theme-selector.component';
 import {AccentColorSelectorComponent} from './theme/accent-color-selector/accent-color-selector.component';
 import {SettingsComponent} from './settings/settings.component';
+import {Aura} from 'primeng/themes/aura';
 
 @Component({
     selector: 'app-root',
@@ -22,8 +22,8 @@ export class AppComponent implements OnInit {
         private primeConfig: PrimeNGConfig,
     ) {
         this.primeConfig.theme.set({
-            preset: DefaultTheme,
             options: {
+                preset: Aura,
                 prefix: 'p',
                 darkModeSelector: '.dark-mode',
                 cssLayer: {

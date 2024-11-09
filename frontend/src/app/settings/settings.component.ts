@@ -9,6 +9,7 @@ import {SettingsService} from './settings.service';
 import {UserSettingsComponent} from './user-settings/user-settings.component';
 import {DividerModule} from 'primeng/divider';
 import {AppearanceSettingsComponent} from './appearance-settings/appearance-settings.component';
+import {UnsplashAuthComponent} from '../widgets/unsplash/unsplash-auth/unsplash-auth.component';
 
 @Component({
   selector: 'app-settings',
@@ -22,7 +23,8 @@ import {AppearanceSettingsComponent} from './appearance-settings/appearance-sett
         AvatarModule,
         UserSettingsComponent,
         DividerModule,
-        AppearanceSettingsComponent
+        AppearanceSettingsComponent,
+        UnsplashAuthComponent
     ],
   templateUrl: './settings.component.html',
   styleUrl: './settings.component.css'

@@ -1,6 +1,9 @@
 server:
   port: 8000
 
+frontend:
+  base-url: ${FRONTEND_BASE_URL}
+
 spring:
   data:
     mongodb:
@@ -38,7 +41,7 @@ unsplash:
   service-name: Unsplash
   client-id: ${UNSPLASH_CLIENT_ID}
   client-secret: ${UNSPLASH_CLIENT_SECRET}
-  redirect-uri: http://localhost:8000/auth/unsplash/callback
+  redirect-uri: http://localhost:4200/callback/unsplash
   api-base-url: https://api.unsplash.com
   scopes: write_likes+public
 

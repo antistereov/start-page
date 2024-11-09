@@ -1,5 +1,7 @@
 package io.github.antistereov.start.user.exception
 
-class UsernameAlreadyExistsException(val info: String) : UserServiceException(
+import java.awt.SystemColor.info
+
+class UsernameAlreadyExistsException(info: String) : UserServiceException(
     message = "$info: Username already exists"
 )

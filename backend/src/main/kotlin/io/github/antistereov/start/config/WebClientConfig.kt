@@ -18,51 +18,8 @@ import reactor.core.publisher.Mono
 class WebClientConfig {
 
     @Bean
-    fun webClientBuilder(): WebClient.Builder {
-        val strategies = ExchangeStrategies.builder()
-            .codecs { configurer: ClientCodecConfigurer -> configurer.defaultCodecs().maxInMemorySize(2 * 1024 * 1024) } // 2MB
-            .build()
-
+    fun webClient(): WebClient {
         return WebClient.builder()
-            .exchangeStrategies(strategies)
-            .filter { request, next ->
-                next.exchange(request).flatMap { clientResponse ->
-                    if (clientResponse.statusCode().isError) {
-                        clientResponse.bodyToMono(String::class.java)
-                            .flatMap { errorMessage ->
-                                Mono.error(
-                                    ThirdPartyAPIException(
-                                        request.url(),
-                                        clientResponse.statusCode(),
-                                        errorMessage
-                                    )
-                                )
-                            }
-                    } else {
-                        Mono.just(clientResponse)
-                    }
-                }
-                .onErrorResume(WebClientResponseException::class.java) { e ->
-                    if (e.statusCode == HttpStatus.REQUEST_TIMEOUT) {
-                        Mono.error(
-                            TimeoutException("Timeout occurred while calling ${request.url()}: ${e.message}")
-                        )
-                    } else {
-                        Mono.error(
-                            NetworkErrorException("Network error occurred while calling ${request.url()}: ${e.message}")
-                        )
-                    }
-                }
-                .onErrorResume(DecoderException::class.java) { e ->
-                    Mono.error(
-                        ParsingErrorException("Error parsing response from ${request.url()}: ${e.message}")
-                    )
-                }
-            }
-    }
-
-    @Bean
-    fun webClient(webClientBuilder: WebClient.Builder): WebClient {
-        return webClientBuilder.build()
+            .build()
     }
 }

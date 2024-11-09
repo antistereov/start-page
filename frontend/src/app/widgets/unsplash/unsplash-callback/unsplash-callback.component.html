@@ -1,0 +1,8 @@
+<div>
+    <p-progress-spinner *ngIf="loading" strokeWidth="4"></p-progress-spinner>
+
+    <div *ngIf="!loading">
+        <p-message *ngIf="successMessage" severity="success" text="{{ successMessage }}"></p-message>
+        <p-message *ngIf="errorMessage" severity="error" text="{{ errorMessage }}"></p-message>
+    </div>
+</div>

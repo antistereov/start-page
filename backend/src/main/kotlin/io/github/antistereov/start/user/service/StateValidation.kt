@@ -4,6 +4,7 @@ import io.github.antistereov.start.global.exception.InvalidStateParameterExcepti
 import io.github.antistereov.start.security.AESEncryption
 import io.github.antistereov.start.user.model.StateParameter
 import io.github.antistereov.start.user.repository.StateRepository
+import kotlinx.coroutines.flow.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.scheduling.annotation.Scheduled
@@ -20,47 +21,49 @@ class StateValidation(
     val logger: Logger = LoggerFactory.getLogger(StateValidation::class.java)
     val validityPeriodMinutes = 5L
 
-    fun createState(userId: String): Mono<String> {
+    suspend fun createState(userId: String): String {
         val timestamp = Instant.now().toEpochMilli()
         val state = "$userId:$timestamp"
         val encryptedState = aesEncryption.encrypt(state)
-        return stateRepository.save(StateParameter(encryptedState, userId, timestamp)).map { encryptedState }
+
+        stateRepository.save(StateParameter(encryptedState, userId, timestamp))
+
+        return encryptedState
     }
 
-    fun getUserId(state: String): Mono<String> {
+    suspend fun getUserId(state: String): String {
         val decryptedState = aesEncryption.decrypt(state)
-        return stateRepository.findById(state)
-            .switchIfEmpty(Mono.error(InvalidStateParameterException()))
-            .flatMap { storedState ->
-                validateState(decryptedState, storedState)
+        val storedState = stateRepository.findById(state) ?: throw InvalidStateParameterException()
 
-                val userId = decryptedState.split(":")[0]
-                val stateTime = getStateTime(decryptedState)
+        validateState(decryptedState, storedState)
 
-                validateTime(stateTime)
+        val userId = decryptedState.split(":")[0]
+        val stateTime = getStateTime(decryptedState)
 
-                deleteState(state)
+        validateTime(stateTime)
 
-                Mono.just(userId)
-            }
+        deleteState(state)
+
+        return userId
     }
 
     @Scheduled(fixedRate = 10*60*1000) // This will run the method every 10 minutes
-    fun deleteExpiredStates() {
+    suspend fun deleteExpiredStates() {
         val currentTime = Instant.now()
         var deletedCount = 0
 
         stateRepository.findAll()
-            .filterWhen { state ->
+            .filter { state ->
                 val stateTime = Instant.ofEpochMilli(state.timestamp)
-                Mono.just(stateTime.plusSeconds(validityPeriodMinutes * 60).isBefore(currentTime))
+                stateTime.plusSeconds(validityPeriodMinutes * 60).isBefore(currentTime)
             }
-            .flatMap { state ->
+            .onEach { state ->
                 deletedCount++
                 stateRepository.deleteById(state.id)
             }
-            .doOnComplete { logger.info("$deletedCount expired states were deleted.") }
-            .subscribe()
+            .collect()
+
+        logger.info("$deletedCount expired states were deleted.")
     }
 
     private fun validateState(decryptedState: String, storedStateParameter: StateParameter) {
@@ -82,7 +85,7 @@ class StateValidation(
         }
     }
 
-    private fun deleteState(state: String) {
-        stateRepository.deleteById(state).subscribe()
+    private suspend fun deleteState(state: String) {
+        stateRepository.deleteById(state)
     }
 }
