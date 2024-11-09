@@ -1,6 +1,5 @@
 package io.github.antistereov.start.widget.unsplash.auth
 
-import io.github.antistereov.start.config.properties.FrontendProperties
 import io.github.antistereov.start.global.exception.InvalidCallbackException
 import io.github.antistereov.start.global.exception.ThirdPartyAuthorizationCanceledException
 import io.github.antistereov.start.security.AESEncryption
@@ -24,7 +23,6 @@ import org.springframework.web.reactive.function.BodyInserters
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.awaitBody
 import org.springframework.web.util.UriComponentsBuilder
-import kotlin.math.log
 
 @Service
 class UnsplashAuthService(
@@ -33,7 +31,6 @@ class UnsplashAuthService(
     private val aesEncryption: AESEncryption,
     private val stateValidation: StateValidation,
     private val properties: UnsplashProperties,
-    private val frontendProperties: FrontendProperties,
 ) {
 
     private val logger: KLogger

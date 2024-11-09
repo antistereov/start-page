@@ -1,9 +1,6 @@
 package io.github.antistereov.start.widget.unsplash
 
 import io.github.antistereov.start.auth.service.PrincipalService
-import io.github.antistereov.start.widget.unsplash.auth.UnsplashAuthController
-import io.github.antistereov.start.widget.unsplash.auth.UnsplashAuthService
-import io.github.antistereov.start.widget.unsplash.auth.model.UnsplashPublicUserProfile
 import io.github.antistereov.start.widget.unsplash.model.UnsplashPhoto
 import io.github.oshai.kotlinlogging.KLogger
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -15,7 +12,6 @@ import org.springframework.web.bind.annotation.*
 class UnsplashController(
     private val service: UnsplashService,
     private val principalService: PrincipalService,
-    private val unsplashAuthService: UnsplashAuthService,
 ) {
 
     private val logger: KLogger

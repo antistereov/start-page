@@ -1,7 +1,6 @@
 import {Component, OnInit} from '@angular/core';
 import {ActivatedRoute, Router} from '@angular/router';
 import {UnsplashAuthService, UnsplashUserProfile} from '../unsplash-auth/unsplash-auth.service';
-import {UnsplashCallbackService} from './unsplash-callback.service';
 import {ProgressSpinnerModule} from 'primeng/progressspinner';
 import {Message} from 'primeng/message';
 import {NgIf} from '@angular/common';
