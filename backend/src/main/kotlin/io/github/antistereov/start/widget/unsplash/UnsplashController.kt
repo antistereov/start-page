@@ -18,12 +18,12 @@ class UnsplashController(
         get() = KotlinLogging.logger {}
 
     @GetMapping("/photo")
-    suspend fun getRandomPhoto(authentication: Authentication, @RequestParam query: String? = null): UnsplashPhoto {
+    suspend fun getRandomPhoto(authentication: Authentication, @RequestParam query: String? = null, @RequestParam topic: String? = null): UnsplashPhoto {
         logger.info { "Executing Unsplash getRandomPhoto with method query: ${query}." }
 
         val userId = principalService.getUserId(authentication)
 
-        return service.getRandomPhoto(userId, query)
+        return service.getRandomPhoto(userId, query, topic)
     }
 
     @GetMapping("/photo/url")

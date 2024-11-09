@@ -18,7 +18,7 @@ class UnsplashService(
 
     private val logger: Logger = LoggerFactory.getLogger(UnsplashService::class.java)
 
-    suspend fun getRandomPhoto(userId: String, query: String? = null): UnsplashPhoto {
+    suspend fun getRandomPhoto(userId: String, query: String?, topic: String?): UnsplashPhoto {
         logger.debug("Getting random photo for user $userId")
 
         val uri = UriComponentsBuilder.fromHttpUrl("${properties.apiBaseUrl}/photos/random")
@@ -26,6 +26,7 @@ class UnsplashService(
             .queryParam("orientation", "landscape")
 
         if (query != null) uri.queryParam("query", query)
+        if (topic != null) uri.queryParam("topic", topic)
 
         return webClient.get()
             .uri(uri.toUriString())
@@ -81,7 +82,7 @@ class UnsplashService(
     ): String {
         logger.debug("Getting new random photo for user $userId")
 
-        val randomPhoto = getRandomPhoto(userId, query)
+        val randomPhoto = getRandomPhoto(userId, query, null)
 
         val width = calculateMinimumPictureWidth(randomPhoto.width, randomPhoto.height, screenWidth, screenHeight)
 

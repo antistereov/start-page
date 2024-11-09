@@ -20,3 +20,15 @@ body {
 body.dark-mode {
     background-color: var(--p-surface-800);
 }
+
+html, body {
+    margin: 0;
+    height: 100%;  /* Make sure the body takes up the full height */
+}
+
+body {
+    background-size: cover;  /* Ensures the image covers the full height */
+    background-position: center;  /* Centers the image */
+    background-repeat: no-repeat;  /* Prevents the image from repeating */
+    height: 100vh;  /* Ensures the body takes the full height of the viewport */
+}
