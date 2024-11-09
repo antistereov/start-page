@@ -7,11 +7,12 @@ import {ThemeSelectorComponent} from './theme/theme-selector/theme-selector.comp
 import {AccentColorSelectorComponent} from './theme/accent-color-selector/accent-color-selector.component';
 import {SettingsComponent} from './settings/settings.component';
 import {Aura} from 'primeng/themes/aura';
+import {UnsplashWidgetComponent} from './widgets/unsplash/unsplash-widget/unsplash-widget.component';
 
 @Component({
     selector: 'app-root',
     standalone: true,
-    imports: [RouterOutlet, ButtonModule, ToggleButton, ThemeSelectorComponent, AccentColorSelectorComponent, SettingsComponent],
+    imports: [RouterOutlet, ButtonModule, ToggleButton, ThemeSelectorComponent, AccentColorSelectorComponent, SettingsComponent, UnsplashWidgetComponent],
     templateUrl: './app.component.html',
     styleUrl: './app.component.css'
 })

@@ -85,7 +85,7 @@ class UnsplashService(
 
         val width = calculateMinimumPictureWidth(randomPhoto.width, randomPhoto.height, screenWidth, screenHeight)
 
-        return UriComponentsBuilder.fromHttpUrl(randomPhoto.imageUrl)
+        return UriComponentsBuilder.fromHttpUrl(randomPhoto.urls.full)
             .queryParam("w", width)
             .queryParam("q", quality)
             .toUriString()

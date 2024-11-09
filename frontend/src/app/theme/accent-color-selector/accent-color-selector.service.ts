@@ -27,7 +27,6 @@ export class AccentColorSelectorService {
     }
 
     private applyAccentColor(accentColor: AccentColor) {
-        console.log(`Updating primary color to: ${accentColor}`);
         updatePrimaryPalette({
             50: this.createString(accentColor, 50),
             100: this.createString(accentColor, 100),

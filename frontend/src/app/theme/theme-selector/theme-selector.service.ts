@@ -8,6 +8,8 @@ import {Theme} from './theme.enum';
 export class ThemeSelectorService {
     private themeSubject = new BehaviorSubject<Theme>(this.getInitialTheme());
     theme$ = this.themeSubject.asObservable();
+    private isDarkModeSubject = new BehaviorSubject<boolean>(false);
+    isDarkModeSubject$ = this.isDarkModeSubject.asObservable();
 
     constructor() {
         this.applyTheme(this.themeSubject.value);
@@ -21,6 +23,18 @@ export class ThemeSelectorService {
                 this.applyTheme(e.matches ? Theme.Dark : Theme.Light);
             }
         });
+    }
+
+    private themeIsDark(theme: Theme): boolean {
+        switch (theme) {
+            case Theme.Light:
+                return false;
+            case Theme.Dark:
+                return true;
+            case Theme.System:
+                const systemTheme = this.getSystemTheme();
+                return systemTheme === Theme.Dark;
+        }
     }
 
     private getInitialTheme(): Theme {
@@ -45,18 +59,12 @@ export class ThemeSelectorService {
         htmlElement?.classList.remove('dark-mode');
         bodyElement.classList.remove('dark-mode');
 
-        switch (theme) {
-            case Theme.Light: break;
-            case Theme.Dark:
-                htmlElement?.classList.add('dark-mode');
-                bodyElement.classList.add('dark-mode');
-                break;
-            case Theme.System:
-                const systemTheme = this.getSystemTheme();
-                if (systemTheme === Theme.Dark) {
-                    htmlElement?.classList.add('dark-mode');
-                    bodyElement.classList.add('dark-mode');
-                }
+        if (this.themeIsDark(theme)) {
+            this.isDarkModeSubject.next(true);
+            htmlElement?.classList.add('dark-mode');
+            bodyElement.classList.add('dark-mode');
+        } else {
+            this.isDarkModeSubject.next(false);
         }
     }
 

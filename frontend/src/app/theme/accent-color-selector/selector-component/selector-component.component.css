@@ -6,5 +6,9 @@
 }
 
 .color-square.selected {
+    box-shadow: 0 0 0 2px var(--p-surface-950);
+}
+
+.color-square.selected.dark-mode {
     box-shadow: 0 0 0 2px var(--p-surface-0);
 }
