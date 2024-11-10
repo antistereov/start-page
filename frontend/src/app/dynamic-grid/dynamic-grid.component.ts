@@ -1,4 +1,4 @@
-import {Component} from '@angular/core';
+import {AfterViewInit, Component, ElementRef, Input, OnDestroy, ViewChild} from '@angular/core';
 import {NgClass, NgForOf, NgStyle, NgTemplateOutlet} from '@angular/common';
 import {CardModule} from 'primeng/card';
 import {TileComponent} from './tile/tile.component';
@@ -20,9 +20,12 @@ import {ScrollPanelModule} from 'primeng/scrollpanel';
   styleUrl: './dynamic-grid.component.css'
 })
 export class DynamicGridComponent {
-    columns = 3;
-    columnWidth = 200;
-    rowHeight = 200;
+    @Input() direction: 'rows' | 'columns' = 'rows';
+    @Input() size = 3;
+    @Input() columnWidth = 200;
+    @Input() rowHeight = 200;
+
+    @ViewChild('scrollContainer') scrollContainer!: ElementRef;
 
     tiles: Tile[] = [
         new Tile("first", false, 1, 1, 2, 1),
@@ -46,24 +49,23 @@ export class DynamicGridComponent {
     }
 
     private calculatePositions() {
-        const occupied: boolean[][] = []; // Array of rows, each row is an array of columns
-        let currentRow = 0;
-
-        if (currentRow >= 10) return;
+        const occupied: boolean[][] = []; // Array of rows, each row is an array of column
 
         this.positions = this.tiles.map((tile) => {
             let positionFound = false;
             let startRow = 0, startCol = 0;
 
+            let currentRow = 0;
+
             // Loop through rows, expanding rows as needed
             while (!positionFound) {
                 // Ensure the current row exists in the occupied map
                 if (!occupied[currentRow]) {
-                    occupied[currentRow] = Array(this.columns).fill(false);
+                    occupied[currentRow] = Array(this.size).fill(false);
                 }
 
                 // Search for a position in the current row
-                for (let col = 0; col < this.columns; col++) {
+                for (let col = 0; col < this.size; col++) {
                     if (this.canPlaceTile(occupied, currentRow, col, tile.spanCols, tile.spanRows)) {
                         startRow = currentRow;
                         startCol = col;
@@ -82,7 +84,7 @@ export class DynamicGridComponent {
             for (let r = 0; r < tile.spanRows; r++) {
                 // Ensure the row exists
                 if (!occupied[startRow + r]) {
-                    occupied[startRow + r] = Array(this.columns).fill(false);
+                    occupied[startRow + r] = Array(this.size).fill(false);
                 }
                 for (let c = 0; c < tile.spanCols; c++) {
                     occupied[startRow + r]![startCol + c] = true;
@@ -90,18 +92,27 @@ export class DynamicGridComponent {
             }
 
             // Set the position for this tile
-            return {
-                left: `${startCol * this.columnWidth}px`,
-                top: `${startRow * this.rowHeight}px`,
-                width: `${tile.spanCols * this.columnWidth}px`,
-                height: `${tile.spanRows * this.rowHeight}px`
-            };
+            if (this.direction === 'columns') {
+                return {
+                    left: `${startCol * this.columnWidth}px`,
+                    top: `${startRow * this.rowHeight}px`,
+                    width: `${tile.spanCols * this.columnWidth}px`,
+                    height: `${tile.spanRows * this.rowHeight}px`
+                };
+            } else {
+                return {
+                    left: `${startRow * this.rowHeight}px`,
+                    top: `${startCol * this.columnWidth}px`,
+                    width: `${tile.spanRows * this.rowHeight}px`,
+                    height: `${tile.spanCols * this.columnWidth}px`
+                };
+            }
         });
     }
 
     private canPlaceTile(occupied: boolean[][], row: number, col: number, spanCols: number, spanRows: number): boolean {
         // Ensure the tile fits within the column boundaries
-        if (col + spanCols > this.columns) {
+        if (col + spanCols > this.size) {
             return false;
         }
 

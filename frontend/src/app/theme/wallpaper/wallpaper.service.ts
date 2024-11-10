@@ -16,7 +16,18 @@ export class WallpaperService {
 
     setWallpaper(url: string) {
         const body = this.document.body;
-        this.renderer.setStyle(body, 'backgroundImage', `url(${url})`);
+        const img = new Image();
+
+        img.onload = () => {
+            this.renderer.setStyle(body, 'transition', 'background-image 1s ease-in-out');
+
+            this.renderer.setStyle(body, 'opacity', '0');
+
+            this.renderer.setStyle(body, 'backgroundImage', `url(${url})`);
+            this.renderer.setStyle(body, 'opacity', '1');
+        }
+
+        img.src = url;
     }
 
 }

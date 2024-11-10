@@ -10,6 +10,7 @@ import {UserSettingsComponent} from './user-settings/user-settings.component';
 import {DividerModule} from 'primeng/divider';
 import {AppearanceSettingsComponent} from './appearance-settings/appearance-settings.component';
 import {UnsplashAuthComponent} from '../widgets/unsplash/unsplash-auth/unsplash-auth.component';
+import {Drawer} from 'primeng/drawer';
 
 @Component({
   selector: 'app-settings',
@@ -24,7 +25,8 @@ import {UnsplashAuthComponent} from '../widgets/unsplash/unsplash-auth/unsplash-
         UserSettingsComponent,
         DividerModule,
         AppearanceSettingsComponent,
-        UnsplashAuthComponent
+        UnsplashAuthComponent,
+        Drawer
     ],
   templateUrl: './settings.component.html',
   styleUrl: './settings.component.css'

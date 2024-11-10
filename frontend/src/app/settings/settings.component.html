@@ -1,4 +1,4 @@
-<p-sidebar
+<p-drawer
     [(visible)]="isVisible"
     [dismissible]="false"
     class="bg-opacity-70 border-none shadow-none"
@@ -14,7 +14,7 @@
     <p-divider />
     <p>Unsplash</p>
     <app-unsplash-auth></app-unsplash-auth>
-</p-sidebar>
+</p-drawer>
 
 <p-button
     (click)="open()"

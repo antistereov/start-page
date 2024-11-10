@@ -8,11 +8,13 @@ import {AccentColorSelectorComponent} from './theme/accent-color-selector/accent
 import {SettingsComponent} from './settings/settings.component';
 import {Aura} from 'primeng/themes/aura';
 import {UnsplashWidgetComponent} from './widgets/unsplash/unsplash-widget/unsplash-widget.component';
+import {DynamicGridComponent} from './dynamic-grid/dynamic-grid.component';
+import {TileComponent} from './dynamic-grid/tile/tile.component';
 
 @Component({
     selector: 'app-root',
     standalone: true,
-    imports: [RouterOutlet, ButtonModule, ToggleButton, ThemeSelectorComponent, AccentColorSelectorComponent, SettingsComponent, UnsplashWidgetComponent],
+    imports: [RouterOutlet, ButtonModule, ToggleButton, ThemeSelectorComponent, AccentColorSelectorComponent, SettingsComponent, UnsplashWidgetComponent, DynamicGridComponent, TileComponent],
     templateUrl: './app.component.html',
     styleUrl: './app.component.css'
 })
