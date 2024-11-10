@@ -1,0 +1,19 @@
+<p-scroll-panel styleClass="horizontal-scrollbar" [style]="{ width: '100%', height: '1000px', overflowX: 'auto' }">
+    <div
+        class="grid-container"
+    >
+        <app-tile
+            *ngFor="let tile of tiles; let i = index"
+            [style]="{
+                left: positions[i]?.left,
+                top: positions[i]?.top,
+                width: positions[i]?.width,
+                height: positions[i]?.height
+            }"
+            class="tile"
+            (click)="toggleTile(tile)"
+        >
+            {{ tile.name }}
+        </app-tile>
+    </div>
+</p-scroll-panel>

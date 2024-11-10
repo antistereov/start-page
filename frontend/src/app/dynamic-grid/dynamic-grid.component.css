@@ -1,0 +1,7 @@
+.grid-container {}
+
+.tile {
+    position: absolute;
+    transition: all 0.3s ease;
+    padding: 4px;
+}
