@@ -1,4 +1,4 @@
-import {AfterViewInit, Component, ElementRef, Input, OnDestroy, ViewChild} from '@angular/core';
+import {Component, ElementRef, Input, ViewChild} from '@angular/core';
 import {NgClass, NgForOf, NgStyle, NgTemplateOutlet} from '@angular/common';
 import {CardModule} from 'primeng/card';
 import {TileComponent} from './tile/tile.component';
@@ -49,9 +49,12 @@ export class DynamicGridComponent {
     }
 
     private calculatePositions() {
-        const occupied: boolean[][] = []; // Array of rows, each row is an array of column
+        const occupied: boolean[][] = [];
 
         this.positions = this.tiles.map((tile) => {
+            const width = this.direction == 'columns' ? tile.width : tile.height;
+            const height = this.direction == 'columns' ? tile.height : tile.width;
+
             let positionFound = false;
             let startRow = 0, startCol = 0;
 
@@ -66,7 +69,7 @@ export class DynamicGridComponent {
 
                 // Search for a position in the current row
                 for (let col = 0; col < this.size; col++) {
-                    if (this.canPlaceTile(occupied, currentRow, col, tile.spanCols, tile.spanRows)) {
+                    if (this.canPlaceTile(occupied, currentRow, col, width, height)) {
                         startRow = currentRow;
                         startCol = col;
                         positionFound = true;
@@ -81,12 +84,12 @@ export class DynamicGridComponent {
             }
 
             // Mark the occupied cells for this tile
-            for (let r = 0; r < tile.spanRows; r++) {
+            for (let r = 0; r < height; r++) {
                 // Ensure the row exists
                 if (!occupied[startRow + r]) {
                     occupied[startRow + r] = Array(this.size).fill(false);
                 }
-                for (let c = 0; c < tile.spanCols; c++) {
+                for (let c = 0; c < width; c++) {
                     occupied[startRow + r]![startCol + c] = true;
                 }
             }
@@ -96,15 +99,15 @@ export class DynamicGridComponent {
                 return {
                     left: `${startCol * this.columnWidth}px`,
                     top: `${startRow * this.rowHeight}px`,
-                    width: `${tile.spanCols * this.columnWidth}px`,
-                    height: `${tile.spanRows * this.rowHeight}px`
+                    width: `${width * this.columnWidth}px`,
+                    height: `${height * this.rowHeight}px`
                 };
             } else {
                 return {
                     left: `${startRow * this.rowHeight}px`,
                     top: `${startCol * this.columnWidth}px`,
-                    width: `${tile.spanRows * this.rowHeight}px`,
-                    height: `${tile.spanCols * this.columnWidth}px`
+                    width: `${height * this.rowHeight}px`,
+                    height: `${width * this.columnWidth}px`
                 };
             }
         });
@@ -130,25 +133,25 @@ export class DynamicGridComponent {
 }
 
 export class Tile{
-    spanCols: number;
-    spanRows: number;
+    width: number;
+    height: number;
 
     constructor(
         public name: string,
         public expanded: boolean,
-        protected collapsedCols: number,
-        protected collapsedRows: number,
-        protected expandedCols: number,
-        protected expandedRows: number,
+        protected collapsedWidth: number,
+        protected collapsedHeight: number,
+        protected expandedWidth: number,
+        protected expandedHeight: number,
     ) {
-        this.spanCols = this.expanded ? expandedCols : collapsedCols;
-        this.spanRows = this.expanded ? expandedRows : collapsedRows;
+        this.width = this.expanded ? expandedWidth : collapsedWidth;
+        this.height = this.expanded ? expandedHeight : collapsedHeight;
     }
 
     toggle() {
         this.expanded = !this.expanded;
 
-        this.spanCols = this.expanded ? this.expandedCols : this.collapsedCols;
-        this.spanRows = this.expanded ? this.expandedRows : this.collapsedRows;
+        this.width = this.expanded ? this.expandedWidth : this.collapsedWidth;
+        this.height = this.expanded ? this.expandedHeight : this.collapsedHeight;
     }
 }
