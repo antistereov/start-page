@@ -16,4 +16,3 @@ services:
       "--auth"
 volumes:
   mongo-data:
-z

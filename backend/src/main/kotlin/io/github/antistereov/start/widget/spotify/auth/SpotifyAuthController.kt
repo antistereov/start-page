@@ -6,7 +6,6 @@ import io.github.oshai.kotlinlogging.KLogger
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.*
-import reactor.core.publisher.Mono
 
 @RestController
 @RequestMapping("/auth/spotify")

@@ -3,7 +3,6 @@ package io.github.antistereov.start.widget.spotify.auth
 import io.github.antistereov.start.global.exception.InvalidCallbackException
 import io.github.antistereov.start.global.exception.ThirdPartyAuthorizationCanceledException
 import io.github.antistereov.start.security.AESEncryption
-import io.github.antistereov.start.user.exception.UserDoesNotExistException
 import io.github.antistereov.start.user.service.StateValidation
 import io.github.antistereov.start.user.service.UserService
 import io.github.antistereov.start.widget.shared.model.WidgetUserInformation
@@ -80,7 +79,7 @@ class SpotifyAuthService(
         suspend fun handleUser(userId: String, response: SpotifyTokenResponse) {
             logger.debug { "Handling user." }
 
-            val user = userService.findById(userId) ?: throw UserDoesNotExistException(userId)
+            val user = userService.findById(userId)
 
             val refreshToken = response.refreshToken
             val expirationDate = LocalDateTime.now().plusSeconds(response.expiresIn)
