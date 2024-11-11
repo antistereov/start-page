@@ -3,8 +3,8 @@ package io.github.antistereov.start.config
 import io.github.antistereov.start.auth.properties.JwtProperties
 import io.github.antistereov.start.config.properties.EncryptionProperties
 import io.github.antistereov.start.config.properties.FrontendProperties
-import io.github.antistereov.start.widget.spotify.auth.SpotifyProperties
-import io.github.antistereov.start.widget.unsplash.UnsplashProperties
+import io.github.antistereov.start.connector.spotify.auth.SpotifyProperties
+import io.github.antistereov.start.connector.unsplash.UnsplashProperties
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Configuration
 import org.springframework.scheduling.annotation.EnableScheduling

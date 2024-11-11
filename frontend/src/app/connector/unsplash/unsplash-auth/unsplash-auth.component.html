@@ -1,0 +1,12 @@
+<p-button *ngIf="!isLoggedIn" (click)="connect()">Connect</p-button>
+
+<div *ngIf="isLoggedIn">
+    <p-avatar *ngIf="userProfile && userProfile.profileImage; else fallbackAvatar" [image]="userProfile.profileImage"/>
+    <ng-template #fallbackAvatar>
+        <p-avatar icon="pi pi-user"></p-avatar>
+    </ng-template>
+
+    <p *ngIf="userProfile"><strong>Username:</strong> {{ userProfile.username }} </p>
+
+    <p-button (click)="disconnect()">Disconnect</p-button>
+</div>

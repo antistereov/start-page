@@ -1,6 +1,6 @@
 package io.github.antistereov.start.user.model
 
-import io.github.antistereov.start.widget.shared.model.WidgetUserInformation
+import io.github.antistereov.start.connector.shared.model.WidgetUserInformation
 import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.index.Indexed
 import org.springframework.data.mongodb.core.mapping.Document

@@ -7,7 +7,7 @@ import {ThemeSelectorComponent} from './theme/theme-selector/theme-selector.comp
 import {AccentColorSelectorComponent} from './theme/accent-color-selector/accent-color-selector.component';
 import {SettingsComponent} from './settings/settings.component';
 import {Aura} from 'primeng/themes/aura';
-import {UnsplashWidgetComponent} from './widgets/unsplash/unsplash-widget/unsplash-widget.component';
+import {UnsplashWidgetComponent} from './connector/unsplash/unsplash-widget/unsplash-widget.component';
 import {DynamicGridComponent} from './dynamic-grid/dynamic-grid.component';
 import {TileComponent} from './dynamic-grid/tile/tile.component';
 
