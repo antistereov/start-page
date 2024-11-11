@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {environment} from '../../../../environment/environment';
-import {WallpaperService} from '../../../theme/wallpaper/wallpaper.service';
+import {WallpaperService} from '../../../services/wallpaper/wallpaper.service';
 import {BehaviorSubject} from 'rxjs';
 
 @Injectable({

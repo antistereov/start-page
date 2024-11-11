@@ -3,13 +3,13 @@ import { RouterOutlet } from '@angular/router';
 import {PrimeNGConfig} from 'primeng/api';
 import {ButtonModule} from 'primeng/button';
 import {ToggleButton} from 'primeng/togglebutton'
-import {ThemeSelectorComponent} from './theme/theme-selector/theme-selector.component';
-import {AccentColorSelectorComponent} from './theme/accent-color-selector/accent-color-selector.component';
-import {SettingsComponent} from './settings/settings.component';
+import {ThemeSelectorComponent} from './components/settings/appearance-settings/theme-selector/theme-selector.component';
+import {AccentColorSelectorComponent} from './components/settings/appearance-settings/accent-color-selector/accent-color-selector.component';
+import {SettingsComponent} from './components/settings/settings.component';
 import {Aura} from 'primeng/themes/aura';
 import {UnsplashWidgetComponent} from './connector/unsplash/unsplash-widget/unsplash-widget.component';
-import {DynamicGridComponent} from './dynamic-grid/dynamic-grid.component';
-import {TileComponent} from './dynamic-grid/tile/tile.component';
+import {DynamicGridComponent} from './components/shared/dynamic-grid/dynamic-grid.component';
+import {TileComponent} from './components/shared/tile/tile.component';
 
 @Component({
     selector: 'app-root',

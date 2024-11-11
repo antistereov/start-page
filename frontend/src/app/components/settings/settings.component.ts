@@ -1,15 +1,15 @@
 import {Component, OnInit} from '@angular/core';
 import {ButtonModule} from 'primeng/button';
 import {SidebarModule} from 'primeng/sidebar';
-import {ThemeSelectorComponent} from '../theme/theme-selector/theme-selector.component';
-import {AccentColorSelectorComponent} from '../theme/accent-color-selector/accent-color-selector.component';
+import {ThemeSelectorComponent} from './appearance-settings/theme-selector/theme-selector.component';
+import {AccentColorSelectorComponent} from './appearance-settings/accent-color-selector/accent-color-selector.component';
 import {NgIf} from '@angular/common';
 import {AvatarModule} from 'primeng/avatar';
 import {SettingsService} from './settings.service';
 import {UserSettingsComponent} from './user-settings/user-settings.component';
 import {DividerModule} from 'primeng/divider';
 import {AppearanceSettingsComponent} from './appearance-settings/appearance-settings.component';
-import {UnsplashAuthComponent} from '../connector/unsplash/unsplash-auth/unsplash-auth.component';
+import {UnsplashAuthComponent} from '../../connector/unsplash/unsplash-auth/unsplash-auth.component';
 import {Drawer} from 'primeng/drawer';
 
 @Component({

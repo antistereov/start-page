@@ -3,7 +3,7 @@ import {AvatarModule} from "primeng/avatar";
 import {ButtonModule} from "primeng/button";
 import {NgIf} from "@angular/common";
 import {Router} from '@angular/router';
-import {AuthService} from '../../auth/auth.service';
+import {AuthService} from '../../../auth/auth.service';
 import {SettingsService} from '../settings.service';
 
 @Component({

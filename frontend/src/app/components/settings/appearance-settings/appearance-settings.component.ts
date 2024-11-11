@@ -1,8 +1,8 @@
 import { Component } from '@angular/core';
-import {AccentColorSelectorComponent} from "../../theme/accent-color-selector/accent-color-selector.component";
+import {AccentColorSelectorComponent} from "./accent-color-selector/accent-color-selector.component";
 import {DividerModule} from "primeng/divider";
-import {ThemeSelectorComponent} from "../../theme/theme-selector/theme-selector.component";
-import {PresetSelectorComponent} from '../../theme/preset-selector/preset-selector.component';
+import {ThemeSelectorComponent} from "./theme-selector/theme-selector.component";
+import {PresetSelectorComponent} from './preset-selector/preset-selector.component';
 
 @Component({
   selector: 'app-appearance-settings',

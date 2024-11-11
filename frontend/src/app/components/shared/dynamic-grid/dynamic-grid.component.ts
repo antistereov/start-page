@@ -1,7 +1,7 @@
 import {Component, ElementRef, Input, ViewChild} from '@angular/core';
 import {NgClass, NgForOf, NgStyle, NgTemplateOutlet} from '@angular/common';
 import {CardModule} from 'primeng/card';
-import {TileComponent} from './tile/tile.component';
+import {TileComponent} from '../tile/tile.component';
 import {ScrollPanelModule} from 'primeng/scrollpanel';
 
 @Component({
