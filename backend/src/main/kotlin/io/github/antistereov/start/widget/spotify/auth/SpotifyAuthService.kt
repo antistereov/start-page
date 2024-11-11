@@ -10,16 +10,15 @@ import io.github.antistereov.start.widget.shared.model.WidgetUserInformation
 import io.github.antistereov.start.widget.spotify.auth.model.SpotifyTokenResponse
 import io.github.antistereov.start.widget.spotify.exception.SpotifyAccessTokenNotFoundException
 import io.github.antistereov.start.widget.spotify.exception.SpotifyException
+import io.github.antistereov.start.widget.spotify.model.SpotifyUserProfile
 import io.github.antistereov.start.widget.spotify.model.SpotifyUserInformation
 import io.github.oshai.kotlinlogging.KLogger
 import io.github.oshai.kotlinlogging.KotlinLogging
-import org.apache.catalina.User
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.BodyInserters
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.awaitBody
 import org.springframework.web.util.UriComponentsBuilder
-import reactor.core.publisher.Mono
 import java.time.LocalDateTime
 import java.util.*
 
@@ -50,7 +49,7 @@ class SpotifyAuthService(
             .toUriString()
     }
 
-    suspend fun authenticate(code: String?, state: String?, error: String?) {
+    suspend fun authenticate(code: String?, state: String?, error: String?): SpotifyUserProfile {
 
         suspend fun getSpotifyTokenResponse(code: String): SpotifyTokenResponse {
             logger.debug { "Handling authentication." }
@@ -103,13 +102,14 @@ class SpotifyAuthService(
             userService.save(updatedUser)
         }
 
-
         logger.debug { "Authenticating user." }
 
         if (code != null && state != null) {
             val spotifyTokenResponse = getSpotifyTokenResponse(code)
             val userId = stateValidation.getUserId(state)
-            return handleUser(userId, spotifyTokenResponse)
+            handleUser(userId, spotifyTokenResponse)
+
+            getUserProfile(userId)
         }
 
         if (error != null) {
@@ -130,7 +130,7 @@ class SpotifyAuthService(
     suspend fun logout(userId: String) {
         logger.debug { "Logging out user: $userId." }
 
-        val user = userService.findById(userId) ?: throw UserDoesNotExistException(userId)
+        val user = userService.findById(userId)
 
         val widgetsInfo = user.widgets ?: WidgetUserInformation()
         val updatedWidgetInfo = widgetsInfo.copy(spotify = null)
@@ -140,12 +140,43 @@ class SpotifyAuthService(
         userService.save(updatedUser)
     }
 
-    suspend fun refreshToken(userId: String): SpotifyTokenResponse {
+    suspend fun getUserProfile(userId: String): SpotifyUserProfile {
+        logger.debug { "Fetching Spotify user profile for user $userId" }
+        val accessToken = getAccessToken(userId)
+
+        return webClient.get()
+            .uri("${properties.apiBaseUrl}/me")
+            .header("Authorization", "Bearer $accessToken")
+            .retrieve()
+            .awaitBody<SpotifyUserProfile>()
+    }
+
+    suspend fun getAccessToken(userId: String): String {
+        logger.debug { "Getting access token for user: $userId." }
+
+        val currentTime = LocalDateTime.now()
+
+        val user = userService.findById(userId)
+
+        val expirationDate = user.widgets?.spotify?.expirationDate
+            ?: throw SpotifyException("No expiration date for Spotify access token saved for user $userId")
+
+        return if (currentTime.isAfter(expirationDate)) {
+            this.refreshToken(userId).accessToken
+        } else {
+            val encryptedSpotifyAccessToken = user.widgets.spotify.accessToken
+                ?: throw SpotifyAccessTokenNotFoundException(userId)
+
+            aesEncryption.decrypt(encryptedSpotifyAccessToken)
+        }
+    }
+
+    private suspend fun refreshToken(userId: String): SpotifyTokenResponse {
         logger.debug { "Refreshing token for user: $userId." }
 
         val uri = "https://accounts.spotify.com/api/token"
 
-        val user = userService.findById(userId) ?: throw UserDoesNotExistException(userId)
+        val user = userService.findById(userId)
 
         val encryptedRefreshToken = user.widgets?.spotify?.refreshToken
             ?: throw SpotifyAccessTokenNotFoundException(userId)
@@ -166,25 +197,5 @@ class SpotifyAuthService(
             )
             .retrieve()
             .awaitBody<SpotifyTokenResponse>()
-    }
-
-    suspend fun getAccessToken(userId: String): String {
-        logger.debug { "Getting access token for user: $userId." }
-
-        val currentTime = LocalDateTime.now()
-
-        val user = userService.findById(userId) ?: throw UserDoesNotExistException(userId)
-
-        val expirationDate = user.widgets?.spotify?.expirationDate
-            ?: throw SpotifyException("No expiration date for Spotify access token saved for user $userId")
-
-        return if (currentTime.isAfter(expirationDate)) {
-            this.refreshToken(userId).accessToken
-        } else {
-            val encryptedSpotifyAccessToken = user.widgets.spotify.accessToken
-                ?: throw SpotifyAccessTokenNotFoundException(userId)
-
-            aesEncryption.decrypt(encryptedSpotifyAccessToken)
-        }
     }
 }

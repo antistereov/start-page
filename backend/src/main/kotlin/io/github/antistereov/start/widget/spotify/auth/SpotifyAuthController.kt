@@ -1,7 +1,9 @@
 package io.github.antistereov.start.widget.spotify.auth
 
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+import io.github.antistereov.start.auth.service.PrincipalService
+import io.github.antistereov.start.widget.spotify.model.SpotifyUserProfile
+import io.github.oshai.kotlinlogging.KLogger
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.*
 import reactor.core.publisher.Mono
@@ -10,60 +12,44 @@ import reactor.core.publisher.Mono
 @RequestMapping("/auth/spotify")
 class SpotifyAuthController(
     private val tokenService: SpotifyAuthService,
-    private val principalExtractor: AuthenticationPrincipalExtractor,
+    private val principalService: PrincipalService,
 ) {
 
-    private val logger: Logger = LoggerFactory.getLogger(SpotifyAuthController::class.java)
+    private val logger: KLogger
+        get() = KotlinLogging.logger {}
 
     @GetMapping
-    fun login(authentication: Authentication): Mono<String> {
-        logger.info("Executing Spotify login method.")
+    suspend fun login(authentication: Authentication): String {
+        logger.info { "Executing Spotify login method." }
 
-        return principalExtractor.getUserId(authentication).flatMap { userId ->
-            tokenService.getAuthorizationUrl(userId).map { url ->
-                logger.info("Redirecting user $userId to Spotify authorization URL: $url.")
+        val userId = principalService.getUserId(authentication)
+        val url = tokenService.getAuthorizationUrl(userId)
+        logger.info { "Redirecting user $userId to Spotify authorization URL: $url." }
 
-                "redirect:$url"
-            }
-        }
+        return "{ \"url\": $url }"
     }
 
     @GetMapping("/callback")
-    fun callback(
+    suspend fun callback(
         @RequestParam code: String?,
         @RequestParam state: String?,
         @RequestParam error: String?,
-    ): Mono<String> {
-        logger.info("Received Spotify callback with state: $state and error: $error.")
+    ): SpotifyUserProfile {
+        logger.info {"Received Spotify callback with state: $state and error: $error." }
 
-        return tokenService.authenticate(code, state, error)
-            .map {
-                logger.info("Spotify authentication successful.")
+        val userProfile = tokenService.authenticate(code, state, error)
 
-                "Spotify authentication successful."
-            }
-    }
+        logger.info { "Spotify authentication successful." }
 
-    @GetMapping("/refresh")
-    fun refreshAccessToken(authentication: Authentication): Mono<String> {
-        logger.info("Executing Spotify refreshAccessToken method.")
-
-        return principalExtractor.getUserId(authentication)
-            .flatMap { userId ->
-                tokenService.refreshToken(userId). map {
-                    logger.info("Successfully refreshed Instagram access token for user: $userId.")
-
-                    "Successfully refreshed Spotify access token for user: $userId."
-                }
-            }
+        return userProfile
     }
 
     @DeleteMapping
-    fun logout(authentication: Authentication): Mono<String> {
-        logger.info("Executing Spotify logout method.")
+    suspend fun logout(authentication: Authentication) {
+        logger.info { "Executing Spotify logout method" }
 
-        return principalExtractor.getUserId(authentication).flatMap { userId ->
-            tokenService.logout(userId).then(Mono.fromCallable { "Spotify user information deleted for user: $userId." })
-        }
+        val userId = principalService.getUserId(authentication)
+
+        tokenService.logout(userId)
     }
 }
