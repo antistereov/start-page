@@ -1,5 +1,6 @@
 package io.github.antistereov.start.user.service
 
+import io.github.antistereov.start.user.exception.UserDoesNotExistException
 import io.github.antistereov.start.user.model.UserDocument
 import io.github.antistereov.start.user.repository.UserRepository
 import io.github.oshai.kotlinlogging.KLogger
@@ -14,10 +15,10 @@ class UserService(
     private val logger: KLogger
         get() = KotlinLogging.logger {}
 
-    suspend fun findById(userId: String): UserDocument? {
+    suspend fun findById(userId: String): UserDocument {
         logger.debug { "Finding user by ID: $userId" }
 
-        return userRepository.findById(userId)
+        return userRepository.findById(userId) ?: throw UserDoesNotExistException(userId)
     }
 
     suspend fun findByUsername(username: String): UserDocument? {
