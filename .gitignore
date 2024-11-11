@@ -10,7 +10,6 @@ build/
 .apt_generated
 .classpath
 .factorypath
-.project
 .settings
 .springBeans
 .sts4-cache
@@ -80,8 +79,6 @@ testem.log
 .DS_Store
 Thumbs.db
 
-/mongodb/.env
-/backend/.env
 /mongodb/data/
 
 node_modules/
