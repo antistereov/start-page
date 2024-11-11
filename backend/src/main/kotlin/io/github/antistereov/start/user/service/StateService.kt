@@ -1,7 +1,7 @@
 package io.github.antistereov.start.user.service
 
-import io.github.antistereov.start.global.exception.InvalidStateParameterException
 import io.github.antistereov.start.security.AESEncryption
+import io.github.antistereov.start.user.exception.InvalidStateParameterException
 import io.github.antistereov.start.user.model.StateParameter
 import io.github.antistereov.start.user.repository.StateRepository
 import kotlinx.coroutines.flow.*
@@ -12,12 +12,12 @@ import org.springframework.stereotype.Service
 import java.time.Instant
 
 @Service
-class StateValidation(
+class StateService(
     private val aesEncryption: AESEncryption,
     private val stateRepository: StateRepository,
 ) {
 
-    val logger: Logger = LoggerFactory.getLogger(StateValidation::class.java)
+    val logger: Logger = LoggerFactory.getLogger(StateService::class.java)
     val validityPeriodMinutes = 5L
 
     suspend fun createState(userId: String): String {
@@ -32,7 +32,8 @@ class StateValidation(
 
     suspend fun getUserId(state: String): String {
         val decryptedState = aesEncryption.decrypt(state)
-        val storedState = stateRepository.findById(state) ?: throw InvalidStateParameterException()
+        val storedState = stateRepository.findById(state)
+            ?: throw InvalidStateParameterException("State $state not found in database")
 
         validateState(decryptedState, storedState)
 
@@ -68,19 +69,20 @@ class StateValidation(
     private fun validateState(decryptedState: String, storedStateParameter: StateParameter) {
         val parts = decryptedState.split(":")
         if (parts.size != 2 || decryptedState != "${storedStateParameter.userId}:${storedStateParameter.timestamp}") {
-            throw InvalidStateParameterException()
+            throw InvalidStateParameterException("State has an invalid format")
         }
     }
 
     private fun getStateTime(decryptedState: String): Instant {
-        val timestamp = decryptedState.split(":")[1].toLongOrNull() ?: throw InvalidStateParameterException()
+        val timestamp = decryptedState.split(":")[1].toLongOrNull()
+            ?: throw InvalidStateParameterException("State has an invalid format")
         return Instant.ofEpochMilli(timestamp)
     }
 
     private fun validateTime(stateTime: Instant) {
         val currentTime = Instant.now()
         if (currentTime.isAfter(stateTime.plusSeconds(validityPeriodMinutes * 60))) {
-            throw InvalidStateParameterException()
+            throw InvalidStateParameterException("State is expired")
         }
     }
 

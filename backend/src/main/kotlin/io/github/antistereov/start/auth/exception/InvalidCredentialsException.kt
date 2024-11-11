@@ -1,5 +1,5 @@
 package io.github.antistereov.start.auth.exception
 
-class InvalidCredentialsException : AuthServiceException(
+class InvalidCredentialsException : AuthException(
     message = "Login failed: Invalid credentials",
 )

@@ -1,6 +1,6 @@
 package io.github.antistereov.start.widget.unsplash.exception
 
-import io.github.antistereov.start.global.exception.ErrorResponse
+import io.github.antistereov.start.global.model.ErrorResponse
 import io.github.oshai.kotlinlogging.KLogger
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.http.HttpStatus

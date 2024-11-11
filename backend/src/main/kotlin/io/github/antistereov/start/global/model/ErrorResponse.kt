@@ -1,4 +1,4 @@
-package io.github.antistereov.start.global.exception
+package io.github.antistereov.start.global.model
 
 import java.time.LocalDateTime
 

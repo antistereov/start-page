@@ -1,7 +1,7 @@
 package io.github.antistereov.start.widget.spotify.auth
 
 import io.github.antistereov.start.security.AESEncryption
-import io.github.antistereov.start.user.service.StateValidation
+import io.github.antistereov.start.user.service.StateService
 import io.github.antistereov.start.user.service.UserService
 import io.github.antistereov.start.widget.shared.model.WidgetUserInformation
 import io.github.antistereov.start.widget.spotify.auth.model.SpotifyTokenResponse
@@ -25,7 +25,7 @@ class SpotifyAuthService(
     private val webClient: WebClient,
     private val userService: UserService,
     private val aesEncryption: AESEncryption,
-    private val stateValidation: StateValidation,
+    private val stateService: StateService,
     private val properties: SpotifyProperties,
 ) {
 
@@ -35,7 +35,7 @@ class SpotifyAuthService(
     suspend fun getAuthorizationUrl(userId: String): String {
         logger.debug { "Getting authorization URL for user: $userId." }
 
-        val state = stateValidation.createState(userId)
+        val state = stateService.createState(userId)
 
         return UriComponentsBuilder
             .fromHttpUrl("https://accounts.spotify.com/authorize")
@@ -108,7 +108,7 @@ class SpotifyAuthService(
         }
 
         val spotifyTokenResponse = getSpotifyTokenResponse(code)
-        val userId = stateValidation.getUserId(state)
+        val userId = stateService.getUserId(state)
         handleUser(userId, spotifyTokenResponse)
 
         return getUserProfile(userId)

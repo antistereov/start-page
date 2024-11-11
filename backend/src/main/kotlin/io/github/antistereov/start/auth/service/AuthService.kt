@@ -1,7 +1,7 @@
 package io.github.antistereov.start.auth.service
 
 import io.github.antistereov.start.auth.dto.LoginResponseDto
-import io.github.antistereov.start.auth.exception.AuthServiceException
+import io.github.antistereov.start.auth.exception.AuthException
 import io.github.antistereov.start.auth.exception.InvalidCredentialsException
 import io.github.antistereov.start.auth.properties.JwtProperties
 import io.github.antistereov.start.user.dto.LoginUserDto
@@ -34,7 +34,7 @@ class AuthService(
         }
 
         if (user.id == null) {
-            throw AuthServiceException("Login failed: UserDocument contains no id")
+            throw AuthException("Login failed: UserDocument contains no id")
         }
 
         logger.debug { "Successfully logged in user ${payload.username}" }
@@ -60,7 +60,7 @@ class AuthService(
         val savedUserDocument = userService.save(userDocument)
 
         if (savedUserDocument.id == null) {
-            throw AuthServiceException("Login failed: UserDocument contains no id")
+            throw AuthException("Login failed: UserDocument contains no id")
         }
 
         logger.debug { "Successfully registered user ${payload.username}" }

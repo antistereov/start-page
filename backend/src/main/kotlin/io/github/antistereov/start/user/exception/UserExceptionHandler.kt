@@ -1,6 +1,6 @@
 package io.github.antistereov.start.user.exception
 
-import io.github.antistereov.start.global.exception.ErrorResponse
+import io.github.antistereov.start.global.model.ErrorResponse
 import io.github.oshai.kotlinlogging.KLogger
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.http.HttpStatus
@@ -57,5 +57,20 @@ class UserExceptionHandler {
         )
 
         return ResponseEntity(errorResponse, HttpStatus.NOT_FOUND)
+    }
+
+    @ExceptionHandler(InvalidStateParameterException::class)
+    suspend fun handleInvalidStateParameterException(ex: InvalidStateParameterException,
+                                                     exchange: ServerWebExchange): ResponseEntity<ErrorResponse> {
+        logger.error(ex) { "${ex.javaClass.simpleName} - ${ex.message}" }
+
+        val errorResponse = ErrorResponse(
+            status = HttpStatus.FORBIDDEN.value(),
+            error = ex.javaClass.simpleName,
+            message = "Invalid state parameter: ${ex.message}",
+            path = exchange.request.uri.path
+        )
+
+        return ResponseEntity(errorResponse, HttpStatus.FORBIDDEN)
     }
 }

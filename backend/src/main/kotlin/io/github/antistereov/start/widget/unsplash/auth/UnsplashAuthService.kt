@@ -2,7 +2,7 @@ package io.github.antistereov.start.widget.unsplash.auth
 
 import io.github.antistereov.start.security.AESEncryption
 import io.github.antistereov.start.widget.shared.model.WidgetUserInformation
-import io.github.antistereov.start.user.service.StateValidation
+import io.github.antistereov.start.user.service.StateService
 import io.github.antistereov.start.user.service.UserService
 import io.github.antistereov.start.widget.unsplash.UnsplashProperties
 import io.github.antistereov.start.widget.unsplash.auth.model.UnsplashPublicUserProfile
@@ -27,7 +27,7 @@ class UnsplashAuthService(
     private val webClient: WebClient,
     private val userService: UserService,
     private val aesEncryption: AESEncryption,
-    private val stateValidation: StateValidation,
+    private val stateService: StateService,
     private val properties: UnsplashProperties,
 ) {
 
@@ -37,7 +37,7 @@ class UnsplashAuthService(
     suspend fun getAuthorizationUrl(userId: String): String {
         logger.debug { "Creating Unsplash authorization URL for user $userId." }
 
-        val state = stateValidation.createState(userId)
+        val state = stateService.createState(userId)
 
         return UriComponentsBuilder.fromHttpUrl("https://unsplash.com/oauth/authorize")
                 .queryParam("redirect_uri", properties.redirectUri)
@@ -116,7 +116,7 @@ class UnsplashAuthService(
             throw UnsplashInvalidCallbackException()
         }
 
-        val userId = stateValidation.getUserId(state)
+        val userId = stateService.getUserId(state)
         handleTokenResponse(userId, code)
         return handleUser(userId)
     }

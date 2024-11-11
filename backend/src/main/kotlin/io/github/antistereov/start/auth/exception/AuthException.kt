@@ -1,9 +1,11 @@
 package io.github.antistereov.start.auth.exception
 
-open class AuthServiceException(
+import io.github.antistereov.start.global.exception.StartPageException
+
+open class AuthException(
     message: String,
     cause: Throwable? = null
-) : RuntimeException(
+) : StartPageException(
     message,
     cause
 )
