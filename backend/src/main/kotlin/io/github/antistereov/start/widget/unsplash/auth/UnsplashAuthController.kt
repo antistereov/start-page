@@ -42,24 +42,14 @@ class UnsplashAuthController(
         }
     }
 
-    @GetMapping("/logged-in")
-    suspend fun isLoggedIn(authentication: Authentication): String {
-        logger.info { "Checking if user is logged in" }
-
-        val userId = principalService.getUserId(authentication)
-        return service.isLoggedIn(userId)
-    }
-
     @GetMapping("/callback")
     suspend fun callback(
         @RequestParam code: String?,
         @RequestParam state: String?,
-        @RequestParam error: String?,
-        @RequestParam(name = "error_description") errorDescription: String?,
     ): UnsplashPublicUserProfile {
-        logger.info { "Received Unsplash callback with code: $code, state: $state and error: $error." }
+        logger.info { "Received Unsplash callback with code: $code and state: $state" }
 
-        val publicUserProfile = service.authenticate(code, state, error, errorDescription)
+        val publicUserProfile = service.authenticate(code, state)
 
         logger.info { "Unsplash authentication successful." }
 

@@ -1,7 +1,5 @@
 package io.github.antistereov.start.widget.unsplash.auth
 
-import io.github.antistereov.start.global.exception.InvalidCallbackException
-import io.github.antistereov.start.global.exception.ThirdPartyAuthorizationCanceledException
 import io.github.antistereov.start.security.AESEncryption
 import io.github.antistereov.start.user.exception.UserDoesNotExistException
 import io.github.antistereov.start.widget.shared.model.WidgetUserInformation
@@ -11,8 +9,9 @@ import io.github.antistereov.start.widget.unsplash.UnsplashProperties
 import io.github.antistereov.start.widget.unsplash.auth.model.UnsplashPublicUserProfile
 import io.github.antistereov.start.widget.unsplash.auth.model.UnsplashTokenResponse
 import io.github.antistereov.start.widget.unsplash.auth.model.UnsplashUserProfile
-import io.github.antistereov.start.widget.unsplash.exception.UnsplashAccessTokenNotFoundException
+import io.github.antistereov.start.widget.unsplash.exception.UnsplashTokenException
 import io.github.antistereov.start.widget.unsplash.exception.UnsplashException
+import io.github.antistereov.start.widget.unsplash.exception.UnsplashInvalidCallbackException
 import io.github.antistereov.start.widget.unsplash.model.UnsplashUserInformation
 import io.github.oshai.kotlinlogging.KLogger
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -53,8 +52,6 @@ class UnsplashAuthService(
     suspend fun authenticate(
         code: String?,
         state: String?,
-        error: String?,
-        errorDescription: String?
     ): UnsplashPublicUserProfile {
 
         suspend fun handleTokenResponse(userId: String, code: String): UnsplashTokenResponse {
@@ -75,7 +72,7 @@ class UnsplashAuthService(
                 .retrieve()
                 .awaitBody<UnsplashTokenResponse>()
 
-            val user = userService.findById(userId) ?: throw UserDoesNotExistException(userId)
+            val user = userService.findById(userId)
 
             val widgets = user.widgets ?: WidgetUserInformation()
             val unsplashWidget = widgets.unsplash ?: UnsplashUserInformation()
@@ -93,7 +90,7 @@ class UnsplashAuthService(
         suspend fun handleUser(userId: String): UnsplashPublicUserProfile {
             logger.debug { "Handling Unsplash user $userId" }
 
-            val user = userService.findById(userId) ?: throw UserDoesNotExistException(userId)
+            val user = userService.findById(userId)
 
             val widgets = user.widgets ?: WidgetUserInformation()
             val unsplashWidget = widgets.unsplash ?: UnsplashUserInformation()
@@ -114,32 +111,21 @@ class UnsplashAuthService(
             return publicUserProfile
         }
 
-        logger.debug { "Received Unsplash callback with state: $state and error: $error." }
+        logger.debug { "Received Unsplash callback with state: $state" }
 
-        if (code != null && state != null) {
-            val userId = stateValidation.getUserId(state)
-            handleTokenResponse(userId, code)
-            return handleUser(userId)
+        if (code == null || state == null) {
+            throw UnsplashInvalidCallbackException()
         }
 
-        if (error != null && errorDescription != null) {
-            throw ThirdPartyAuthorizationCanceledException(
-                properties.serviceName,
-                error,
-                errorDescription
-            )
-        }
-
-        throw InvalidCallbackException(
-            properties.serviceName,
-            "Invalid request parameters."
-        )
+        val userId = stateValidation.getUserId(state)
+        handleTokenResponse(userId, code)
+        return handleUser(userId)
     }
 
     suspend fun logout(userId: String) {
         logger.debug { "Deleting Unsplash user information for user $userId." }
 
-        val user = userService.findById(userId) ?: throw UserDoesNotExistException(userId)
+        val user = userService.findById(userId)
 
         val updatedWidgets = user.widgets?.copy(unsplash = null) ?: WidgetUserInformation()
         val updatedUser = user.copy(widgets = updatedWidgets)
@@ -150,9 +136,9 @@ class UnsplashAuthService(
     suspend fun getAccessToken(userId: String): String {
         logger.debug { "Getting Unsplash access token for user $userId." }
 
-        val user = userService.findById(userId) ?: throw UserDoesNotExistException(userId)
+        val user = userService.findById(userId)
         val encryptedAccessToken = user.widgets?.unsplash?.accessToken
-            ?: throw UnsplashAccessTokenNotFoundException(userId)
+            ?: throw UnsplashTokenException("No Unsplash access token found for user $userId")
 
         return aesEncryption.decrypt(encryptedAccessToken)
     }
@@ -185,7 +171,7 @@ class UnsplashAuthService(
     suspend fun getSavedPublicUserProfile(userId: String): UnsplashPublicUserProfile {
         logger.debug { "Fetching saved public Unsplash user profile for user $userId from database" }
 
-        val user = userService.findById(userId) ?: throw UserDoesNotExistException(userId)
+        val user = userService.findById(userId)
 
         val unsplash = user.widgets?.unsplash ?: throw UnsplashException("No Unsplash user information saved")
 
@@ -195,16 +181,5 @@ class UnsplashAuthService(
             username = unsplash.username,
             profileImage = unsplash.profileImage,
         )
-    }
-
-    suspend fun isLoggedIn(userId: String): String {
-        val isLoggedIn = try {
-            getAccessToken(userId)
-            true
-        } catch (e: UnsplashAccessTokenNotFoundException) {
-            false
-        }
-
-        return "{ \"loggedIn\": $isLoggedIn }"
     }
 }
