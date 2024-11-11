@@ -1,14 +1,13 @@
 package io.github.antistereov.start.widget.spotify.auth
 
-import io.github.antistereov.start.global.exception.InvalidCallbackException
-import io.github.antistereov.start.global.exception.ThirdPartyAuthorizationCanceledException
 import io.github.antistereov.start.security.AESEncryption
 import io.github.antistereov.start.user.service.StateValidation
 import io.github.antistereov.start.user.service.UserService
 import io.github.antistereov.start.widget.shared.model.WidgetUserInformation
 import io.github.antistereov.start.widget.spotify.auth.model.SpotifyTokenResponse
-import io.github.antistereov.start.widget.spotify.exception.SpotifyAccessTokenNotFoundException
+import io.github.antistereov.start.widget.spotify.exception.SpotifyTokenException
 import io.github.antistereov.start.widget.spotify.exception.SpotifyException
+import io.github.antistereov.start.widget.spotify.exception.SpotifyInvalidCallbackException
 import io.github.antistereov.start.widget.spotify.model.SpotifyUserProfile
 import io.github.antistereov.start.widget.spotify.model.SpotifyUserInformation
 import io.github.oshai.kotlinlogging.KLogger
@@ -103,27 +102,16 @@ class SpotifyAuthService(
 
         logger.debug { "Authenticating user." }
 
-        if (code != null && state != null) {
-            val spotifyTokenResponse = getSpotifyTokenResponse(code)
-            val userId = stateValidation.getUserId(state)
-            handleUser(userId, spotifyTokenResponse)
-
-            getUserProfile(userId)
+        if (code == null || state == null) {
+            throw SpotifyInvalidCallbackException("Invalid callback from Unsplash: " +
+                    "no code or no state passed to callback")
         }
 
-        if (error != null) {
-            throw ThirdPartyAuthorizationCanceledException(
-                properties.serviceName,
-                error,
-                error
-            )
-        }
+        val spotifyTokenResponse = getSpotifyTokenResponse(code)
+        val userId = stateValidation.getUserId(state)
+        handleUser(userId, spotifyTokenResponse)
 
-        throw InvalidCallbackException(
-            properties.serviceName,
-            "Invalid request parameters."
-        )
-
+        return getUserProfile(userId)
     }
 
     suspend fun logout(userId: String) {
@@ -164,7 +152,7 @@ class SpotifyAuthService(
             this.refreshToken(userId).accessToken
         } else {
             val encryptedSpotifyAccessToken = user.widgets.spotify.accessToken
-                ?: throw SpotifyAccessTokenNotFoundException(userId)
+                ?: throw SpotifyTokenException(userId)
 
             aesEncryption.decrypt(encryptedSpotifyAccessToken)
         }
@@ -178,7 +166,7 @@ class SpotifyAuthService(
         val user = userService.findById(userId)
 
         val encryptedRefreshToken = user.widgets?.spotify?.refreshToken
-            ?: throw SpotifyAccessTokenNotFoundException(userId)
+            ?: throw SpotifyTokenException(userId)
 
         val refreshToken = aesEncryption.decrypt(encryptedRefreshToken)
 
