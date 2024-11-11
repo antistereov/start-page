@@ -1,7 +1,6 @@
 package io.github.antistereov.start.widget.unsplash.auth
 
 import io.github.antistereov.start.security.AESEncryption
-import io.github.antistereov.start.user.exception.UserDoesNotExistException
 import io.github.antistereov.start.widget.shared.model.WidgetUserInformation
 import io.github.antistereov.start.user.service.StateValidation
 import io.github.antistereov.start.user.service.UserService
