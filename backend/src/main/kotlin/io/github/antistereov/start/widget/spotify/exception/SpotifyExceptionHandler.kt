@@ -16,7 +16,7 @@ class SpotifyExceptionHandler {
         get() = KotlinLogging.logger {}
 
     @ExceptionHandler(SpotifyException::class)
-    fun handleSpotifyException(ex: SpotifyException, exchange: ServerWebExchange): ResponseEntity<ErrorResponse> {
+    suspend fun handleSpotifyException(ex: SpotifyException, exchange: ServerWebExchange): ResponseEntity<ErrorResponse> {
         logger.error(ex) { "${ex.javaClass.simpleName} - ${ex.message}" }
 
         val errorResponse = ErrorResponse(
@@ -30,7 +30,7 @@ class SpotifyExceptionHandler {
     }
 
     @ExceptionHandler(SpotifyTokenException::class)
-    fun handleSpotifyTokenException(ex: SpotifyTokenException,
+    suspend fun handleSpotifyTokenException(ex: SpotifyTokenException,
                                      exchange: ServerWebExchange): ResponseEntity<ErrorResponse> {
         logger.error(ex) { "${ex.javaClass.simpleName} - ${ex.message}"}
 
@@ -45,7 +45,7 @@ class SpotifyExceptionHandler {
     }
 
     @ExceptionHandler(SpotifyInvalidCallbackException::class)
-    fun handleSpotifyInvalidCallbackException(ex: SpotifyInvalidCallbackException,
+    suspend fun handleSpotifyInvalidCallbackException(ex: SpotifyInvalidCallbackException,
                                                exchange: ServerWebExchange): ResponseEntity<ErrorResponse> {
         logger.error(ex) { "${ex.javaClass.simpleName} - ${ex.message}" }
 

@@ -16,7 +16,7 @@ class UnsplashExceptionHandler {
         get() = KotlinLogging.logger {}
 
     @ExceptionHandler(UnsplashException::class)
-    fun handleUnsplashException(ex: UnsplashException, exchange: ServerWebExchange): ResponseEntity<ErrorResponse> {
+    suspend fun handleUnsplashException(ex: UnsplashException, exchange: ServerWebExchange): ResponseEntity<ErrorResponse> {
         logger.error(ex) { "${ex.javaClass.simpleName} - ${ex.message}" }
 
         val errorResponse = ErrorResponse(
@@ -30,7 +30,7 @@ class UnsplashExceptionHandler {
     }
 
     @ExceptionHandler(UnsplashTokenException::class)
-    fun handleUnsplashTokenException(ex: UnsplashTokenException,
+    suspend fun handleUnsplashTokenException(ex: UnsplashTokenException,
                                      exchange: ServerWebExchange): ResponseEntity<ErrorResponse> {
         logger.error(ex) { "${ex.javaClass.simpleName} - ${ex.message}"}
 
@@ -45,7 +45,7 @@ class UnsplashExceptionHandler {
     }
 
     @ExceptionHandler(UnsplashInvalidCallbackException::class)
-    fun handleUnsplashInvalidCallbackException(ex: UnsplashInvalidCallbackException,
+    suspend fun handleUnsplashInvalidCallbackException(ex: UnsplashInvalidCallbackException,
                                                exchange: ServerWebExchange): ResponseEntity<ErrorResponse> {
         logger.error(ex) { "${ex.javaClass.simpleName} - ${ex.message}" }
 
