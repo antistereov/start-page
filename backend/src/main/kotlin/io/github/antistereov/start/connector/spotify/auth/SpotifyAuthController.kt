@@ -1,6 +1,7 @@
 package io.github.antistereov.start.connector.spotify.auth
 
 import io.github.antistereov.start.auth.service.PrincipalService
+import io.github.antistereov.start.connector.spotify.exception.SpotifyException
 import io.github.antistereov.start.connector.spotify.model.SpotifyUserProfile
 import io.github.oshai.kotlinlogging.KLogger
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -23,9 +24,8 @@ class SpotifyAuthController(
 
         val userId = principalService.getUserId(authentication)
         val url = spotifyAuthService.getAuthorizationUrl(userId)
-        logger.info { "Redirecting user $userId to Spotify authorization URL: $url." }
 
-        return "{ \"url\": $url }"
+        return "{ \"url\": \"$url\" }"
     }
 
     @GetMapping("/callback")
@@ -50,5 +50,29 @@ class SpotifyAuthController(
         val userId = principalService.getUserId(authentication)
 
         spotifyAuthService.disconnect(userId)
+    }
+
+    @GetMapping("/access-token")
+    suspend fun getAccessToken(authentication: Authentication): String {
+        logger.info { "Fetching Spotify access token" }
+
+        val userId = principalService.getUserId(authentication)
+
+        val accessToken = spotifyAuthService.getAccessToken(userId)
+
+        return "{ \"accessToken\": \"$accessToken\" }"
+    }
+
+    @GetMapping("/me")
+    suspend fun getUserProfile(authentication: Authentication): SpotifyUserProfile? {
+        logger.info { "Fetching Spotify user profile" }
+
+        val userId = principalService.getUserId(authentication)
+
+        return try {
+            spotifyAuthService.getUserProfile(userId)
+        } catch (e: SpotifyException) {
+            return null
+        }
     }
 }
