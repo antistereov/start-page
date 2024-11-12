@@ -37,4 +37,4 @@ export class SpotifyAuthComponent implements OnInit {
     disconnect() {
         this.spotifyAuthService.disconnect();
     }
-    }
+}
