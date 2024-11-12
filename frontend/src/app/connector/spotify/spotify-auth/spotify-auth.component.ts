@@ -2,7 +2,7 @@ import {Component, OnInit} from '@angular/core';
 import {AvatarModule} from "primeng/avatar";
 import {ButtonModule} from "primeng/button";
 import {NgIf} from "@angular/common";
-import {UnsplashAuthService, UnsplashUserProfile} from '../../unsplash/unsplash-auth/unsplash-auth.service';
+import {UnsplashUserProfile} from '../../unsplash/unsplash-auth/unsplash-auth.service';
 import {SpotifyAuthService} from './spotify-auth.service';
 
 @Component({
