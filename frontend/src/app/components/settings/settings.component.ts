@@ -11,6 +11,7 @@ import {DividerModule} from 'primeng/divider';
 import {AppearanceSettingsComponent} from './appearance-settings/appearance-settings.component';
 import {UnsplashAuthComponent} from '../../connector/unsplash/unsplash-auth/unsplash-auth.component';
 import {Drawer} from 'primeng/drawer';
+import {SpotifyAuthComponent} from '../../connector/spotify/spotify-auth/spotify-auth.component';
 
 @Component({
   selector: 'app-settings',
@@ -26,7 +27,8 @@ import {Drawer} from 'primeng/drawer';
         DividerModule,
         AppearanceSettingsComponent,
         UnsplashAuthComponent,
-        Drawer
+        Drawer,
+        SpotifyAuthComponent
     ],
   templateUrl: './settings.component.html',
   styleUrl: './settings.component.css'

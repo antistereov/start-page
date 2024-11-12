@@ -10,11 +10,12 @@ import {Aura} from 'primeng/themes/aura';
 import {UnsplashWidgetComponent} from './connector/unsplash/unsplash-widget/unsplash-widget.component';
 import {DynamicGridComponent} from './components/shared/dynamic-grid/dynamic-grid.component';
 import {TileComponent} from './components/shared/tile/tile.component';
+import {SpotifyPlaybackComponent} from './connector/spotify/spotify-playback/spotify-playback.component';
 
 @Component({
     selector: 'app-root',
     standalone: true,
-    imports: [RouterOutlet, ButtonModule, ToggleButton, ThemeSelectorComponent, AccentColorSelectorComponent, SettingsComponent, UnsplashWidgetComponent, DynamicGridComponent, TileComponent],
+    imports: [RouterOutlet, ButtonModule, ToggleButton, ThemeSelectorComponent, AccentColorSelectorComponent, SettingsComponent, UnsplashWidgetComponent, DynamicGridComponent, TileComponent, SpotifyPlaybackComponent],
     templateUrl: './app.component.html',
     styleUrl: './app.component.css'
 })
