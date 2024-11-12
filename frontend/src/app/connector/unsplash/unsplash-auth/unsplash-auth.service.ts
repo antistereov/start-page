@@ -12,8 +12,6 @@ export class UnsplashAuthService {
 
     constructor(private httpClient: HttpClient) {}
 
-    baseUrl = 'http://localhost:8000';
-
     getUserProfile(): void {
         this.httpClient.get<any>(`${environment.baseUrl}/auth/unsplash/me`)
             .subscribe(result => {
@@ -31,13 +29,13 @@ export class UnsplashAuthService {
     }
 
     connect() {
-        this.httpClient.get<any>(`${this.baseUrl}/auth/unsplash`).subscribe(result => {
+        this.httpClient.get<any>(`${environment.baseUrl}/auth/unsplash`).subscribe(result => {
             window.location.href = result.url;
         })
     }
 
     disconnect(): void {
-        this.httpClient.delete(`${this.baseUrl}/auth/unsplash`).subscribe(() => {
+        this.httpClient.delete(`${environment}/auth/unsplash`).subscribe(() => {
             this.userProfileSubject.next(null);
         })
     }
@@ -46,14 +44,14 @@ export class UnsplashAuthService {
         const params = new HttpParams()
             .set('code', code)
             .set('state', state)
-        return this.httpClient.get<any>(`${environment.baseUrl}/auth/unsplash/callback`, { params })
+        return this.httpClient.get<any>(`${environment.baseUrl}/auth/unsplash/callback`, { params });
     }
 }
 
 export class UnsplashUserProfile {
     constructor(
         public username: string,
-        public profileImage: string | undefined
+        public profileImage: string | null
     ) {}
 }
 

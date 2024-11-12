@@ -42,7 +42,7 @@ export class UnsplashCallbackComponent implements OnInit {
                 this.loading = false;
                 this.errorMessage = 'Authorization code or state not found';
             }
-        })
+        });
     }
 
     authenticateUser(code: string, state: string): void {
