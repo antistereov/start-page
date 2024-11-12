@@ -7,7 +7,7 @@ frontend:
 spring:
   data:
     mongodb:
-      uri: mongodb://${MONGO_DB_USER}:${MONGO_DB_PASSWORD}@localhost:27017/start?authSource=admin
+      uri: mongodb://${MONGO_DB_USERNAME}:${MONGO_DB_PASSWORD}@localhost:27017/start?authSource=admin
   devtools:
     restart:
       enabled: ${DEV_MODE}
@@ -27,7 +27,7 @@ spotify:
   client-secret: ${SPOTIFY_CLIENT_SECRET}
   redirect-uri: ${FRONTEND_BASE_URL}/callback/spotify
   apiBase-url: https://api.spotify.com/v1
-  scopes: user-read-currently-playing
+  scopes: user-read-currently-playing user-read-private
 
 todoist:
   service-name: Todoist
