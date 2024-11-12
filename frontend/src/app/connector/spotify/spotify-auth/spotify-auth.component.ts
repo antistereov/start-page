@@ -2,19 +2,19 @@ import {Component, OnInit} from '@angular/core';
 import {AvatarModule} from "primeng/avatar";
 import {ButtonModule} from "primeng/button";
 import {NgIf} from "@angular/common";
-import {UnsplashAuthService, UnsplashUserProfile} from '../../unsplash/unsplash-auth/unsplash-auth.service';
+import {UnsplashUserProfile} from '../../unsplash/unsplash-auth/unsplash-auth.service';
 import {SpotifyAuthService} from './spotify-auth.service';
 
 @Component({
-  selector: 'app-spotify-auth',
-  standalone: true,
-    imports: [
-        AvatarModule,
-        ButtonModule,
-        NgIf
-    ],
-  templateUrl: './spotify-auth.component.html',
-  styleUrl: './spotify-auth.component.css'
+    selector: 'app-spotify-auth',
+    standalone: true,
+        imports: [
+            AvatarModule,
+            ButtonModule,
+            NgIf
+        ],
+    templateUrl: './spotify-auth.component.html',
+    styleUrl: './spotify-auth.component.css'
 })
 export class SpotifyAuthComponent implements OnInit {
     userProfile: UnsplashUserProfile | null = null;

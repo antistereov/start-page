@@ -1,5 +1,4 @@
-import {Component, OnInit} from '@angular/core';
-import {withDebugTracing} from '@angular/router';
+import {Component} from '@angular/core';
 import {SpotifyPlaybackService} from './spotify-playback.service';
 import {ButtonModule} from 'primeng/button';
 
