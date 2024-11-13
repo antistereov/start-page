@@ -1,7 +1,22 @@
-.grid-container {}
-
 .tile {
     position: absolute;
     transition: all 0.3s ease;
     padding: 4px;
+}
+
+.scroll-panel-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%; /* Prevent shrinking horizontally */
+}
+
+.grid-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    width: 100%; /* Ensure the grid container takes up full width */
+    max-width: 1200px; /* Optional: Add a max-width to avoid overflow */
+    margin: 0 auto;
 }
