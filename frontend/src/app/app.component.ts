@@ -11,11 +11,12 @@ import {UnsplashWidgetComponent} from './connector/unsplash/unsplash-widget/unsp
 import {DynamicGridComponent} from './components/shared/dynamic-grid/dynamic-grid.component';
 import {TileComponent} from './components/shared/tile/tile.component';
 import {SpotifyPlaybackComponent} from './connector/spotify/spotify-playback/spotify-playback.component';
+import {WallpaperComponent} from './components/shared/wallpaper/wallpaper.component';
 
 @Component({
     selector: 'app-root',
     standalone: true,
-    imports: [RouterOutlet, ButtonModule, ToggleButton, ThemeSelectorComponent, AccentColorSelectorComponent, SettingsComponent, UnsplashWidgetComponent, DynamicGridComponent, TileComponent, SpotifyPlaybackComponent],
+    imports: [RouterOutlet, ButtonModule, ToggleButton, ThemeSelectorComponent, AccentColorSelectorComponent, SettingsComponent, UnsplashWidgetComponent, DynamicGridComponent, TileComponent, SpotifyPlaybackComponent, WallpaperComponent],
     templateUrl: './app.component.html',
     styleUrl: './app.component.css'
 })

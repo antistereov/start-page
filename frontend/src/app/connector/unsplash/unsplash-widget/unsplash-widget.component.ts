@@ -22,10 +22,10 @@ export class UnsplashWidgetComponent implements OnInit {
     ) {}
 
     ngOnInit() {
-        this.unsplashWidgetService.isLast$.subscribe((isLast) => {
+        this.unsplashWidgetService.isLast$.subscribe(isLast => {
             this.isLast = isLast;
         });
-        this.unsplashWidgetService.isFirst$.subscribe((isFirst) => {
+        this.unsplashWidgetService.isFirst$.subscribe(isFirst => {
             this.isFirst = isFirst;
         });
 

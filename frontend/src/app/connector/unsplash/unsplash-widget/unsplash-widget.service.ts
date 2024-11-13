@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {environment} from '../../../../environment/environment';
-import {WallpaperService} from '../../../services/wallpaper/wallpaper.service';
-import {BehaviorSubject} from 'rxjs';
+import {WallpaperService} from '../../../components/shared/wallpaper/wallpaper.service';
+import {BehaviorSubject, map, Observable} from 'rxjs';
 
 @Injectable({
     providedIn: 'root'
@@ -13,11 +13,13 @@ export class UnsplashWidgetService {
         private wallpaperService: WallpaperService,
     ) {
         this.setCurrentWallpaper();
+        console.log(this.getCounter(), this.getPreviousWallpapers().length)
+        // console.log(this.getCounter() + 1 === this.getPreviousWallpapers().length)
     }
 
     isFirstSubject = new BehaviorSubject<boolean>(this.getCounter() === 0);
     isFirst$ = this.isFirstSubject.asObservable();
-    isLastSubject = new BehaviorSubject<boolean>(this.getCounter() === this.getPreviousWallpapers().length);
+    isLastSubject = new BehaviorSubject<boolean>(this.getCounter() + 1 === this.getPreviousWallpapers().length);
     isLast$ = this.isLastSubject.asObservable();
 
     setCurrentWallpaper() {
@@ -30,17 +32,16 @@ export class UnsplashWidgetService {
             this.wallpaperService.setWallpaper(this.getCurrentWallpaper()!)
         }
 
-        this.setCounter(this.getPreviousWallpapers().length);
+        this.setCounter(this.getPreviousWallpapers().length - 1);
     }
 
     setPreviousWallpaper() {
         let counter = this.getCounter();
-        if (counter && counter > 0) {
+        if (counter > 0) {
 
             counter--
             const previousWallpaper = this.getPreviousWallpapers().at(counter);
             if (previousWallpaper) {
-
                 this.wallpaperService.setWallpaper(previousWallpaper);
             }
             this.setCounter(counter);
@@ -53,32 +54,47 @@ export class UnsplashWidgetService {
     setNextWallpaper() {
         let counter = this.getCounter();
         const wallpapersCount = this.getPreviousWallpapers().length;
-        if (counter && counter + 1 < wallpapersCount) {
+        if (counter + 1 < wallpapersCount) {
+            console.log("next saved")
             this.isFirstSubject.next(false);
 
-            const previousWallpaper = this.getPreviousWallpapers().at(counter + 1);
+            counter++
+            const previousWallpaper = this.getPreviousWallpapers().at(counter);
 
             if (previousWallpaper) {
                 this.wallpaperService.setWallpaper(previousWallpaper);
-                counter++
                 this.setCounter(counter);
-            }
-        } else if (counter && counter + 1 === wallpapersCount) {
-            this.isFirstSubject.next(false);
 
-            this.getNewWallpaper();
-            this.setCounter(this.getPreviousWallpapers().length);
+                if (counter + 1 === wallpapersCount) {
+                    this.isLastSubject.next(true);
+                }
+            }
+        } else if (counter + 1 === wallpapersCount) {
+            this.isFirstSubject.next(false);
             this.isLastSubject.next(true);
+
+            this.getNewWallpaper().subscribe(result => {
+                if (result) {
+                    this.wallpaperService.setWallpaper(result);
+                    this.setCounter(this.getPreviousWallpapers().length - 1)
+                }
+            });
         }
     }
 
+    private getNewWallpaper(): Observable<string | null> {
+        return this.httpClient.get<any>(`${environment.baseUrl}/unsplash/photo?topic=wallpapers`).pipe(
+            map(result => {
+                const wallpaper = result.urls.full;
 
-    private getNewWallpaper() {
-        this.httpClient.get<any>(`${environment.baseUrl}/unsplash/photo?topic=wallpapers`).subscribe(result => {
-            const wallpaper = result.urls.full;
-
-            this.addNewWallpaper(wallpaper);
-        })
+                if (wallpaper) {
+                    this.addNewWallpaper(wallpaper);
+                    return wallpaper;
+                } else {
+                    return null;
+                }
+            })
+        );
     }
 
     private addNewWallpaper(wallpaper: string) {
@@ -94,7 +110,7 @@ export class UnsplashWidgetService {
     }
 
     private getCurrentWallpaper(): string | null {
-        const currentWallpaper = this.getPreviousWallpapers().at(-1)
+        const currentWallpaper = this.getPreviousWallpapers().at(-1);
 
         return currentWallpaper ?? null;
     }
@@ -102,7 +118,7 @@ export class UnsplashWidgetService {
     private getCounter(): number {
         const savedNumber = localStorage.getItem('wallpaper-counter');
 
-        return savedNumber ? Number(savedNumber) : -1;
+        return savedNumber ? Number(savedNumber) : 0;
     }
 
     private setCounter(counter: number) {
