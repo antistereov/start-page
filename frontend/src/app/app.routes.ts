@@ -4,9 +4,10 @@ import {AdminComponent} from './pages/admin/admin.component';
 import {authGuard} from './auth/auth.guard';
 import {UnsplashCallbackComponent} from './connector/unsplash/unsplash-callback/unsplash-callback.component';
 import {SpotifyCallbackComponent} from './connector/spotify/spotify-callback/spotify-callback.component';
+import {HomeComponent} from './pages/home/home.component';
 
 export const routes: Routes = [
-    // { path: '', redirectTo: '/login', pathMatch: 'full' },
+    { path: '', component: HomeComponent },
     { path: 'login', component: LoginComponent },
     { path: 'admin', component: AdminComponent, canActivate: [authGuard] },
     { path: 'callback/unsplash', component: UnsplashCallbackComponent },
