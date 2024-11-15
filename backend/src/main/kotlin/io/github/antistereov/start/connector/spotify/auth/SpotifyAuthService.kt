@@ -4,6 +4,7 @@ import io.github.antistereov.start.security.AESEncryption
 import io.github.antistereov.start.user.service.StateService
 import io.github.antistereov.start.user.service.UserService
 import io.github.antistereov.start.connector.shared.model.WidgetUserInformation
+import io.github.antistereov.start.connector.spotify.auth.model.SpotifyRefreshTokenResponse
 import io.github.antistereov.start.connector.spotify.auth.model.SpotifyTokenResponse
 import io.github.antistereov.start.connector.spotify.exception.SpotifyTokenException
 import io.github.antistereov.start.connector.spotify.exception.SpotifyException
@@ -158,7 +159,7 @@ class SpotifyAuthService(
         }
     }
 
-    private suspend fun refreshToken(userId: String): SpotifyTokenResponse {
+    private suspend fun refreshToken(userId: String): SpotifyRefreshTokenResponse {
         logger.debug { "Refreshing token for user: $userId." }
 
         val uri = "https://accounts.spotify.com/api/token"
@@ -170,7 +171,7 @@ class SpotifyAuthService(
 
         val refreshToken = aesEncryption.decrypt(encryptedRefreshToken)
 
-        return webClient.post()
+        val tokenResponse = webClient.post()
             .uri(uri)
             .header(
                 "Content-Type",
@@ -183,6 +184,22 @@ class SpotifyAuthService(
                     .with("client_secret", properties.clientSecret)
             )
             .retrieve()
-            .awaitBody<SpotifyTokenResponse>()
+            .awaitBody<SpotifyRefreshTokenResponse>()
+
+        val encryptedUpdatedAccessToken = aesEncryption.encrypt(tokenResponse.accessToken)
+        val expirationDate = LocalDateTime.now().plusSeconds(tokenResponse.expiresIn)
+
+        val updatedUser = user.copy(
+            widgets = user.widgets.copy(
+                spotify = user.widgets.spotify.copy(
+                    accessToken = encryptedUpdatedAccessToken,
+                    expirationDate = expirationDate,
+                )
+            )
+        )
+
+        userService.save(updatedUser)
+
+        return tokenResponse
     }
 }
