@@ -28,7 +28,7 @@ export class DynamicGridComponent {
     @ViewChild('scrollContainer') scrollContainer!: ElementRef;
 
     tiles: Tile[] = [
-        new Tile("first", false, 1, 1, 2, 1),
+        new Tile("first", false, 1, 1, 1, 2),
         new Tile("second", false, 1, 1, 2, 3),
         new Tile("third", false, 1, 1, 2, 2),
         new Tile("forth", false, 1, 1, 1, 2),
@@ -139,10 +139,10 @@ export class Tile{
     constructor(
         public name: string,
         public expanded: boolean,
-        protected collapsedWidth: number,
-        protected collapsedHeight: number,
-        protected expandedWidth: number,
-        protected expandedHeight: number,
+        protected collapsedWidth: 1 | 2 | 3,
+        protected collapsedHeight: 1 | 2 | 3,
+        protected expandedWidth: 1 | 2 | 3,
+        protected expandedHeight: 1 | 2 | 3,
     ) {
         this.width = this.expanded ? expandedWidth : collapsedWidth;
         this.height = this.expanded ? expandedHeight : collapsedHeight;

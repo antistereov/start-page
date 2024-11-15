@@ -1,0 +1,19 @@
+<p-button (onClick)="previousWallpaper()" icon="pi pi-angle-left" [disabled]="isFirst"></p-button>
+<p-button *ngIf="!isLast" (onClick)="nextWallpaper()" icon="pi pi-angle-right"></p-button>
+<p-button *ngIf="isLast" (onClick)="nextWallpaper()" icon="pi pi-refresh"></p-button>
+
+<p-button
+    [icon]="likedByUser === true ? 'pi pi-heart-fill' : 'pi pi-heart'"
+    [disabled]="likedByUser === undefined"
+    (onClick)="toggleLike()"
+>
+</p-button>
+
+<div class="wallpaper-info">
+
+    <p class="text-white text-sm font-light">
+        <u><a [href]="photoLink" target="_blank" class="icon-link">Photo</a></u> by
+        <u><a [href]="userLink" target="_blank" class="user-link">{{ userName }}</a></u> on
+        <u><a [href]="unsplashLink" target="_blank" class="unsplash-link">Unsplash</a></u>
+    </p>
+</div>

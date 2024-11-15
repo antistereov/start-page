@@ -1,7 +1,6 @@
 package io.github.antistereov.start.connector.unsplash
 
 import io.github.antistereov.start.connector.unsplash.auth.UnsplashAuthService
-import io.github.antistereov.start.connector.unsplash.model.UnsplashPhoto
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
@@ -18,23 +17,26 @@ class UnsplashService(
 
     private val logger: Logger = LoggerFactory.getLogger(UnsplashService::class.java)
 
-    suspend fun getRandomPhoto(userId: String, query: String?, topic: String?): UnsplashPhoto {
+    suspend fun getRandomPhoto(
+        userId: String,
+        params: Map<String, Any?> = emptyMap(),
+    ): String {
         logger.debug("Getting random photo for user $userId")
 
         val uri = UriComponentsBuilder.fromHttpUrl("${properties.apiBaseUrl}/photos/random")
             .queryParam("client_id", properties.clientId)
-            .queryParam("orientation", "landscape")
 
-        if (query != null) uri.queryParam("query", query)
-        if (topic != null) uri.queryParam("topic", topic)
+        params.forEach { (key, value) ->
+            if (value != null) uri.queryParam(key, value)
+        }
 
         return webClient.get()
             .uri(uri.toUriString())
             .retrieve()
-            .awaitBody<UnsplashPhoto>()
+            .awaitBody()
     }
 
-    suspend fun getPhoto(id: String): UnsplashPhoto {
+    suspend fun getPhoto(id: String): String {
         logger.debug("Getting photo with id $id")
 
         val uri = UriComponentsBuilder.fromHttpUrl("${properties.apiBaseUrl}/photos/$id")
@@ -71,37 +73,5 @@ class UnsplashService(
             .header("Authorization", "Bearer $accessToken")
             .retrieve()
             .awaitBody()
-    }
-
-    suspend fun getNewRandomPhotoUrlForScreen(
-        userId: String,
-        query: String? = null,
-        screenWidth: Int,
-        screenHeight: Int,
-        quality: Int = 85
-    ): String {
-        logger.debug("Getting new random photo for user $userId")
-
-        val randomPhoto = getRandomPhoto(userId, query, null)
-
-        val width = calculateMinimumPictureWidth(randomPhoto.width, randomPhoto.height, screenWidth, screenHeight)
-
-        return UriComponentsBuilder.fromHttpUrl(randomPhoto.urls.full)
-            .queryParam("w", width)
-            .queryParam("q", quality)
-            .toUriString()
-    }
-
-    private fun calculateMinimumPictureWidth(pictureWidth: Int, pictureHeight: Int, screenWidth: Int, screenHeight: Int): Int {
-        logger.debug("Calculating minimum picture width")
-
-        val screenAspectRatio = screenWidth.toDouble() / screenHeight
-        val pictureAspectRatio = pictureWidth.toDouble() / pictureHeight
-
-        return if (screenAspectRatio > pictureAspectRatio) {
-            screenWidth
-        } else {
-            (screenHeight * pictureAspectRatio).toInt()
-        }
     }
 }

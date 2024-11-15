@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import {DynamicGridComponent} from "../../components/shared/dynamic-grid/dynamic-grid.component";
 import {RouterOutlet} from "@angular/router";
-import {UnsplashWidgetComponent} from "../../connector/unsplash/unsplash-widget/unsplash-widget.component";
+import {UnsplashWallpaperComponent} from "../../connector/unsplash/unsplash-wallpaper/unsplash-wallpaper.component";
 
 @Component({
   selector: 'app-home',
@@ -9,7 +9,7 @@ import {UnsplashWidgetComponent} from "../../connector/unsplash/unsplash-widget/
     imports: [
         DynamicGridComponent,
         RouterOutlet,
-        UnsplashWidgetComponent
+        UnsplashWallpaperComponent
     ],
   templateUrl: './home.component.html',
   styleUrl: './home.component.css'
