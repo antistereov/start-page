@@ -3,7 +3,7 @@ package io.github.antistereov.start.connector.spotify.auth
 import io.github.antistereov.start.security.AESEncryption
 import io.github.antistereov.start.user.service.StateService
 import io.github.antistereov.start.user.service.UserService
-import io.github.antistereov.start.connector.shared.model.WidgetUserInformation
+import io.github.antistereov.start.connector.shared.model.ConnectorInformation
 import io.github.antistereov.start.connector.spotify.auth.model.SpotifyRefreshTokenResponse
 import io.github.antistereov.start.connector.spotify.auth.model.SpotifyTokenResponse
 import io.github.antistereov.start.connector.spotify.exception.SpotifyTokenException
@@ -84,7 +84,7 @@ class SpotifyAuthService(
             val refreshToken = response.refreshToken
             val expirationDate = LocalDateTime.now().plusSeconds(response.expiresIn)
 
-            val widgetInformation = user.widgets ?: WidgetUserInformation()
+            val widgetInformation = user.connectors ?: ConnectorInformation()
 
             val spotifyInfo = widgetInformation.spotify ?: SpotifyUserInformation()
 
@@ -96,7 +96,7 @@ class SpotifyAuthService(
 
             val updatedWidgetInformation = widgetInformation.copy(spotify = updatedSpotifyInfo)
 
-            val updatedUser = user.copy(widgets = updatedWidgetInformation)
+            val updatedUser = user.copy(connectors = updatedWidgetInformation)
 
             userService.save(updatedUser)
         }
@@ -120,10 +120,10 @@ class SpotifyAuthService(
 
         val user = userService.findById(userId)
 
-        val widgetsInfo = user.widgets ?: WidgetUserInformation()
+        val widgetsInfo = user.connectors ?: ConnectorInformation()
         val updatedWidgetInfo = widgetsInfo.copy(spotify = null)
 
-        val updatedUser = user.copy(widgets = updatedWidgetInfo)
+        val updatedUser = user.copy(connectors = updatedWidgetInfo)
 
         userService.save(updatedUser)
     }
@@ -146,13 +146,13 @@ class SpotifyAuthService(
 
         val user = userService.findById(userId)
 
-        val expirationDate = user.widgets?.spotify?.expirationDate
+        val expirationDate = user.connectors?.spotify?.expirationDate
             ?: throw SpotifyException("No expiration date for Spotify access token saved for user $userId")
 
         return if (currentTime.isAfter(expirationDate)) {
             this.refreshToken(userId).accessToken
         } else {
-            val encryptedSpotifyAccessToken = user.widgets.spotify.accessToken
+            val encryptedSpotifyAccessToken = user.connectors.spotify.accessToken
                 ?: throw SpotifyTokenException(userId)
 
             aesEncryption.decrypt(encryptedSpotifyAccessToken)
@@ -166,7 +166,7 @@ class SpotifyAuthService(
 
         val user = userService.findById(userId)
 
-        val encryptedRefreshToken = user.widgets?.spotify?.refreshToken
+        val encryptedRefreshToken = user.connectors?.spotify?.refreshToken
             ?: throw SpotifyTokenException(userId)
 
         val refreshToken = aesEncryption.decrypt(encryptedRefreshToken)
@@ -190,8 +190,8 @@ class SpotifyAuthService(
         val expirationDate = LocalDateTime.now().plusSeconds(tokenResponse.expiresIn)
 
         val updatedUser = user.copy(
-            widgets = user.widgets.copy(
-                spotify = user.widgets.spotify.copy(
+            connectors = user.connectors.copy(
+                spotify = user.connectors.spotify.copy(
                     accessToken = encryptedUpdatedAccessToken,
                     expirationDate = expirationDate,
                 )

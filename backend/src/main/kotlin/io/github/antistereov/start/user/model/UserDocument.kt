@@ -1,6 +1,6 @@
 package io.github.antistereov.start.user.model
 
-import io.github.antistereov.start.connector.shared.model.WidgetUserInformation
+import io.github.antistereov.start.connector.shared.model.ConnectorInformation
 import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.index.Indexed
 import org.springframework.data.mongodb.core.mapping.Document
@@ -11,5 +11,5 @@ data class UserDocument(
     @Indexed(unique = true) val username: String,
     val password: String,
     val roles: List<Role> = listOf(Role.USER),
-    val widgets: WidgetUserInformation? = null,
+    val connectors: ConnectorInformation? = null,
 )

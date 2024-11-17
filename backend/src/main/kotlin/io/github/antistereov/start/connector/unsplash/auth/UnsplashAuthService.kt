@@ -1,7 +1,7 @@
 package io.github.antistereov.start.connector.unsplash.auth
 
 import io.github.antistereov.start.security.AESEncryption
-import io.github.antistereov.start.connector.shared.model.WidgetUserInformation
+import io.github.antistereov.start.connector.shared.model.ConnectorInformation
 import io.github.antistereov.start.user.service.StateService
 import io.github.antistereov.start.user.service.UserService
 import io.github.antistereov.start.connector.unsplash.UnsplashProperties
@@ -73,13 +73,13 @@ class UnsplashAuthService(
 
             val user = userService.findById(userId)
 
-            val widgets = user.widgets ?: WidgetUserInformation()
+            val widgets = user.connectors ?: ConnectorInformation()
             val unsplashWidget = widgets.unsplash ?: UnsplashUserInformation()
             val encryptedAccessToken = aesEncryption.encrypt(response.accessToken)
 
             val updatedUnsplashInfo = unsplashWidget.copy(accessToken = encryptedAccessToken)
             val widgetWithAccessToken = widgets.copy(unsplash = updatedUnsplashInfo)
-            val updatedUser = user.copy(widgets = widgetWithAccessToken)
+            val updatedUser = user.copy(connectors = widgetWithAccessToken)
 
             userService.save(updatedUser)
 
@@ -91,7 +91,7 @@ class UnsplashAuthService(
 
             val user = userService.findById(userId)
 
-            val widgets = user.widgets ?: WidgetUserInformation()
+            val widgets = user.connectors ?: ConnectorInformation()
             val unsplashWidget = widgets.unsplash ?: UnsplashUserInformation()
 
             val publicUserProfile = getPublicUserProfile(userId)
@@ -103,7 +103,7 @@ class UnsplashAuthService(
 
             val updatedWidgets = widgets.copy(unsplash = updatedUnsplashWidget)
 
-            val updatedUser = user.copy(widgets = updatedWidgets)
+            val updatedUser = user.copy(connectors = updatedWidgets)
 
             userService.save(updatedUser)
 
@@ -126,8 +126,8 @@ class UnsplashAuthService(
 
         val user = userService.findById(userId)
 
-        val updatedWidgets = user.widgets?.copy(unsplash = null) ?: WidgetUserInformation()
-        val updatedUser = user.copy(widgets = updatedWidgets)
+        val updatedWidgets = user.connectors?.copy(unsplash = null) ?: ConnectorInformation()
+        val updatedUser = user.copy(connectors = updatedWidgets)
 
         userService.save(updatedUser)
     }
@@ -136,7 +136,7 @@ class UnsplashAuthService(
         logger.debug { "Getting Unsplash access token for user $userId." }
 
         val user = userService.findById(userId)
-        val encryptedAccessToken = user.widgets?.unsplash?.accessToken
+        val encryptedAccessToken = user.connectors?.unsplash?.accessToken
             ?: throw UnsplashTokenException("No Unsplash access token found for user $userId")
 
         return aesEncryption.decrypt(encryptedAccessToken)
@@ -172,7 +172,7 @@ class UnsplashAuthService(
 
         val user = userService.findById(userId)
 
-        val unsplash = user.widgets?.unsplash ?: throw UnsplashException("No Unsplash user information saved")
+        val unsplash = user.connectors?.unsplash ?: throw UnsplashException("No Unsplash user information saved")
 
         if (unsplash.username == null) throw UnsplashException("No Unsplash user information saved")
 

@@ -25,8 +25,6 @@ val log4jVersion = "2.20.0"
 val jacksonVersion = "2.16.0"
 
 dependencies {
-    implementation("org.springframework.boot:spring-boot-starter-web:$springBootVersion")
-
     // Logging
     api("io.github.oshai:kotlin-logging-jvm:7.0.0")
     api("org.apache.logging.log4j:log4j-core:$log4jVersion")
@@ -47,6 +45,7 @@ dependencies {
     // Reactive Mongo DB
     implementation("org.springframework.boot:spring-boot-starter-data-mongodb-reactive:$springBootVersion")
     implementation("org.springframework.boot:spring-boot-starter-webflux:$springBootVersion")
+    implementation("org.springframework.boot:spring-boot-starter-reactor-netty")
     implementation("org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion")
 
     implementation("org.springframework.boot:spring-boot-starter-data-mongodb-reactive:$springBootVersion")
