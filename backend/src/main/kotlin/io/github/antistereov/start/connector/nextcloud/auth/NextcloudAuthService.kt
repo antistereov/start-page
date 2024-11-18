@@ -78,8 +78,8 @@ class NextcloudAuthService(
         val encodedCredentials = authHandler.createBasicAuthHeader(credentials.username, credentials.password)
 
         return webClient.get()
-                .uri("${credentials.host}/remote.php/dav/files/${credentials.username}")
-                .header("Authentication", "Basic $encodedCredentials")
+                .uri("${credentials.host}/status.php")
+                .header("Authorization", "Basic $encodedCredentials")
                 .awaitExchange { clientResponse ->
                     when {
                         clientResponse.statusCode().is2xxSuccessful -> true
