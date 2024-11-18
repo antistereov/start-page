@@ -11,6 +11,8 @@ import io.github.antistereov.start.global.component.UrlHandler
 import io.github.oshai.kotlinlogging.KLogger
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.slf4j.LoggerFactory
+import org.springframework.http.HttpStatus
+import org.springframework.http.HttpStatusCode
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.awaitExchange
@@ -77,17 +79,20 @@ class NextcloudAuthService(
 
         val encodedCredentials = authHandler.createBasicAuthHeader(credentials.username, credentials.password)
 
-        return try {
-            webClient.get()
+        return webClient.get()
                 .uri("${credentials.host}/remote.php/dav/files/${credentials.username}")
                 .header("Authentication", "Basic $encodedCredentials")
                 .awaitExchange { clientResponse ->
-                    clientResponse.statusCode().is2xxSuccessful
+                    when {
+                        clientResponse.statusCode().is2xxSuccessful -> true
+                        clientResponse.statusCode() == HttpStatus.UNAUTHORIZED -> false
+                        else -> throw NextcloudInvalidCredentialsException("Credentials are not valid, " +
+                                "status code: ${clientResponse.statusCode()}")
+
+                    }
                 }
-        } catch (e: Exception) {
-            false
-        }
     }
+
 
     suspend fun logout(userId: String) {
         logger.debug { "Logging out user: $userId." }

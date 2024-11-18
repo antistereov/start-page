@@ -2,7 +2,9 @@ package io.github.antistereov.start.config
 
 import io.github.antistereov.start.auth.service.TokenService
 import io.github.antistereov.start.user.model.Role
+import io.github.antistereov.start.user.model.UserDocument
 import io.github.antistereov.start.user.service.UserService
+import kotlinx.coroutines.reactor.mono
 import kotlinx.coroutines.runBlocking
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -13,15 +15,23 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.config.annotation.web.invoke
+import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity
+import org.springframework.security.config.web.server.ServerHttpSecurity
+import org.springframework.security.config.web.server.invoke
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.security.oauth2.server.resource.InvalidBearerTokenException
+import org.springframework.security.oauth2.server.resource.authentication.ReactiveJwtAuthenticationConverterAdapter
 import org.springframework.security.web.SecurityFilterChain
+import org.springframework.security.web.server.SecurityWebFilterChain
+import reactor.core.publisher.Mono
+import reactor.core.scheduler.Schedulers
+import kotlin.coroutines.suspendCoroutine
 
 @Configuration
-@EnableWebSecurity
+@EnableWebFluxSecurity
 @EnableMethodSecurity(prePostEnabled = true)
 class WebSecurityConfig(
     private val tokenService: TokenService,
@@ -35,47 +45,46 @@ class WebSecurityConfig(
 
     @Bean
     fun filterChain(
-        http: HttpSecurity,
+        http: ServerHttpSecurity,
         userService: UserService,
-    ): SecurityFilterChain {
-        http.invoke {
-            csrf { disable() }
-            authorizeRequests {
-                authorize("/auth/spotify/callback", permitAll)
-                authorize("/auth/todoist/callback", permitAll)
-                authorize("/auth/unsplash/callback", permitAll)
-                authorize("/auth/instagram/callback", permitAll)
-                authorize("/api/auth/**", permitAll)
-//                authorize("/api/users/login", permitAll)
-//                authorize("/api/users/session-test", permitAll)
-//                authorize("/api/users/**", hasRole("ADMIN"))
-                authorize("/me", hasRole(Role.USER.toString()))
-                authorize(anyRequest, authenticated)
+    ): SecurityWebFilterChain {
+        return http
+            .csrf { it.disable() }
+            .authorizeExchange {
+                it.pathMatchers(
+                    "/auth/spotify/callback",
+                    "/auth/todoist/callback",
+                    "/auth/unsplash/callback",
+                    "/auth/instagram/callback",
+                    "/api/auth/**",
+                ).permitAll()
+                it.anyExchange().authenticated()
             }
-            oauth2ResourceServer {
-                jwt {
-                    jwtAuthenticationConverter = jwtAuthenticationConverter()
+            .oauth2ResourceServer { oauth2 ->
+                oauth2.jwt { jwt ->
+                    jwt.jwtAuthenticationConverter(jwtAuthenticationConverter())
                 }
             }
-        }
-        return http.build()
+            .build()
     }
 
-    @Bean
-    fun jwtAuthenticationConverter(): Converter<Jwt, AbstractAuthenticationToken> {
-        return object : Converter<Jwt, AbstractAuthenticationToken> {
 
-            override fun convert(jwt: Jwt): AbstractAuthenticationToken {
-                val userId = tokenService.getUserId(jwt.tokenValue)
-                    ?: throw InvalidBearerTokenException("Invalid token")
-                val user = runBlocking { userService.findById(userId) }
-                    ?: throw InvalidBearerTokenException("Invalid token")
-                return UsernamePasswordAuthenticationToken(
-                    userId,
-                    "",
-                    user.roles.map { SimpleGrantedAuthority("ROLE_$it") }
-                )
-            }
+
+    @Bean
+    fun jwtAuthenticationConverter(): (Jwt) -> Mono<UsernamePasswordAuthenticationToken> {
+        return { jwt ->
+            mono { tokenService.getUserId(jwt.tokenValue) }
+                .switchIfEmpty(Mono.error(InvalidBearerTokenException("Invalid token")))
+                .flatMap { userId ->
+                    mono { userService.findById(userId) }.map { user ->
+                        UsernamePasswordAuthenticationToken(
+                            userId,
+                            "",
+                            user.roles.map { SimpleGrantedAuthority("ROLE_$it") }
+                        )
+                    }
+                }
+                .onErrorResume { Mono.error(InvalidBearerTokenException("Invalid token")) }
         }
     }
 }

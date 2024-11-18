@@ -56,4 +56,18 @@ class AuthExceptionHandler {
 
         return ResponseEntity(errorResponse, HttpStatus.FORBIDDEN)
     }
+
+    @ExceptionHandler(AccessTokenExpiredException::class)
+    suspend fun handleAccessTokenExpiredException(ex: AccessTokenExpiredException, exchange: ServerWebExchange): ResponseEntity<ErrorResponse> {
+        logger.error(ex) { "${ex.javaClass.simpleName} - ${ex.message}" }
+
+        val errorResponse = ErrorResponse(
+            status = HttpStatus.UNAUTHORIZED.value(),
+            error = ex.javaClass.simpleName,
+            message = "${ex.message}",
+            path = exchange.request.uri.path
+        )
+
+        return ResponseEntity(errorResponse, HttpStatus.UNAUTHORIZED)
+    }
 }

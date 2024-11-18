@@ -1,24 +1,27 @@
 package io.github.antistereov.start.auth.service
 
+import io.github.antistereov.start.auth.exception.AccessTokenExpiredException
 import io.github.antistereov.start.auth.properties.JwtProperties
+import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.springframework.security.oauth2.jwt.JwsHeader
 import org.springframework.security.oauth2.jwt.JwtClaimsSet
 import org.springframework.security.oauth2.jwt.JwtDecoder
 import org.springframework.security.oauth2.jwt.JwtEncoder
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters
+import org.springframework.security.oauth2.jwt.ReactiveJwtDecoder
 import org.springframework.stereotype.Service
 import java.time.Instant
 
 @Service
 class TokenService(
-    private val jwtDecoder: JwtDecoder,
+    private val jwtDecoder: ReactiveJwtDecoder,
     private val jwtEncoder: JwtEncoder,
     jwtProperties: JwtProperties
 ) {
 
     private val tokenExpiresInSeconds = jwtProperties.expiresIn
 
-    suspend fun createToken(userId: String): String {
+    fun createToken(userId: String): String {
         val jwsHeader = JwsHeader.with { "HS256" }.build()
         val claims = JwtClaimsSet.builder()
             .issuedAt(Instant.now())
@@ -29,8 +32,12 @@ class TokenService(
         return jwtEncoder.encode(JwtEncoderParameters.from(jwsHeader, claims)).tokenValue
     }
 
-    fun getUserId(token: String): String? {
-        val jwt = jwtDecoder.decode(token)
+    suspend fun getUserId(token: String): String? {
+        val jwt = jwtDecoder.decode(token).awaitFirstOrNull() ?: return null
+        val expiresAt = jwt.expiresAt ?: return null
+
+        if (expiresAt <= Instant.now()) throw AccessTokenExpiredException("Access token is expired")
+
         return try {
             jwt.claims["sub"] as String
         } catch (e: NoSuchElementException) {

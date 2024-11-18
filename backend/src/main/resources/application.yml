@@ -5,12 +5,14 @@ frontend:
   base-url: ${FRONTEND_BASE_URL}
 
 spring:
+  main:
+    web-application-type: reactive
   data:
     mongodb:
       uri: mongodb://${MONGO_DB_USERNAME}:${MONGO_DB_PASSWORD}@localhost:27017/start?authSource=admin
   devtools:
     restart:
-      enabled: ${DEV_MODE}
+      enabled: ${DEV_MODE:false}
       additional-paths: src/main
 
 jwt:

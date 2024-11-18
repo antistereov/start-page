@@ -42,18 +42,18 @@ dependencies {
     implementation("org.springframework.security:spring-security-oauth2-resource-server:$springSecurityVersion")
     implementation("org.springframework.security:spring-security-oauth2-jose:$springSecurityVersion")
 
-    // Reactive Mongo DB
-    implementation("org.springframework.boot:spring-boot-starter-data-mongodb-reactive:$springBootVersion")
+    // Reactor
     implementation("org.springframework.boot:spring-boot-starter-webflux:$springBootVersion")
-    implementation("org.springframework.boot:spring-boot-starter-reactor-netty")
     implementation("org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:1.9.0")
 
+    // Reactive web server
+
+    implementation("io.projectreactor.netty:reactor-netty")
+    implementation("org.springframework.boot:spring-boot-starter-reactor-netty")
+
+    // MongoDB
     implementation("org.springframework.boot:spring-boot-starter-data-mongodb-reactive:$springBootVersion")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
-
-    // Data Validation
-    implementation("jakarta.persistence:jakarta.persistence-api:3.1.0")
-    implementation("org.hibernate.validator:hibernate-validator:8.0.1.Final")
 
     // Http Client
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
@@ -76,6 +76,7 @@ configurations {
     all {
         exclude(group = "commons-logging", module = "commons-logging")
         exclude(group = "org.springframework.boot", module = "spring-boot-starter-logging")
+        exclude(group = "org.springframework.boot", module = "spring-boot-starter-tomcat")
     }
 }
 
