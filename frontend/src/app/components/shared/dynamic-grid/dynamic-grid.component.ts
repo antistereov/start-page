@@ -1,8 +1,10 @@
-import {Component, ElementRef, Input, ViewChild} from '@angular/core';
+import {AfterViewInit, Component, ComponentRef, ElementRef, Input, ViewChild, ViewContainerRef} from '@angular/core';
 import {NgClass, NgForOf, NgStyle, NgTemplateOutlet} from '@angular/common';
 import {CardModule} from 'primeng/card';
 import {TileComponent} from '../tile/tile.component';
 import {ScrollPanelModule} from 'primeng/scrollpanel';
+import {Tile} from '../../tiles/tile.model';
+import {TileRegistry} from '../../tiles/tile.registry';
 
 @Component({
   selector: 'app-dynamic-grid',
@@ -19,23 +21,31 @@ import {ScrollPanelModule} from 'primeng/scrollpanel';
   templateUrl: './dynamic-grid.component.html',
   styleUrl: './dynamic-grid.component.css'
 })
-export class DynamicGridComponent {
+export class DynamicGridComponent implements AfterViewInit {
+    @Input() tiles: { type: string; properties: Tile }[] = [];
     @Input() direction: 'rows' | 'columns' = 'rows';
     @Input() size = 3;
     @Input() columnWidth = 200;
     @Input() rowHeight = 200;
 
+    @ViewChild('gridContainer', { read: ViewContainerRef, static: true })
+    container!: ViewContainerRef;
+
     @ViewChild('scrollContainer') scrollContainer!: ElementRef;
 
-    tiles: Tile[] = [
-        new Tile("first", false, 1, 1, 1, 2),
-        new Tile("second", false, 1, 1, 2, 3),
-        new Tile("third", false, 1, 1, 2, 2),
-        new Tile("forth", false, 1, 1, 1, 2),
-        new Tile("fifth", false, 1, 1, 3, 3),
-        new Tile("sixth", false, 1, 1, 2, 2),
-        new Tile("seventh", false, 1, 1, 1, 2),
-    ];
+    ngAfterViewInit() {
+        this.renderTiles();
+    }
+
+    renderTiles() {
+        this.tiles.forEach((tileConfig) => {
+            const tileComponent: any = TileRegistry[tileConfig.type];
+            if (tileComponent) {
+                const componentRef: ComponentRef<Tile> = this.container.createComponent(tileComponent);
+                componentRef.instance.data = tileConfig.properties || {};
+            }
+        })
+    }
 
     positions: { left: string, top: string, width: string, height: string }[] = [];
 
@@ -52,8 +62,8 @@ export class DynamicGridComponent {
         const occupied: boolean[][] = [];
 
         this.positions = this.tiles.map((tile) => {
-            const width = this.direction == 'columns' ? tile.width : tile.height;
-            const height = this.direction == 'columns' ? tile.height : tile.width;
+            const width = this.direction == 'columns' ? tile.properties.width : tile.properties.height;
+            const height = this.direction == 'columns' ? tile.properties.height : tile.properties.width;
 
             let positionFound = false;
             let startRow = 0, startCol = 0;
@@ -130,28 +140,4 @@ export class DynamicGridComponent {
         return true;
     }
 
-}
-
-export class Tile{
-    width: number;
-    height: number;
-
-    constructor(
-        public name: string,
-        public expanded: boolean,
-        protected collapsedWidth: 1 | 2 | 3,
-        protected collapsedHeight: 1 | 2 | 3,
-        protected expandedWidth: 1 | 2 | 3,
-        protected expandedHeight: 1 | 2 | 3,
-    ) {
-        this.width = this.expanded ? expandedWidth : collapsedWidth;
-        this.height = this.expanded ? expandedHeight : collapsedHeight;
-    }
-
-    toggle() {
-        this.expanded = !this.expanded;
-
-        this.width = this.expanded ? this.expandedWidth : this.collapsedWidth;
-        this.height = this.expanded ? this.expandedHeight : this.collapsedHeight;
-    }
 }
