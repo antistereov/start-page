@@ -15,8 +15,6 @@ export class UnsplashPhotoService {
     getRandomPhoto(
         randomParams: RandomParams,
     ): Observable<UnsplashPhoto> {
-
-
         const uri = `${environment.baseUrl}/unsplash/photo`;
 
         return this.httpClient.get<FullWithLiked>(uri, { params: paramsToHttpParams(randomParams) }).pipe(
@@ -36,13 +34,13 @@ export class UnsplashPhotoService {
         )
     }
 
-    likePhoto(id: string): Observable<UnsplashPhoto> {
+    likePhoto(id: string): Observable<boolean> {
         console.log(`Like photo ${id}`)
         const uri = `${environment.baseUrl}/unsplash/photo/${id}`;
 
-        return this.httpClient.post<FullWithLiked>(uri, null).pipe(
+        return this.httpClient.post<any>(uri, null).pipe(
             map(result => {
-                return toUnsplashPhoto(result);
+                return result.liked_by_user;
             })
         )
     }

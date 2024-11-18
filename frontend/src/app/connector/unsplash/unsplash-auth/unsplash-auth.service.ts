@@ -35,7 +35,7 @@ export class UnsplashAuthService {
     }
 
     disconnect(): void {
-        this.httpClient.delete(`${environment}/auth/unsplash`).subscribe(() => {
+        this.httpClient.delete(`${environment.baseUrl}/auth/unsplash`).subscribe(() => {
             this.userProfileSubject.next(null);
         })
     }

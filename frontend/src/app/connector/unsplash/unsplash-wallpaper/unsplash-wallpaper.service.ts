@@ -106,12 +106,14 @@ export class UnsplashWallpaperService {
 
         if (currentWallpaper) {
             if (currentWallpaper.likedByUser) {
-                this.unsplashPhotoService.unlikePhoto(currentWallpaper.id).subscribe(result => {
-                    this.currentWallpaperSubject.next(result);
+                this.unsplashPhotoService.unlikePhoto(currentWallpaper.id).subscribe(() => {
+                    const updatedWallpaper = { ...currentWallpaper, likedByUser: false }
+                    this.currentWallpaperSubject.next(updatedWallpaper);
                 });
             } else {
-                this.unsplashPhotoService.likePhoto(currentWallpaper.id).subscribe(result => {
-                    this.currentWallpaperSubject.next(result);
+                this.unsplashPhotoService.likePhoto(currentWallpaper.id).subscribe(() => {
+                    const updatedWallpaper = { ...currentWallpaper, likedByUser: true }
+                    this.currentWallpaperSubject.next(updatedWallpaper);
                 });
             }
         }

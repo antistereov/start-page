@@ -29,10 +29,15 @@ class UnsplashController(
     }
 
     @GetMapping("/photo/{id}")
-    suspend fun getPhoto(@PathVariable id: String): String {
+    suspend fun getPhoto(
+        authentication: Authentication,
+        @PathVariable id: String
+    ): String {
         logger.info { "Executing Unsplash getPhoto method with id: ${id}" }
 
-        return service.getPhoto(id)
+        val userId = principalService.getUserId(authentication)
+
+        return service.getPhoto(userId, id)
     }
 
     @PostMapping("photo/{id}")

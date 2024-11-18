@@ -23,6 +23,8 @@ class UnsplashService(
     ): String {
         logger.debug("Getting random photo for user $userId")
 
+        val accessToken = unsplashAuthService.getAccessToken(userId)
+
         val uri = UriComponentsBuilder.fromHttpUrl("${properties.apiBaseUrl}/photos/random")
             .queryParam("client_id", properties.clientId)
 
@@ -32,12 +34,15 @@ class UnsplashService(
 
         return webClient.get()
             .uri(uri.toUriString())
+            .header("Authorization", "Bearer $accessToken")
             .retrieve()
             .awaitBody()
     }
 
-    suspend fun getPhoto(id: String): String {
+    suspend fun getPhoto(userId: String, id: String): String {
         logger.debug("Getting photo with id $id")
+
+        val accessToken = unsplashAuthService.getAccessToken(userId)
 
         val uri = UriComponentsBuilder.fromHttpUrl("${properties.apiBaseUrl}/photos/$id")
             .queryParam("client_id", properties.clientId)
@@ -45,6 +50,7 @@ class UnsplashService(
 
         return webClient.get()
             .uri(uri)
+            .header("Authorization", "Bearer $accessToken")
             .retrieve()
             .awaitBody()
     }
