@@ -1,0 +1,15 @@
+<p-card
+    class="tile"
+    (click)="click()"
+    [style]="{
+        height: '100%',
+        width: '100%',
+        'background-image': albumArt ? 'url(' + albumArt + ')' : 'none',
+        'background-size': 'cover',
+        'background-repeat': 'no-repeat',
+        'background-position': 'center'
+    }"
+    [style.cursor]="'pointer'"
+>
+    <ng-content></ng-content>
+</p-card>

@@ -1,4 +1,4 @@
-import {Component, EventEmitter, Input} from '@angular/core';
+import {Component, EventEmitter} from '@angular/core';
 import {Tile, TileConfig, TileSize} from '../tile.model';
 import {CardModule} from 'primeng/card';
 
@@ -12,14 +12,14 @@ import {CardModule} from 'primeng/card';
   styleUrl: './base-tile.component.css'
 })
 export class BaseTileComponent extends Tile {
-    @Input() override config: TileConfig = {
+    override config: TileConfig = {
         name: "Tile",
         properties: {}
     }
 
     tileClick = new EventEmitter<Tile>;
 
-    @Input() override size = new TileSize(false, 1, 1, 2, 2)
+    override size = new TileSize(false, 1, 1, 2, 2)
 
     click() {
         this.tileClick.emit(this);

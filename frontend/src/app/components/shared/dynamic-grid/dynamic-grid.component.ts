@@ -22,7 +22,7 @@ import {Tile, TileConfig} from '../../tiles/tile.model';
 export class DynamicGridComponent implements AfterViewInit {
     @Input() tiles: { type: string; config: TileConfig }[] = [
         { type: 'baseTile', config: { name: 'first', properties: {} } },
-        { type: 'baseTile', config: { name: 'second', properties: {} }},
+        { type: 'spotifyPlaybackTile', config: { name: 'second', properties: {} }},
         { type: 'baseTile', config: { name: 'third', properties: {} } }
     ];
     @Input() direction: 'rows' | 'columns' = 'rows';
@@ -33,6 +33,7 @@ export class DynamicGridComponent implements AfterViewInit {
     @ViewChild('gridContainer', { read: ViewContainerRef, static: true })
     container!: ViewContainerRef;
 
+    // TODO: Find way to combine those
     private componentRefs: ComponentRef<Tile>[] = []
     private positions: Position[] = []
 
@@ -50,6 +51,7 @@ export class DynamicGridComponent implements AfterViewInit {
                 this.componentRefs.push(componentRef);
 
                 const element = componentRef.location.nativeElement as HTMLElement;
+                // TODO: Set styling in CSS
                 element.style.transition = 'all 0.3s ease';
                 element.style.padding = '4px';
 
