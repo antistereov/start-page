@@ -1,34 +1,45 @@
-import {EventEmitter} from '@angular/core';
+import {Directive, EventEmitter} from "@angular/core";
 
-export class Tile<T = any> {
-    width: number;
-    height: number;
-    data: T;
-    tileClick: EventEmitter<Tile>;
+@Directive()
+export abstract class Tile<T = any> {
+    abstract config: TileConfig<T>;
+    abstract size: TileSize;
 
-    constructor(
-        public name: string,
-        public expanded: boolean,
-        protected collapsedWidth: 1 | 2 | 3,
-        protected collapsedHeight: 1 | 2 | 3,
-        protected expandedWidth: 1 | 2 | 3,
-        protected expandedHeight: 1 | 2 | 3,
-        data: T
-    ) {
-        this.tileClick = new EventEmitter<Tile>;
-        this.data = data;
-        this.width = this.expanded ? expandedWidth : collapsedWidth;
-        this.height = this.expanded ? expandedHeight : collapsedHeight;
-    }
+    abstract tileClick: EventEmitter<Tile>;
 
     toggle() {
-        this.expanded = !this.expanded;
+        this.size.toggle();
+    }
+
+}
+
+export interface TileConfig<T = any> {
+    name: string;
+    properties: T;
+}
+
+export class TileSize {
+    expanded: boolean;
+
+    width: 1 | 2 | 3;
+    height: 1 | 2 | 3;
+
+    constructor(
+        expanded: boolean = false,
+        private collapsedWidth: 1 | 2 | 3 = 1,
+        private collapsedHeight: 1 | 2 | 3 = 1,
+        private expandedWidth: 1 | 2 | 3 = 2,
+        private expandedHeight: 1 | 2 | 3 = 2,
+    ) {
+        this.expanded = expanded;
 
         this.width = this.expanded ? this.expandedWidth : this.collapsedWidth;
         this.height = this.expanded ? this.expandedHeight : this.collapsedHeight;
     }
 
-    click() {
-        this.tileClick.emit(this);
+    toggle() {
+        this.expanded = !this.expanded;
+        this.width = this.expanded ? this.expandedWidth : this.collapsedWidth;
+        this.height = this.expanded ? this.expandedHeight : this.collapsedHeight;
     }
 }

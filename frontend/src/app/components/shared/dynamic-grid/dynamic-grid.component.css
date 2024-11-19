@@ -1,7 +1,7 @@
 .tile {
-    position: absolute;
     transition: all 0.3s ease;
     padding: 4px;
+    position: absolute;
 }
 
 .scroll-panel-container {

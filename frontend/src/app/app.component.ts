@@ -9,14 +9,24 @@ import {SettingsComponent} from './components/settings/settings.component';
 import {Aura} from 'primeng/themes/aura';
 import {UnsplashWallpaperComponent} from './connector/unsplash/unsplash-wallpaper/unsplash-wallpaper.component';
 import {DynamicGridComponent} from './components/shared/dynamic-grid/dynamic-grid.component';
-import {TileComponent} from './components/shared/tile/tile.component';
 import {SpotifyPlaybackComponent} from './connector/spotify/spotify-playback/spotify-playback.component';
 import {WallpaperComponent} from './components/shared/wallpaper/wallpaper.component';
 
 @Component({
     selector: 'app-root',
     standalone: true,
-    imports: [RouterOutlet, ButtonModule, ToggleButton, ThemeSelectorComponent, AccentColorSelectorComponent, SettingsComponent, UnsplashWallpaperComponent, DynamicGridComponent, TileComponent, SpotifyPlaybackComponent, WallpaperComponent],
+    imports: [
+        RouterOutlet,
+        ButtonModule,
+        ToggleButton,
+        ThemeSelectorComponent,
+        AccentColorSelectorComponent,
+        SettingsComponent,
+        UnsplashWallpaperComponent,
+        DynamicGridComponent,
+        SpotifyPlaybackComponent,
+        WallpaperComponent
+    ],
     templateUrl: './app.component.html',
     styleUrl: './app.component.css'
 })

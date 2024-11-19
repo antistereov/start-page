@@ -1,10 +1,9 @@
-import {AfterViewInit, Component, ComponentRef, ElementRef, Input, ViewChild, ViewContainerRef} from '@angular/core';
+import {AfterViewInit, Component, ComponentRef, Input, ViewChild, ViewContainerRef} from '@angular/core';
 import {NgClass, NgForOf, NgStyle, NgTemplateOutlet} from '@angular/common';
 import {CardModule} from 'primeng/card';
-import {TileComponent} from '../tile/tile.component';
 import {ScrollPanelModule} from 'primeng/scrollpanel';
-import {Tile} from '../../tiles/tile.model';
 import {TileRegistry} from '../../tiles/tile.registry';
+import {Tile, TileConfig} from '../../tiles/tile.model';
 
 @Component({
   selector: 'app-dynamic-grid',
@@ -14,7 +13,6 @@ import {TileRegistry} from '../../tiles/tile.registry';
         CardModule,
         NgForOf,
         NgClass,
-        TileComponent,
         NgTemplateOutlet,
         ScrollPanelModule
     ],
@@ -22,7 +20,11 @@ import {TileRegistry} from '../../tiles/tile.registry';
   styleUrl: './dynamic-grid.component.css'
 })
 export class DynamicGridComponent implements AfterViewInit {
-    @Input() tiles: { type: string; properties: Tile }[] = [];
+    @Input() tiles: { type: string; config: TileConfig }[] = [
+        { type: 'baseTile', config: { name: 'first', properties: {} } },
+        { type: 'baseTile', config: { name: 'second', properties: {} }},
+        { type: 'baseTile', config: { name: 'third', properties: {} } }
+    ];
     @Input() direction: 'rows' | 'columns' = 'rows';
     @Input() size = 3;
     @Input() columnWidth = 200;
@@ -31,10 +33,13 @@ export class DynamicGridComponent implements AfterViewInit {
     @ViewChild('gridContainer', { read: ViewContainerRef, static: true })
     container!: ViewContainerRef;
 
-    @ViewChild('scrollContainer') scrollContainer!: ElementRef;
+    private componentRefs: ComponentRef<Tile>[] = []
+    private positions: Position[] = []
 
     ngAfterViewInit() {
         this.renderTiles();
+        this.calculatePositions();
+        this.applyPositions();
     }
 
     renderTiles() {
@@ -42,28 +47,52 @@ export class DynamicGridComponent implements AfterViewInit {
             const tileComponent: any = TileRegistry[tileConfig.type];
             if (tileComponent) {
                 const componentRef: ComponentRef<Tile> = this.container.createComponent(tileComponent);
-                componentRef.instance.data = tileConfig.properties || {};
+                this.componentRefs.push(componentRef);
+
+                const element = componentRef.location.nativeElement as HTMLElement;
+                element.style.transition = 'all 0.3s ease';
+                element.style.padding = '4px';
+
+                Object.assign(componentRef.instance.config, tileConfig.config);
+
+                componentRef.instance.tileClick.subscribe(tile => {
+                    this.toggleTile(tile);
+                })
             }
         })
     }
 
-    positions: { left: string, top: string, width: string, height: string }[] = [];
-
     constructor() {
         this.calculatePositions();
+        this.applyPositions();
     }
 
     toggleTile(tile: Tile) {
         tile.toggle();
         this.calculatePositions();
+        this.applyPositions();
+    }
+
+    private applyPositions() {
+        this.componentRefs.forEach((componentRef, index) => {
+            const position = this.positions[index];
+            if (position) {
+                const element = componentRef.location.nativeElement as HTMLElement;
+                element.style.position = 'absolute';
+                element.style.left = position.left;
+                element.style.top = position.top;
+                element.style.width = position.width;
+                element.style.height = position.height;
+            }
+        })
     }
 
     private calculatePositions() {
         const occupied: boolean[][] = [];
 
-        this.positions = this.tiles.map((tile) => {
-            const width = this.direction == 'columns' ? tile.properties.width : tile.properties.height;
-            const height = this.direction == 'columns' ? tile.properties.height : tile.properties.width;
+        this.positions = this.componentRefs.map((tile) => {
+            const width = this.direction == 'columns' ? tile.instance.size.width : tile.instance.size.height;
+            const height = this.direction == 'columns' ? tile.instance.size.height : tile.instance.size.width;
 
             let positionFound = false;
             let startRow = 0, startCol = 0;
@@ -140,4 +169,11 @@ export class DynamicGridComponent implements AfterViewInit {
         return true;
     }
 
+}
+
+interface Position {
+    left: string;
+    top: string;
+    width: string;
+    height: string;
 }
