@@ -12,8 +12,8 @@
 <div class="wallpaper-info">
 
     <p class="text-white text-sm font-light">
-        <u><a [href]="photoLink" target="_blank" class="icon-link">Photo</a></u> by
-        <u><a [href]="userLink" target="_blank" class="user-link">{{ userName }}</a></u> on
-        <u><a [href]="unsplashLink" target="_blank" class="unsplash-link">Unsplash</a></u>
+        <u><a [href]="photoLink + unsplashReferral" target="_blank" class="icon-link">Photo</a></u> by
+        <u><a [href]="userLink + unsplashReferral" target="_blank" class="user-link">{{ userName }}</a></u> on
+        <u><a [href]="'https://unsplash.com' + unsplashReferral" target="_blank" class="unsplash-link">Unsplash</a></u>
     </p>
 </div>

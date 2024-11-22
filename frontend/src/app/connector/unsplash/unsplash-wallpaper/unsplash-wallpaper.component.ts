@@ -3,6 +3,7 @@ import {UnsplashWallpaperService} from './unsplash-wallpaper.service';
 import {ButtonModule} from 'primeng/button';
 import {NgIf} from '@angular/common';
 import {UnsplashPhoto} from '../unsplash-photo/unsplash-photo.model';
+import {environment} from '../../../../environment/environment';
 
 @Component({
   selector: 'app-unsplash-widget',
@@ -23,7 +24,7 @@ export class UnsplashWallpaperComponent implements OnInit {
     userLink: string | undefined = undefined;
     photoLink: string | undefined = undefined;
 
-    unsplashLink = `https://unsplash.com/utm_source=502706&utm_medium=referral`;
+    unsplashReferral = `?utm_source=${environment.appName}&utm_medium=referral`;
 
     constructor(
         private unsplashWallpaperService: UnsplashWallpaperService,

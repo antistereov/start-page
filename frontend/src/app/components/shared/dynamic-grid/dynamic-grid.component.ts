@@ -20,10 +20,10 @@ import {Tile, TileConfig} from '../../tiles/tile.model';
   styleUrl: './dynamic-grid.component.css'
 })
 export class DynamicGridComponent implements AfterViewInit {
-    @Input() tiles: { type: string; config: TileConfig }[] = [
-        { type: 'baseTile', config: { name: 'first', properties: {} } },
-        { type: 'spotifyPlaybackTile', config: { name: 'second', properties: {} }},
-        { type: 'baseTile', config: { name: 'third', properties: {} } }
+    @Input() tiles: { type: string; config: Partial<TileConfig> }[] = [
+        { type: 'baseTile', config: { name: 'first' } },
+        { type: 'spotifyPlaybackTile', config: {} },
+        { type: 'baseTile', config: { name: 'third' } }
     ];
     @Input() direction: 'rows' | 'columns' = 'rows';
     @Input() size = 3;
