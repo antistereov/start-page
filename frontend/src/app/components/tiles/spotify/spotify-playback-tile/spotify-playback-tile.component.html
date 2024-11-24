@@ -11,5 +11,14 @@
     }"
     [style.cursor]="'pointer'"
 >
-    <ng-content></ng-content>
+    <p-button
+        icon="pi pi-step-backward"
+        (click)="skipToPrevious(); $event.stopPropagation()"
+    >
+    </p-button>
+    <p-button
+        icon="pi pi-step-forward"
+        (click)="skipToNext(); $event.stopPropagation()"
+    >
+    </p-button>
 </p-card>

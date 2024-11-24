@@ -29,7 +29,7 @@ spotify:
   client-secret: ${SPOTIFY_CLIENT_SECRET}
   redirect-uri: ${FRONTEND_BASE_URL}/callback/spotify
   apiBase-url: https://api.spotify.com/v1
-  scopes: user-read-currently-playing user-read-private
+  scopes: user-read-currently-playing user-read-private user-modify-playback-state
 
 todoist:
   service-name: Todoist

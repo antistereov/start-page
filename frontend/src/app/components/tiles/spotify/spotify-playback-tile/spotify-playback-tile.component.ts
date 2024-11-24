@@ -3,13 +3,15 @@ import {Component, EventEmitter} from '@angular/core';
 import {Tile, TileConfig, TileSize} from '../../tile.model';
 import {SpotifyPlaybackService} from '../../../../connector/spotify/spotify-web-api/spotify-playback.service';
 import {CardModule} from 'primeng/card';
-import {Track} from '@spotify/web-api-ts-sdk';
+import {PlaybackState, Track} from '@spotify/web-api-ts-sdk';
+import {ButtonModule} from 'primeng/button';
 
 @Component({
   selector: 'app-spotify-playback-tile',
   standalone: true,
     imports: [
-        CardModule
+        CardModule,
+        ButtonModule
     ],
   templateUrl: './spotify-playback-tile.component.html',
   styleUrl: './spotify-playback-tile.component.css'
@@ -36,12 +38,25 @@ export class SpotifyPlaybackTileComponent extends Tile {
 
         this.spotifyPlaybackService.currentlyPlaying$.subscribe(currentlyPlaying => {
             if (currentlyPlaying) {
-                const item = currentlyPlaying.item as Track;
-                console.log(item);
-
-                this.albumArt = item.album.images.at(0)?.url ?? null;
+                this.setCurrentlyPlaying(currentlyPlaying)
             }
         })
+    }
+
+    private setCurrentlyPlaying(currentlyPlaying: PlaybackState) {
+        const item = currentlyPlaying.item as Track;
+        console.log(item);
+
+        this.albumArt = item.album.images.at(0)?.url ?? null;
+    }
+
+
+    skipToNext(deviceId: string | null = null) {
+        this.spotifyPlaybackService.skipToNext(deviceId).subscribe();
+    }
+
+    skipToPrevious(deviceId: string | null = null) {
+        this.spotifyPlaybackService.skipToPrevious(deviceId).subscribe();
     }
 
 
