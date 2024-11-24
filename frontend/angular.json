@@ -65,6 +65,9 @@
                             "buildTarget": "frontend:build:production"
                         },
                         "development": {
+                            "ssl": true,
+                            "sslKey": "../cert/privkey.pem",
+                            "sslCert": "../cert/cert.pem",
                             "buildTarget": "frontend:build:development"
                         }
                     },

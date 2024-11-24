@@ -10,6 +10,13 @@ Seamlessly blending functionality with elegance, Orbitab empowers you to:
 
 Whether you're planning your day, tracking tasks, or seeking a moment of inspiration, Orbitab ensures your most important information is always within reach—organized, stylish, and effortless.
 
+## Development
+
+### SSL
+
+Since some services require SSL for callbacks, you need to create certificates.
+Put the private key into `cert/privkey.pem` and the certificate into `cert/cert.pem`.
+
 ## Resources
 
 ### Frontend
