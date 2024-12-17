@@ -1,34 +1,34 @@
 package io.github.antistereov.start.config
 
-import io.github.antistereov.start.auth.service.TokenService
+import io.github.antistereov.start.auth.filter.CookieAuthenticationFilter
+import io.github.antistereov.start.config.properties.FrontendProperties
 import io.github.antistereov.start.user.service.UserService
-import kotlinx.coroutines.reactor.mono
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity
+import org.springframework.security.config.web.server.SecurityWebFiltersOrder
 import org.springframework.security.config.web.server.ServerHttpSecurity
-import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
-import org.springframework.security.oauth2.jwt.Jwt
-import org.springframework.security.oauth2.server.resource.InvalidBearerTokenException
 import org.springframework.security.web.server.SecurityWebFilterChain
-import reactor.core.publisher.Mono
+import org.springframework.web.cors.CorsConfiguration
+import org.springframework.web.cors.reactive.CorsConfigurationSource
+import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource
 
 @Configuration
 @EnableWebFluxSecurity
 @EnableMethodSecurity(prePostEnabled = true)
 class WebSecurityConfig(
-    private val tokenService: TokenService,
-    private val userService: UserService,
+    private val cookieAuthenticationFilter: CookieAuthenticationFilter,
+    private val frontendProperties: FrontendProperties,
 ) {
 
     @Bean
     fun passwordEncoder(): PasswordEncoder {
         return BCryptPasswordEncoder()
     }
+
 
     @Bean
     fun filterChain(
@@ -37,6 +37,7 @@ class WebSecurityConfig(
     ): SecurityWebFilterChain {
         return http
             .csrf { it.disable() }
+            .cors { it.configurationSource(corsConfigurationSource()) }
             .authorizeExchange {
                 it.pathMatchers(
                     "/auth/spotify/callback",
@@ -47,31 +48,20 @@ class WebSecurityConfig(
                 ).permitAll()
                 it.anyExchange().authenticated()
             }
-            .oauth2ResourceServer { oauth2 ->
-                oauth2.jwt { jwt ->
-                    jwt.jwtAuthenticationConverter(jwtAuthenticationConverter())
-                }
-            }
+            .addFilterBefore(cookieAuthenticationFilter, SecurityWebFiltersOrder.AUTHENTICATION)
             .build()
     }
 
-
-
     @Bean
-    fun jwtAuthenticationConverter(): (Jwt) -> Mono<UsernamePasswordAuthenticationToken> {
-        return { jwt ->
-            mono { tokenService.getUserId(jwt.tokenValue) }
-                .switchIfEmpty(Mono.error(InvalidBearerTokenException("Invalid token")))
-                .flatMap { userId ->
-                    mono { userService.findById(userId) }.map { user ->
-                        UsernamePasswordAuthenticationToken(
-                            userId,
-                            "",
-                            user.roles.map { SimpleGrantedAuthority("ROLE_$it") }
-                        )
-                    }
-                }
-                .onErrorResume { Mono.error(InvalidBearerTokenException("Invalid token")) }
-        }
+    fun corsConfigurationSource(): CorsConfigurationSource {
+        val configuration = CorsConfiguration()
+        configuration.allowedOrigins = listOf(frontendProperties.baseUrl)  // Angular-Frontend
+        configuration.allowedMethods = listOf("GET", "POST", "PUT", "DELETE", "OPTIONS")
+        configuration.allowedHeaders = listOf("Authorization", "Content-Type")
+        configuration.allowCredentials = true
+
+        val source = UrlBasedCorsConfigurationSource()
+        source.registerCorsConfiguration("/**", configuration)
+        return source
     }
 }

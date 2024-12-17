@@ -23,7 +23,10 @@ class PrincipalService(
     }
 
     private fun extractAuthToken(exchange: ServerWebExchange): String {
-        return exchange.request.cookies["auth"]?.firstOrNull()?.value
-            ?: throw InvalidPrincipalException("Missing auth cookie.")
+        val authToken = exchange.request.cookies["auth"]?.firstOrNull()?.value
+
+        if (authToken == null || authToken == "") throw InvalidPrincipalException("Missing auth cookie.")
+
+        return authToken
     }
 }
