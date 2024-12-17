@@ -45,7 +45,6 @@ export class SpotifyPlaybackTileComponent extends Tile {
 
     private setCurrentlyPlaying(currentlyPlaying: PlaybackState) {
         const item = currentlyPlaying.item as Track;
-        console.log(item);
 
         this.albumArt = item.album.images.at(0)?.url ?? null;
     }

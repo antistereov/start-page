@@ -15,7 +15,6 @@ export class SpotifyAuthService {
     getUserProfile(): void {
         this.httpClient.get<any>(`${environment.baseUrl}/auth/spotify/me`)
             .subscribe(result => {
-                console.log(result);
                 if (result.display_name && result.product) {
                     const profile = new SpotifyUserProfile(result.display_name, result.images.at(0).url, result.product);
                     this.userProfileSubject.next(profile)
