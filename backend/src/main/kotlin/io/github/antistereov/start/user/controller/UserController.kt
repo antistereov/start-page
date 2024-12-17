@@ -3,6 +3,7 @@ package io.github.antistereov.start.user.controller
 import io.github.antistereov.start.auth.service.PrincipalService
 import io.github.antistereov.start.user.model.UserDocument
 import io.github.antistereov.start.user.service.UserService
+import org.springframework.http.ResponseEntity
 import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.*
 
@@ -14,16 +15,20 @@ class UserController(
 ) {
 
     @GetMapping("/me")
-    suspend fun getUserProfile(authentication: Authentication): UserDocument? {
+    suspend fun getUserProfile(authentication: Authentication): ResponseEntity<UserDocument?> {
         val userId = principalExtractor.getUserId(authentication)
 
         // TODO: Catch null case
-        return userService.findById(userId)
+        return ResponseEntity.ok(
+            userService.findById(userId)
+        )
     }
 
     @DeleteMapping("/me")
-    suspend fun deleteUser(authentication: Authentication) {
+    suspend fun deleteUser(authentication: Authentication): ResponseEntity<Any> {
         val userId = principalExtractor.getUserId(authentication)
-        return userService.delete(userId)
+        return ResponseEntity.ok(
+            userService.delete(userId)
+        )
     }
 }

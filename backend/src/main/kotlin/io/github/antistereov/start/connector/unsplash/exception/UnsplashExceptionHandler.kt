@@ -85,7 +85,7 @@ class UnsplashExceptionHandler {
     @ExceptionHandler(UnsplashRateLimitException::class)
     suspend fun handleUnsplashRateLimitException(ex: UnsplashRateLimitException,
                                                  exchange: ServerWebExchange): ResponseEntity<ErrorResponse> {
-        logger.error(ex) { "${ex.javaClass.simpleName} - ${ex.message}"}
+        logger.warn(ex) { "${ex.javaClass.simpleName} - ${ex.message}"}
 
         val statusCode = HttpStatus.TOO_MANY_REQUESTS
 

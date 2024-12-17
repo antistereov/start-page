@@ -4,6 +4,7 @@ import io.github.antistereov.start.auth.dto.LoginResponseDto
 import io.github.antistereov.start.auth.service.AuthService
 import io.github.antistereov.start.user.dto.LoginUserDto
 import io.github.antistereov.start.user.dto.RegisterUserDto
+import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -16,12 +17,16 @@ class AuthController(
 ) {
 
     @PostMapping("/login")
-    suspend fun login(@RequestBody payload: LoginUserDto): LoginResponseDto {
-        return authService.login(payload)
+    suspend fun login(@RequestBody payload: LoginUserDto): ResponseEntity<LoginResponseDto> {
+        return ResponseEntity.ok(
+            authService.login(payload)
+        )
     }
 
     @PostMapping("/register")
-    suspend fun register(@RequestBody payload: RegisterUserDto): LoginResponseDto {
-        return authService.register(payload)
+    suspend fun register(@RequestBody payload: RegisterUserDto): ResponseEntity<LoginResponseDto> {
+        return ResponseEntity.ok(
+            authService.register(payload)
+        )
     }
 }
