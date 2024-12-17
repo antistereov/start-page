@@ -15,6 +15,23 @@ class UnsplashExceptionHandler {
     private val logger: KLogger
         get() = KotlinLogging.logger {}
 
+    @ExceptionHandler(UnsplashApiException::class)
+    suspend fun handleUnsplashApiException(ex: UnsplashApiException,
+                                           exchange: ServerWebExchange): ResponseEntity<ErrorResponse> {
+        logger.error(ex) { "${ex.javaClass.simpleName} - ${ex.message}"}
+
+        val statusCode = ex.statusCode
+
+        val errorResponse = ErrorResponse(
+            status = statusCode.value(),
+            error = ex.javaClass.simpleName,
+            message = "An exception occurred when calling endpoint ${ex.uri}: ${ex.message}",
+            path = exchange.request.uri.path
+        )
+
+        return ResponseEntity(errorResponse, statusCode)
+    }
+
     @ExceptionHandler(UnsplashException::class)
     suspend fun handleUnsplashException(ex: UnsplashException, exchange: ServerWebExchange): ResponseEntity<ErrorResponse> {
         logger.error(ex) { "${ex.javaClass.simpleName} - ${ex.message}" }

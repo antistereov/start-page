@@ -1,12 +1,14 @@
 package io.github.antistereov.start.connector.unsplash
 
 import io.github.antistereov.start.connector.unsplash.auth.UnsplashAuthService
+import io.github.antistereov.start.connector.unsplash.exception.UnsplashApiException
 import io.github.antistereov.start.connector.unsplash.model.UnsplashPhoto
 import io.github.antistereov.start.connector.unsplash.model.UnsplashPhotoApiResponse
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
+import org.springframework.web.reactive.function.client.awaitBodilessEntity
 import org.springframework.web.reactive.function.client.awaitBody
 import org.springframework.web.util.UriComponentsBuilder
 
@@ -69,11 +71,18 @@ class UnsplashService(
         val uri = "${properties.apiBaseUrl}/photos/$photoId/like"
         val accessToken = unsplashAuthService.getAccessToken(userId)
 
-        return webClient.post()
+        webClient.post()
             .uri(uri)
             .header("Authorization", "Bearer $accessToken")
             .retrieve()
-            .awaitBody()
+            .onStatus({ status -> status.isError }) { response ->
+                throw UnsplashApiException(
+                    uri,
+                    response.statusCode(),
+                    "Request failed with status ${response.statusCode()}",
+                )
+            }
+            .awaitBodilessEntity()
     }
 
     suspend fun unlikePhoto(userId: String, photoId: String) {
@@ -82,10 +91,17 @@ class UnsplashService(
         val uri = "${properties.apiBaseUrl}/photos/$photoId/like"
         val accessToken = unsplashAuthService.getAccessToken(userId)
 
-        return webClient.delete()
+        webClient.delete()
             .uri(uri)
             .header("Authorization", "Bearer $accessToken")
             .retrieve()
-            .awaitBody()
+            .onStatus({ status -> status.isError }) { response ->
+                throw UnsplashApiException(
+                    uri,
+                    response.statusCode(),
+                    "Request failed with status ${response.statusCode()}",
+                )
+            }
+            .awaitBodilessEntity()
     }
 }

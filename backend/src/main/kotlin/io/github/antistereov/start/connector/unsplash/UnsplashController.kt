@@ -47,12 +47,12 @@ class UnsplashController(
     }
 
     @PostMapping("photo/{id}")
-    suspend fun likePhoto(authentication: Authentication, @PathVariable id: String): String {
+    suspend fun likePhoto(authentication: Authentication, @PathVariable id: String) {
         logger.info { "Executing Unsplash likePhoto method with id: $id" }
 
         val userId = principalService.getUserId(authentication)
 
-        return "{ liked_by_user: ${service.likePhoto(userId, id)} }"
+        return service.likePhoto(userId, id)
     }
 
     @DeleteMapping("photo/{id}")
@@ -60,6 +60,6 @@ class UnsplashController(
         logger.info { "Executing Unsplash unlikePhoto method with id: $id" }
 
         val userId = principalService.getUserId(authentication)
-        service.unlikePhoto(userId, id)
+        return service.unlikePhoto(userId, id)
     }
 }
