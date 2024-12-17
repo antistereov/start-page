@@ -31,7 +31,7 @@ export class UnsplashWallpaperService {
     }
 
     async setCurrentWallpaper() {
-        const currentWallpaper = await this.getLastWallpaper();
+        const currentWallpaper = await this.getCurrentWallpaper();
 
 
         if (currentWallpaper) {
@@ -168,6 +168,11 @@ export class UnsplashWallpaperService {
 
     private getLastWallpaper(): Promise<UnsplashWallpaper | undefined> {
         return db.wallpaperIds.orderBy('dateAdded').last();
+    }
+
+    private getCurrentWallpaper(): Promise<UnsplashWallpaper | undefined> {
+        const currenCounter = this.getCounter();
+        return db.wallpaperIds.get(currenCounter);
     }
 
     private async getLastCounter(): Promise<number | undefined> {
