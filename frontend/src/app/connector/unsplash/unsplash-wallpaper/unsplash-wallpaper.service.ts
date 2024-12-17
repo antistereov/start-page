@@ -101,12 +101,12 @@ export class UnsplashWallpaperService {
         if (currentWallpaper) {
             if (currentWallpaper.liked_by_user) {
                 this.unsplashPhotoService.unlikePhoto(currentWallpaper.id).subscribe(() => {
-                    const updatedWallpaper = { ...currentWallpaper, likedByUser: false }
+                    const updatedWallpaper = { ...currentWallpaper, liked_by_user: false }
                     this.currentWallpaperSubject.next(updatedWallpaper);
                 });
             } else {
                 this.unsplashPhotoService.likePhoto(currentWallpaper.id).subscribe(() => {
-                    const updatedWallpaper = { ...currentWallpaper, likedByUser: true }
+                    const updatedWallpaper = { ...currentWallpaper, liked_by_user: true }
                     this.currentWallpaperSubject.next(updatedWallpaper);
                 });
             }
