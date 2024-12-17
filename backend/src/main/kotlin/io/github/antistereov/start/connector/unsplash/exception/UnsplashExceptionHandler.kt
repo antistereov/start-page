@@ -82,9 +82,26 @@ class UnsplashExceptionHandler {
         return ResponseEntity(errorResponse, statusCode)
     }
 
+    @ExceptionHandler(UnsplashRateLimitException::class)
+    suspend fun handleUnsplashRateLimitException(ex: UnsplashRateLimitException,
+                                                 exchange: ServerWebExchange): ResponseEntity<ErrorResponse> {
+        logger.error(ex) { "${ex.javaClass.simpleName} - ${ex.message}"}
+
+        val statusCode = HttpStatus.TOO_MANY_REQUESTS
+
+        val errorResponse = ErrorResponse(
+            status = statusCode.value(),
+            error = ex.javaClass.simpleName,
+            message = "Exceeded allowed API request limit: ${ex.message}",
+            path = exchange.request.uri.path
+        )
+
+        return ResponseEntity(errorResponse, statusCode)
+    }
+
     @ExceptionHandler(UnsplashTokenException::class)
     suspend fun handleUnsplashTokenException(ex: UnsplashTokenException,
-                                     exchange: ServerWebExchange): ResponseEntity<ErrorResponse> {
+                                             exchange: ServerWebExchange): ResponseEntity<ErrorResponse> {
         logger.error(ex) { "${ex.javaClass.simpleName} - ${ex.message}"}
 
         val statusCode = HttpStatus.FORBIDDEN

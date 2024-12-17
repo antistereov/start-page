@@ -38,7 +38,6 @@ export class UnsplashPhotoService {
     }
 
     likePhoto(id: string): Observable<any> {
-        console.log(`Like photo ${id}`)
         const uri = `${environment.baseUrl}/unsplash/photo/${id}`;
 
         return this.httpClient.post<any>(uri, null);
