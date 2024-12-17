@@ -19,14 +19,16 @@ class NextcloudExceptionHandler {
     suspend fun handleNextcloudException(ex: NextcloudException, exchange: ServerWebExchange): ResponseEntity<ErrorResponse> {
         logger.error(ex) { "${ex.javaClass.simpleName} - ${ex.message}" }
 
+        val statusCode = HttpStatus.INTERNAL_SERVER_ERROR
+
         val errorResponse = ErrorResponse(
-            status = HttpStatus.INTERNAL_SERVER_ERROR.value(),
+            status = statusCode.value(),
             error = ex.javaClass.simpleName,
             message = "An error in the Nextcloud connector occurred: ${ex.message}",
             path = exchange.request.uri.path
         )
 
-        return ResponseEntity(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR)
+        return ResponseEntity(errorResponse, statusCode)
     }
 
     @ExceptionHandler(NextcloudCredentialsException::class)
@@ -34,14 +36,16 @@ class NextcloudExceptionHandler {
                                              exchange: ServerWebExchange): ResponseEntity<ErrorResponse> {
         logger.error(ex) { "${ex.javaClass.simpleName} - ${ex.message}"}
 
+        val statusCode = HttpStatus.FORBIDDEN
+
         val errorResponse = ErrorResponse(
-            status = HttpStatus.FORBIDDEN.value(),
+            status = statusCode.value(),
             error = ex.javaClass.simpleName,
             message = "An exception occurred when getting saved Nextcloud user credentials: ${ex.message}",
             path = exchange.request.uri.path
         )
 
-        return ResponseEntity(errorResponse, HttpStatus.FORBIDDEN)
+        return ResponseEntity(errorResponse, statusCode)
     }
 
     @ExceptionHandler(NextcloudInvalidCredentialsException::class)
@@ -50,13 +54,15 @@ class NextcloudExceptionHandler {
     ): ResponseEntity<ErrorResponse> {
         logger.error(ex) { "${ex.javaClass.simpleName} - ${ex.message}"}
 
+        val statusCode = HttpStatus.UNAUTHORIZED
+
         val errorResponse = ErrorResponse(
-            status = HttpStatus.UNAUTHORIZED.value(),
+            status = statusCode.value(),
             error = ex.javaClass.simpleName,
             message = "Invalid Nextcloud user credentials: ${ex.message}",
             path = exchange.request.uri.path
         )
 
-        return ResponseEntity(errorResponse, HttpStatus.UNAUTHORIZED)
+        return ResponseEntity(errorResponse, statusCode)
     }
 }

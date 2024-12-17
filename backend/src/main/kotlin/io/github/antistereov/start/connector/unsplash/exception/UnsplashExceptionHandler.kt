@@ -19,14 +19,50 @@ class UnsplashExceptionHandler {
     suspend fun handleUnsplashException(ex: UnsplashException, exchange: ServerWebExchange): ResponseEntity<ErrorResponse> {
         logger.error(ex) { "${ex.javaClass.simpleName} - ${ex.message}" }
 
+        val statusCode = HttpStatus.INTERNAL_SERVER_ERROR
+
         val errorResponse = ErrorResponse(
-            status = HttpStatus.INTERNAL_SERVER_ERROR.value(),
+            status = statusCode.value(),
             error = ex.javaClass.simpleName,
             message = "An error in the Unsplash service occurred: ${ex.message}",
             path = exchange.request.uri.path
         )
 
-        return ResponseEntity(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR)
+        return ResponseEntity(errorResponse, statusCode)
+    }
+
+    @ExceptionHandler(UnsplashInvalidCallbackException::class)
+    suspend fun handleUnsplashInvalidCallbackException(ex: UnsplashInvalidCallbackException,
+                                                       exchange: ServerWebExchange): ResponseEntity<ErrorResponse> {
+        logger.error(ex) { "${ex.javaClass.simpleName} - ${ex.message}" }
+
+        val statusCode = HttpStatus.BAD_REQUEST
+
+        val errorResponse = ErrorResponse(
+            status = statusCode.value(),
+            error = ex.javaClass.simpleName,
+            message = "An exception occurred after Unsplash callback: ${ex.message}",
+            path = exchange.request.uri.path
+        )
+
+        return ResponseEntity(errorResponse, statusCode)
+    }
+
+    @ExceptionHandler(UnsplashInvalidParameterException::class)
+    suspend fun handleUnsplashInvalidParameterException(ex: UnsplashInvalidParameterException,
+                                                        exchange: ServerWebExchange): ResponseEntity<ErrorResponse> {
+        logger.error(ex) { "${ex.javaClass.simpleName} - ${ex.message}" }
+
+        val statusCode = HttpStatus.BAD_REQUEST
+
+        val errorResponse = ErrorResponse(
+            status = statusCode.value(),
+            error = ex.javaClass.simpleName,
+            message = "Illegal request parameter: ${ex.message}",
+            path = exchange.request.uri.path
+        )
+
+        return ResponseEntity(errorResponse, statusCode)
     }
 
     @ExceptionHandler(UnsplashTokenException::class)
@@ -34,43 +70,15 @@ class UnsplashExceptionHandler {
                                      exchange: ServerWebExchange): ResponseEntity<ErrorResponse> {
         logger.error(ex) { "${ex.javaClass.simpleName} - ${ex.message}"}
 
+        val statusCode = HttpStatus.FORBIDDEN
+
         val errorResponse = ErrorResponse(
-            status = HttpStatus.FORBIDDEN.value(),
+            status = statusCode.value(),
             error = ex.javaClass.simpleName,
             message = "An exception occurred when getting saved Unsplash token information: ${ex.message}",
             path = exchange.request.uri.path
         )
 
-        return ResponseEntity(errorResponse, HttpStatus.FORBIDDEN)
-    }
-
-    @ExceptionHandler(UnsplashInvalidCallbackException::class)
-    suspend fun handleUnsplashInvalidCallbackException(ex: UnsplashInvalidCallbackException,
-                                               exchange: ServerWebExchange): ResponseEntity<ErrorResponse> {
-        logger.error(ex) { "${ex.javaClass.simpleName} - ${ex.message}" }
-
-        val errorResponse = ErrorResponse(
-            status = HttpStatus.BAD_REQUEST.value(),
-            error = ex.javaClass.simpleName,
-            message = "An exception occurred after Unsplash callback: ${ex.message}",
-            path = exchange.request.uri.path
-        )
-
-        return ResponseEntity(errorResponse, HttpStatus.BAD_REQUEST)
-    }
-
-    @ExceptionHandler(UnsplashInvalidParameterException::class)
-    suspend fun handleUnsplashInvalidParameterException(ex: UnsplashInvalidParameterException,
-                                                       exchange: ServerWebExchange): ResponseEntity<ErrorResponse> {
-        logger.error(ex) { "${ex.javaClass.simpleName} - ${ex.message}" }
-
-        val errorResponse = ErrorResponse(
-            status = HttpStatus.BAD_REQUEST.value(),
-            error = ex.javaClass.simpleName,
-            message = "Illegal request parameter: ${ex.message}",
-            path = exchange.request.uri.path
-        )
-
-        return ResponseEntity(errorResponse, HttpStatus.BAD_REQUEST)
+        return ResponseEntity(errorResponse, statusCode)
     }
 }

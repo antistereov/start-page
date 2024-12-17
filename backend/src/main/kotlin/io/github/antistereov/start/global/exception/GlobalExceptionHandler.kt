@@ -19,13 +19,15 @@ class GlobalExceptionHandler {
     suspend fun handleGenericException(ex: Exception, exchange: ServerWebExchange): ResponseEntity<ErrorResponse> {
         logger.error(ex) { "Unexpected exception: ${ex.message}" }
 
+        val statusCode = HttpStatus.INTERNAL_SERVER_ERROR
+
         val errorResponse = ErrorResponse(
-            status = HttpStatus.INTERNAL_SERVER_ERROR.value(),
+            status = statusCode.value(),
             error = "Unexpected Error",
             message = "An unexpected error occurred: ${ex.javaClass.simpleName} - ${ex.message}",
             path = exchange.request.uri.path
         )
 
-        return ResponseEntity(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR)
+        return ResponseEntity(errorResponse, statusCode)
     }
 }

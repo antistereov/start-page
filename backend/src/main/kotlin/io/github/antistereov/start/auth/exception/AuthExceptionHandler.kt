@@ -19,55 +19,63 @@ class AuthExceptionHandler {
     suspend fun handleAuthException(ex: AuthException, exchange: ServerWebExchange): ResponseEntity<ErrorResponse> {
         logger.error(ex) { "${ex.javaClass.simpleName} - ${ex.message}" }
 
+        val statusCode = HttpStatus.INTERNAL_SERVER_ERROR
+
         val errorResponse = ErrorResponse(
-            status = HttpStatus.INTERNAL_SERVER_ERROR.value(),
+            status = statusCode.value(),
             error = ex.javaClass.simpleName,
             message = "A authentication error occurred: ${ex.message}",
             path = exchange.request.uri.path
         )
 
-        return ResponseEntity(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR)
+        return ResponseEntity(errorResponse, statusCode)
     }
 
     @ExceptionHandler(InvalidCredentialsException::class)
     suspend fun handleInvalidCredentialsException(ex: InvalidCredentialsException, exchange: ServerWebExchange): ResponseEntity<ErrorResponse> {
         logger.error(ex) { "${ex.javaClass.simpleName} - ${ex.message}" }
 
+        val statusCode = HttpStatus.UNAUTHORIZED
+
         val errorResponse = ErrorResponse(
-            status = HttpStatus.UNAUTHORIZED.value(),
+            status = statusCode.value(),
             error = ex.javaClass.simpleName,
             message = "Invalid credentials: ${ex.message}",
             path = exchange.request.uri.path
         )
 
-        return ResponseEntity(errorResponse, HttpStatus.UNAUTHORIZED)
+        return ResponseEntity(errorResponse, statusCode)
     }
 
     @ExceptionHandler(InvalidPrincipalException::class)
     suspend fun handleInvalidPrincipalException(ex: InvalidPrincipalException, exchange: ServerWebExchange): ResponseEntity<ErrorResponse> {
         logger.error(ex) { "${ex.javaClass.simpleName} - ${ex.message}" }
 
+        val statusCode = HttpStatus.FORBIDDEN
+
         val errorResponse = ErrorResponse(
-            status = HttpStatus.FORBIDDEN.value(),
+            status = statusCode.value(),
             error = ex.javaClass.simpleName,
             message = "Invalid principal: ${ex.message}",
             path = exchange.request.uri.path
         )
 
-        return ResponseEntity(errorResponse, HttpStatus.FORBIDDEN)
+        return ResponseEntity(errorResponse, statusCode)
     }
 
     @ExceptionHandler(AccessTokenExpiredException::class)
     suspend fun handleAccessTokenExpiredException(ex: AccessTokenExpiredException, exchange: ServerWebExchange): ResponseEntity<ErrorResponse> {
         logger.error(ex) { "${ex.javaClass.simpleName} - ${ex.message}" }
 
+        val statusCode = HttpStatus.UNAUTHORIZED
+
         val errorResponse = ErrorResponse(
-            status = HttpStatus.UNAUTHORIZED.value(),
+            status = statusCode.value(),
             error = ex.javaClass.simpleName,
             message = "${ex.message}",
             path = exchange.request.uri.path
         )
 
-        return ResponseEntity(errorResponse, HttpStatus.UNAUTHORIZED)
+        return ResponseEntity(errorResponse, statusCode)
     }
 }

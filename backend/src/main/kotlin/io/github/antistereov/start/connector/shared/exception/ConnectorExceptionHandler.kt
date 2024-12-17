@@ -19,13 +19,15 @@ class ConnectorExceptionHandler {
     fun handleConnectorException(ex: ConnectorException, exchange: ServerWebExchange): ResponseEntity<ErrorResponse> {
         logger.error(ex) { "${ex.javaClass.simpleName} - ${ex.message}" }
 
+        val statusCode = HttpStatus.INTERNAL_SERVER_ERROR
+
         val errorResponse = ErrorResponse(
-            status = HttpStatus.INTERNAL_SERVER_ERROR.value(),
+            status = statusCode.value(),
             error = ex.javaClass.simpleName,
             message = "An error occurred in a connector: ${ex.message}",
             path = exchange.request.uri.path
         )
 
-        return ResponseEntity(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR)
+        return ResponseEntity(errorResponse, statusCode)
     }
 }

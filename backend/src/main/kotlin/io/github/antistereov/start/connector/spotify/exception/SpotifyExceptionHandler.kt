@@ -19,14 +19,16 @@ class SpotifyExceptionHandler {
     suspend fun handleSpotifyException(ex: SpotifyException, exchange: ServerWebExchange): ResponseEntity<ErrorResponse> {
         logger.error(ex) { "${ex.javaClass.simpleName} - ${ex.message}" }
 
+        val statusCode = HttpStatus.INTERNAL_SERVER_ERROR
+
         val errorResponse = ErrorResponse(
-            status = HttpStatus.INTERNAL_SERVER_ERROR.value(),
+            status = statusCode.value(),
             error = ex.javaClass.simpleName,
             message = "An error in the Spotify service occurred: ${ex.message}",
             path = exchange.request.uri.path
         )
 
-        return ResponseEntity(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR)
+        return ResponseEntity(errorResponse, statusCode)
     }
 
     @ExceptionHandler(SpotifyTokenException::class)
@@ -34,14 +36,16 @@ class SpotifyExceptionHandler {
                                      exchange: ServerWebExchange): ResponseEntity<ErrorResponse> {
         logger.error(ex) { "${ex.javaClass.simpleName} - ${ex.message}"}
 
+        val statusCode = HttpStatus.FORBIDDEN
+
         val errorResponse = ErrorResponse(
-            status = HttpStatus.FORBIDDEN.value(),
+            status = statusCode.value(),
             error = ex.javaClass.simpleName,
             message = "An exception occurred when getting saved Spotify token information: ${ex.message}",
             path = exchange.request.uri.path
         )
 
-        return ResponseEntity(errorResponse, HttpStatus.FORBIDDEN)
+        return ResponseEntity(errorResponse, statusCode)
     }
 
     @ExceptionHandler(SpotifyInvalidCallbackException::class)
@@ -49,13 +53,15 @@ class SpotifyExceptionHandler {
                                                exchange: ServerWebExchange): ResponseEntity<ErrorResponse> {
         logger.error(ex) { "${ex.javaClass.simpleName} - ${ex.message}" }
 
+        val statusCode = HttpStatus.BAD_REQUEST
+
         val errorResponse = ErrorResponse(
-            status = HttpStatus.BAD_REQUEST.value(),
+            status = statusCode.value(),
             error = ex.javaClass.simpleName,
             message = "An exception occurred after Spotify callback: ${ex.message}",
             path = exchange.request.uri.path
         )
 
-        return ResponseEntity(errorResponse, HttpStatus.BAD_REQUEST)
+        return ResponseEntity(errorResponse, statusCode)
     }
 }
