@@ -3,19 +3,27 @@ package io.github.antistereov.start.auth.service
 import io.github.antistereov.start.auth.exception.InvalidPrincipalException
 import io.github.oshai.kotlinlogging.KLogger
 import io.github.oshai.kotlinlogging.KotlinLogging
-import org.springframework.security.core.Authentication
 import org.springframework.stereotype.Service
+import org.springframework.web.server.ServerWebExchange
 
 @Service
-class PrincipalService {
+class PrincipalService(
+    val tokenService: TokenService
+) {
 
     private val logger: KLogger
         get() = KotlinLogging.logger {}
 
-    suspend fun getUserId(authentication: Authentication): String {
-        logger.debug {"Extracting user ID from JWT." }
+    suspend fun getUserId(exchange: ServerWebExchange): String {
+        logger.debug {"Extracting user ID from Cookie." }
 
-        return authentication.principal as? String
+        val token =  extractAuthToken(exchange)
+        return tokenService.getUserId(token)
             ?: throw InvalidPrincipalException("Invalid authentication principal.")
+    }
+
+    private fun extractAuthToken(exchange: ServerWebExchange): String {
+        return exchange.request.cookies["auth"]?.firstOrNull()?.value
+            ?: throw InvalidPrincipalException("Missing auth cookie.")
     }
 }

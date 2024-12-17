@@ -3,13 +3,14 @@ package io.github.antistereov.start.connector.spotify.playback
 import io.github.antistereov.start.auth.service.PrincipalService
 import io.github.oshai.kotlinlogging.KLogger
 import io.github.oshai.kotlinlogging.KotlinLogging
-import org.springframework.security.core.Authentication
+import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.server.ServerWebExchange
 
 @RestController
 @RequestMapping("/spotify/me/player")
@@ -22,42 +23,56 @@ class SpotifyPlaybackController(
         get() = KotlinLogging.logger {}
 
     @GetMapping("/currently_playing")
-    suspend fun getCurrentSong(authentication: Authentication): String {
+    suspend fun getCurrentSong(exchange: ServerWebExchange): ResponseEntity<String> {
         logger.info { "Executing Spotify getCurrentSong method." }
 
-        val userId = principalService.getUserId(authentication)
+        val userId = principalService.getUserId(exchange)
 
-        return service.getCurrentlyPlaying(userId)
+        return ResponseEntity.ok(
+            service.getCurrentlyPlaying(userId)
+        )
     }
 
     @PostMapping("/next")
-    suspend fun skipToNext(authentication: Authentication, @RequestParam("device_id") deviceId: String? = null): String {
+    suspend fun skipToNext(
+        exchange: ServerWebExchange,
+        @RequestParam("device_id") deviceId: String? = null
+    ): ResponseEntity<String> {
         logger.info { "Executing Spotify skipToNext method" }
 
-        val userId = principalService.getUserId(authentication)
+        val userId = principalService.getUserId(exchange)
 
-        return service.skipToNext(userId, deviceId)
+        return ResponseEntity.ok(
+            service.skipToNext(userId, deviceId)
+        )
     }
 
     @PostMapping("/previous")
-    suspend fun skipToPrevious(authentication: Authentication, @RequestParam("device_id") deviceId: String? = null): String {
+    suspend fun skipToPrevious(
+        exchange: ServerWebExchange,
+        @RequestParam("device_id") deviceId: String? = null
+    ): ResponseEntity<String> {
         logger.info { "Executing Spotify skipToPrevious method" }
 
-        val userId = principalService.getUserId(authentication)
+        val userId = principalService.getUserId(exchange)
 
-        return service.skipToPrevious(userId, deviceId)
+        return ResponseEntity.ok(
+            service.skipToPrevious(userId, deviceId)
+        )
     }
 
     @PutMapping("/seek")
     suspend fun seekToPosition(
-        authentication: Authentication,
+        exchange: ServerWebExchange,
         @RequestParam("position_ms") positionMs: Int,
         @RequestParam("device_id") deviceId: String? = null,
-    ): String {
+    ): ResponseEntity<String> {
         logger.info { "Executing Spotify seekToPosition method" }
 
-        val userId = principalService.getUserId(authentication)
+        val userId = principalService.getUserId(exchange)
 
-        return service.seekToPosition(userId, positionMs, deviceId)
+        return ResponseEntity.ok(
+            service.seekToPosition(userId, positionMs, deviceId)
+        )
     }
 }

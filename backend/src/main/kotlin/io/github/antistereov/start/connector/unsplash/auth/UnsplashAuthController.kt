@@ -4,8 +4,9 @@ import io.github.antistereov.start.auth.service.PrincipalService
 import io.github.antistereov.start.connector.unsplash.auth.model.UnsplashPublicUserProfile
 import io.github.oshai.kotlinlogging.KLogger
 import io.github.oshai.kotlinlogging.KotlinLogging
-import org.springframework.security.core.Authentication
+import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
+import org.springframework.web.server.ServerWebExchange
 
 @RestController
 @RequestMapping("/auth/unsplash")
@@ -18,27 +19,36 @@ class UnsplashAuthController(
         get() = KotlinLogging.logger {}
 
     @GetMapping
-    suspend fun connect(authentication: Authentication): String {
+    suspend fun connect(exchange: ServerWebExchange): ResponseEntity<Map<String, String>> {
         logger.info { "Executing Unsplash connect method." }
 
-        val userId = principalService.getUserId(authentication)
+        val userId = principalService.getUserId(exchange)
         val authorizationUrl = service.getAuthorizationUrl(userId)
 
         logger.info { "Redirect URL created: $authorizationUrl" }
 
-        return "{ \"url\": \"$authorizationUrl\" }"
+        return ResponseEntity.ok(
+            mapOf("url" to authorizationUrl)
+        )
     }
 
     @GetMapping("/me")
-    suspend fun getPublicUserProfile(authentication: Authentication, @RequestParam refresh: Boolean = false): UnsplashPublicUserProfile {
+    suspend fun getPublicUserProfile(
+        exchange: ServerWebExchange,
+        @RequestParam refresh: Boolean = false
+    ): ResponseEntity<UnsplashPublicUserProfile> {
         logger.info { "Fetching public Unsplash user profile" }
 
-        val userId = principalService.getUserId(authentication)
+        val userId = principalService.getUserId(exchange)
 
         return if (refresh) {
-            service.getPublicUserProfile(userId)
+            ResponseEntity.ok(
+                service.getPublicUserProfile(userId)
+            )
         } else {
-            service.getSavedPublicUserProfile(userId)
+            ResponseEntity.ok(
+                service.getSavedPublicUserProfile(userId)
+            )
         }
     }
 
@@ -46,22 +56,26 @@ class UnsplashAuthController(
     suspend fun callback(
         @RequestParam code: String?,
         @RequestParam state: String?,
-    ): UnsplashPublicUserProfile {
+    ): ResponseEntity<UnsplashPublicUserProfile> {
         logger.info { "Received Unsplash callback with code: $code and state: $state" }
 
         val publicUserProfile = service.authenticate(code, state)
 
         logger.info { "Unsplash authentication successful." }
 
-        return publicUserProfile
+        return ResponseEntity.ok(
+            publicUserProfile
+        )
     }
 
     @DeleteMapping
-    suspend fun disconnect(authentication: Authentication) {
+    suspend fun disconnect(exchange: ServerWebExchange): ResponseEntity<Any> {
         logger.info { "Executing Unsplash logout method." }
 
-        val userId = principalService.getUserId(authentication)
+        val userId = principalService.getUserId(exchange)
 
-        service.disconnect(userId)
+        return ResponseEntity.ok(
+            service.disconnect(userId)
+        )
     }
 }

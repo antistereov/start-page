@@ -1,10 +1,11 @@
-import { Component } from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 import {AvatarModule} from "primeng/avatar";
 import {ButtonModule} from "primeng/button";
-import {NgIf} from "@angular/common";
+import {AsyncPipe, NgIf} from "@angular/common";
 import {Router} from '@angular/router';
 import {AuthService} from '../../../auth/auth.service';
 import {SettingsService} from '../settings.service';
+import {Observable} from 'rxjs';
 
 @Component({
   selector: 'app-user-settings',
@@ -12,12 +13,14 @@ import {SettingsService} from '../settings.service';
     imports: [
         AvatarModule,
         ButtonModule,
-        NgIf
+        NgIf,
+        AsyncPipe
     ],
   templateUrl: './user-settings.component.html',
   styleUrl: './user-settings.component.css'
 })
-export class UserSettingsComponent {
+export class UserSettingsComponent implements OnInit {
+    isLoggedIn$!: Observable<boolean>;
 
     constructor(
         private router: Router,
@@ -25,13 +28,13 @@ export class UserSettingsComponent {
         private settingsService: SettingsService
     ) {}
 
+    ngOnInit() {
+        this.isLoggedIn$ = this.authService.isLoggedIn();
+    }
+
     redirectToLogin() {
         this.settingsService.close();
         this.router.navigate(['/login']).then();
-    }
-
-    isLoggedIn(): boolean {
-        return this.authService.isLoggedIn();
     }
 
     logout() {

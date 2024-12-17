@@ -1,6 +1,6 @@
 package io.github.antistereov.start.auth.service
 
-import io.github.antistereov.start.auth.dto.LoginResponseDto
+import io.github.antistereov.start.auth.model.SessionCookieData
 import io.github.antistereov.start.auth.exception.AuthException
 import io.github.antistereov.start.auth.exception.InvalidCredentialsException
 import io.github.antistereov.start.auth.properties.JwtProperties
@@ -24,7 +24,7 @@ class AuthService(
     private val logger: KLogger
         get() = KotlinLogging.logger {}
 
-    suspend fun login(payload: LoginUserDto): LoginResponseDto {
+    suspend fun login(payload: LoginUserDto): SessionCookieData {
         logger.debug { "Logging in user ${payload.username}" }
         val user = userService.findByUsername(payload.username)
             ?: throw InvalidCredentialsException()
@@ -39,13 +39,13 @@ class AuthService(
 
         logger.debug { "Successfully logged in user ${payload.username}" }
 
-        return LoginResponseDto(
+        return SessionCookieData(
             accessToken = tokenService.createToken(user.id),
             expiresIn = jwtProperties.expiresIn,
         )
     }
 
-    suspend fun register(payload: RegisterUserDto): LoginResponseDto {
+    suspend fun register(payload: RegisterUserDto): SessionCookieData {
         logger.debug { "Registering user ${payload.username}" }
 
         if (userService.existsByUsername(payload.username)) {
@@ -65,7 +65,7 @@ class AuthService(
 
         logger.debug { "Successfully registered user ${payload.username}" }
 
-        return LoginResponseDto(
+        return SessionCookieData(
             accessToken = tokenService.createToken(savedUserDocument.id),
             expiresIn = jwtProperties.expiresIn,
         )

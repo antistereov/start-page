@@ -1,12 +1,12 @@
 package io.github.antistereov.start.connector.spotify.auth
 
 import io.github.antistereov.start.auth.service.PrincipalService
-import io.github.antistereov.start.connector.spotify.exception.SpotifyException
 import io.github.antistereov.start.connector.spotify.model.SpotifyUserProfile
 import io.github.oshai.kotlinlogging.KLogger
 import io.github.oshai.kotlinlogging.KotlinLogging
-import org.springframework.security.core.Authentication
+import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
+import org.springframework.web.server.ServerWebExchange
 
 @RestController
 @RequestMapping("/auth/spotify")
@@ -19,13 +19,15 @@ class SpotifyAuthController(
         get() = KotlinLogging.logger {}
 
     @GetMapping
-    suspend fun connect(authentication: Authentication): String {
+    suspend fun connect(exchange: ServerWebExchange): ResponseEntity<Map<String, String>> {
         logger.info { "Executing Spotify login method." }
 
-        val userId = principalService.getUserId(authentication)
+        val userId = principalService.getUserId(exchange)
         val url = spotifyAuthService.getAuthorizationUrl(userId)
 
-        return "{ \"url\": \"$url\" }"
+        return ResponseEntity.ok(
+            mapOf("url" to url)
+        )
     }
 
     @GetMapping("/callback")
@@ -33,46 +35,50 @@ class SpotifyAuthController(
         @RequestParam code: String?,
         @RequestParam state: String?,
         @RequestParam error: String?,
-    ): SpotifyUserProfile {
+    ): ResponseEntity<SpotifyUserProfile> {
         logger.info {"Received Spotify callback with state: $state and error: $error." }
 
         val userProfile = spotifyAuthService.authenticate(code, state, error)
 
         logger.info { "Spotify authentication successful." }
 
-        return userProfile
+        return ResponseEntity.ok(
+            userProfile
+        )
     }
 
     @DeleteMapping
-    suspend fun disconnect(authentication: Authentication) {
+    suspend fun disconnect(exchange: ServerWebExchange): ResponseEntity<Any> {
         logger.info { "Executing Spotify logout method" }
 
-        val userId = principalService.getUserId(authentication)
+        val userId = principalService.getUserId(exchange)
 
-        spotifyAuthService.disconnect(userId)
+        return ResponseEntity.ok(
+            spotifyAuthService.disconnect(userId)
+        )
     }
 
     @GetMapping("/access-token")
-    suspend fun getAccessToken(authentication: Authentication): String {
+    suspend fun getAccessToken(exchange: ServerWebExchange): ResponseEntity<Map<String, String>> {
         logger.info { "Fetching Spotify access token" }
 
-        val userId = principalService.getUserId(authentication)
+        val userId = principalService.getUserId(exchange)
 
         val accessToken = spotifyAuthService.getAccessToken(userId)
 
-        return "{ \"accessToken\": \"$accessToken\" }"
+        return ResponseEntity.ok(
+            mapOf("accessToken" to accessToken)
+        )
     }
 
     @GetMapping("/me")
-    suspend fun getUserProfile(authentication: Authentication): SpotifyUserProfile? {
+    suspend fun getUserProfile(exchange: ServerWebExchange): ResponseEntity<SpotifyUserProfile> {
         logger.info { "Fetching Spotify user profile" }
 
-        val userId = principalService.getUserId(authentication)
+        val userId = principalService.getUserId(exchange)
 
-        return try {
+        return ResponseEntity.ok(
             spotifyAuthService.getUserProfile(userId)
-        } catch (e: SpotifyException) {
-            return null
-        }
+        )
     }
 }

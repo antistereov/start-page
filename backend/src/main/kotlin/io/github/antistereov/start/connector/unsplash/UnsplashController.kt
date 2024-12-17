@@ -5,8 +5,8 @@ import io.github.antistereov.start.connector.unsplash.model.UnsplashPhoto
 import io.github.oshai.kotlinlogging.KLogger
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.http.ResponseEntity
-import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.*
+import org.springframework.web.server.ServerWebExchange
 
 @RestController
 @RequestMapping("/unsplash")
@@ -20,14 +20,14 @@ class UnsplashController(
 
     @GetMapping("/photo")
     suspend fun getRandomPhoto(
-        authentication: Authentication,
+        exchange: ServerWebExchange,
         @RequestParam screenWidth: Int,
         @RequestParam screenHeight: Int,
         @RequestParam quality: Int = 75,
     ): ResponseEntity<UnsplashPhoto> {
         logger.info { "Executing Unsplash getRandomPhoto" }
 
-        val userId = principalService.getUserId(authentication)
+        val userId = principalService.getUserId(exchange)
 
         return ResponseEntity.ok(
             service.getRandomPhoto(userId, screenWidth, screenHeight, quality)
@@ -36,7 +36,7 @@ class UnsplashController(
 
     @GetMapping("/photo/{id}")
     suspend fun getPhoto(
-        authentication: Authentication,
+        exchange: ServerWebExchange,
         @PathVariable id: String,
         @RequestParam screenWidth: Int,
         @RequestParam screenHeight: Int,
@@ -44,7 +44,7 @@ class UnsplashController(
     ): ResponseEntity<UnsplashPhoto> {
         logger.info { "Executing Unsplash getPhoto method with id: $id" }
 
-        val userId = principalService.getUserId(authentication)
+        val userId = principalService.getUserId(exchange)
 
         return ResponseEntity.ok(
             service.getPhoto(userId, id, screenWidth, screenHeight, quality)
@@ -52,11 +52,13 @@ class UnsplashController(
     }
 
     @PostMapping("photo/{id}")
-    suspend fun likePhoto(authentication: Authentication,
-                          @PathVariable id: String): ResponseEntity<Map<String, String>> {
+    suspend fun likePhoto(
+        exchange: ServerWebExchange,
+        @PathVariable id: String
+    ): ResponseEntity<Map<String, String>> {
         logger.info { "Executing Unsplash likePhoto method with id: $id" }
 
-        val userId = principalService.getUserId(authentication)
+        val userId = principalService.getUserId(exchange)
 
         service.likePhoto(userId, id)
 
@@ -66,11 +68,11 @@ class UnsplashController(
     }
 
     @DeleteMapping("photo/{id}")
-    suspend fun unlikePhoto(authentication: Authentication,
+    suspend fun unlikePhoto(exchange: ServerWebExchange,
                             @PathVariable id: String): ResponseEntity<Map<String, String>> {
         logger.info { "Executing Unsplash unlikePhoto method with id: $id" }
 
-        val userId = principalService.getUserId(authentication)
+        val userId = principalService.getUserId(exchange)
         service.unlikePhoto(userId, id)
 
         return ResponseEntity.ok(
