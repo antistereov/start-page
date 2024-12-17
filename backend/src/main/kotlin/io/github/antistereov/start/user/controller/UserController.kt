@@ -1,22 +1,21 @@
 package io.github.antistereov.start.user.controller
 
-import io.github.antistereov.start.auth.service.PrincipalService
+import io.github.antistereov.start.auth.service.AuthenticationService
 import io.github.antistereov.start.user.model.UserDocument
 import io.github.antistereov.start.user.service.UserService
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
-import org.springframework.web.server.ServerWebExchange
 
 @RestController
 @RequestMapping
 class UserController(
     private val userService: UserService,
-    private val principalExtractor: PrincipalService,
+    private val principalExtractor: AuthenticationService,
 ) {
 
     @GetMapping("/me")
-    suspend fun getUserProfile(exchange: ServerWebExchange): ResponseEntity<UserDocument?> {
-        val userId = principalExtractor.getUserId(exchange)
+    suspend fun getUserProfile(): ResponseEntity<UserDocument?> {
+        val userId = principalExtractor.getCurrentUserId()
 
         // TODO: Catch null case
         return ResponseEntity.ok(
@@ -25,8 +24,8 @@ class UserController(
     }
 
     @DeleteMapping("/me")
-    suspend fun deleteUser(exchange: ServerWebExchange): ResponseEntity<Any> {
-        val userId = principalExtractor.getUserId(exchange)
+    suspend fun deleteUser(): ResponseEntity<Any> {
+        val userId = principalExtractor.getCurrentUserId()
         return ResponseEntity.ok(
             userService.delete(userId)
         )

@@ -1,6 +1,6 @@
 package io.github.antistereov.start.auth.service
 
-import io.github.antistereov.start.auth.model.SessionCookieData
+import io.github.antistereov.start.auth.model.UserSessionCookieData
 import io.github.antistereov.start.auth.exception.AuthException
 import io.github.antistereov.start.auth.exception.InvalidCredentialsException
 import io.github.antistereov.start.auth.properties.JwtProperties
@@ -14,7 +14,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
 
 @Service
-class AuthService(
+class UserSessionService(
     private val userService: UserService,
     private val tokenService: TokenService,
     private val hashService: HashService,
@@ -24,7 +24,7 @@ class AuthService(
     private val logger: KLogger
         get() = KotlinLogging.logger {}
 
-    suspend fun login(payload: LoginUserDto): SessionCookieData {
+    suspend fun login(payload: LoginUserDto): UserSessionCookieData {
         logger.debug { "Logging in user ${payload.username}" }
         val user = userService.findByUsername(payload.username)
             ?: throw InvalidCredentialsException()
@@ -39,13 +39,13 @@ class AuthService(
 
         logger.debug { "Successfully logged in user ${payload.username}" }
 
-        return SessionCookieData(
+        return UserSessionCookieData(
             accessToken = tokenService.createToken(user.id),
             expiresIn = jwtProperties.expiresIn,
         )
     }
 
-    suspend fun register(payload: RegisterUserDto): SessionCookieData {
+    suspend fun register(payload: RegisterUserDto): UserSessionCookieData {
         logger.debug { "Registering user ${payload.username}" }
 
         if (userService.existsByUsername(payload.username)) {
@@ -65,7 +65,7 @@ class AuthService(
 
         logger.debug { "Successfully registered user ${payload.username}" }
 
-        return SessionCookieData(
+        return UserSessionCookieData(
             accessToken = tokenService.createToken(savedUserDocument.id),
             expiresIn = jwtProperties.expiresIn,
         )

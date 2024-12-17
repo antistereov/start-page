@@ -1,7 +1,7 @@
 package io.github.antistereov.start.auth.controller
 
-import io.github.antistereov.start.auth.service.AuthService
-import io.github.antistereov.start.auth.service.PrincipalService
+import io.github.antistereov.start.auth.service.UserSessionService
+import io.github.antistereov.start.auth.service.AuthenticationService
 import io.github.antistereov.start.user.dto.LoginUserDto
 import io.github.antistereov.start.user.dto.RegisterUserDto
 import io.github.oshai.kotlinlogging.KLogger
@@ -13,13 +13,12 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
-import org.springframework.web.server.ServerWebExchange
 
 @RestController
 @RequestMapping("/api/auth")
-class AuthController(
-    private val authService: AuthService,
-    private val principalService: PrincipalService,
+class UserSessionController(
+    private val userSessionService: UserSessionService,
+    private val authenticationService: AuthenticationService,
 ) {
 
     private val logger: KLogger
@@ -29,7 +28,7 @@ class AuthController(
     suspend fun login(@RequestBody payload: LoginUserDto): ResponseEntity<Map<String, String>> {
         logger.info { "Executing login" }
 
-        val sessionCookieData = authService.login(payload)
+        val sessionCookieData = userSessionService.login(payload)
 
         val cookie = ResponseCookie.from("auth", sessionCookieData.accessToken)
             .httpOnly(true)
@@ -49,7 +48,7 @@ class AuthController(
     suspend fun register(@RequestBody payload: RegisterUserDto): ResponseEntity<Map<String, String>> {
         logger.info { "Executing register" }
 
-        val sessionCookieData = authService.register(payload)
+        val sessionCookieData = userSessionService.register(payload)
 
         val cookie = ResponseCookie.from("auth", sessionCookieData.accessToken)
             .httpOnly(true)
@@ -84,11 +83,11 @@ class AuthController(
     }
 
     @GetMapping("/check")
-    suspend fun checkAuthentication(exchange: ServerWebExchange): ResponseEntity<Map<String, String>> {
+    suspend fun checkAuthentication(): ResponseEntity<Map<String, String>> {
         logger.info { "Checking authentication" }
 
         return try {
-            val userId = principalService.getUserId(exchange)
+            val userId = authenticationService.getCurrentUserId()
             ResponseEntity.ok(mapOf("status" to "authenticated", "userId" to userId))
         } catch (ex: Exception) {
             ResponseEntity.status(401).body(mapOf("status" to "unauthenticated"))

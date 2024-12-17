@@ -1,28 +1,27 @@
 package io.github.antistereov.start.connector.unsplash.auth
 
-import io.github.antistereov.start.auth.service.PrincipalService
+import io.github.antistereov.start.auth.service.AuthenticationService
 import io.github.antistereov.start.connector.unsplash.auth.model.UnsplashPublicUserProfile
 import io.github.oshai.kotlinlogging.KLogger
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
-import org.springframework.web.server.ServerWebExchange
 
 @RestController
 @RequestMapping("/auth/unsplash")
 class UnsplashAuthController(
     private val service: UnsplashAuthService,
-    private val principalService: PrincipalService,
+    private val authenticationService: AuthenticationService,
 ) {
 
     private val logger: KLogger
         get() = KotlinLogging.logger {}
 
     @GetMapping
-    suspend fun connect(exchange: ServerWebExchange): ResponseEntity<Map<String, String>> {
+    suspend fun connect(): ResponseEntity<Map<String, String>> {
         logger.info { "Executing Unsplash connect method." }
 
-        val userId = principalService.getUserId(exchange)
+        val userId = authenticationService.getCurrentUserId()
         val authorizationUrl = service.getAuthorizationUrl(userId)
 
         logger.info { "Redirect URL created: $authorizationUrl" }
@@ -34,12 +33,11 @@ class UnsplashAuthController(
 
     @GetMapping("/me")
     suspend fun getPublicUserProfile(
-        exchange: ServerWebExchange,
         @RequestParam refresh: Boolean = false
     ): ResponseEntity<UnsplashPublicUserProfile> {
         logger.info { "Fetching public Unsplash user profile" }
 
-        val userId = principalService.getUserId(exchange)
+        val userId = authenticationService.getCurrentUserId()
 
         return if (refresh) {
             ResponseEntity.ok(
@@ -69,10 +67,10 @@ class UnsplashAuthController(
     }
 
     @DeleteMapping
-    suspend fun disconnect(exchange: ServerWebExchange): ResponseEntity<Any> {
+    suspend fun disconnect(): ResponseEntity<Any> {
         logger.info { "Executing Unsplash logout method." }
 
-        val userId = principalService.getUserId(exchange)
+        val userId = authenticationService.getCurrentUserId()
 
         return ResponseEntity.ok(
             service.disconnect(userId)
