@@ -1,6 +1,8 @@
 package io.github.antistereov.start.connector.unsplash
 
 import io.github.antistereov.start.connector.unsplash.auth.UnsplashAuthService
+import io.github.antistereov.start.connector.unsplash.model.UnsplashPhoto
+import io.github.antistereov.start.connector.unsplash.model.UnsplashPhotoApiResponse
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
@@ -19,8 +21,10 @@ class UnsplashService(
 
     suspend fun getRandomPhoto(
         userId: String,
-        params: Map<String, Any?> = emptyMap(),
-    ): String {
+        screenWidth: Int,
+        screenHeight: Int,
+        quality: Int,
+    ): UnsplashPhoto {
         logger.debug("Getting random photo for user $userId")
 
         val accessToken = unsplashAuthService.getAccessToken(userId)
@@ -28,18 +32,21 @@ class UnsplashService(
         val uri = UriComponentsBuilder.fromHttpUrl("${properties.apiBaseUrl}/photos/random")
             .queryParam("client_id", properties.clientId)
 
-        params.forEach { (key, value) ->
-            if (value != null) uri.queryParam(key, value)
-        }
-
         return webClient.get()
             .uri(uri.toUriString())
             .header("Authorization", "Bearer $accessToken")
             .retrieve()
-            .awaitBody()
+            .awaitBody<UnsplashPhotoApiResponse>()
+            .toUnsplashPhoto(screenWidth, screenHeight, quality)
     }
 
-    suspend fun getPhoto(userId: String, id: String): String {
+    suspend fun getPhoto(
+        userId: String,
+        id: String,
+        screenWidth: Int,
+        screenHeight: Int,
+        quality: Int,
+    ): UnsplashPhoto {
         logger.debug("Getting photo with id $id")
 
         val accessToken = unsplashAuthService.getAccessToken(userId)
@@ -52,10 +59,11 @@ class UnsplashService(
             .uri(uri)
             .header("Authorization", "Bearer $accessToken")
             .retrieve()
-            .awaitBody()
+            .awaitBody<UnsplashPhotoApiResponse>()
+            .toUnsplashPhoto(screenWidth, screenHeight, quality)
     }
 
-    suspend fun likePhoto(userId: String, photoId: String): String {
+    suspend fun likePhoto(userId: String, photoId: String) {
         logger.debug("Liking photo with id $photoId for user $userId")
 
         val uri = "${properties.apiBaseUrl}/photos/$photoId/like"
@@ -68,7 +76,7 @@ class UnsplashService(
             .awaitBody()
     }
 
-    suspend fun unlikePhoto(userId: String, photoId: String): String {
+    suspend fun unlikePhoto(userId: String, photoId: String) {
         logger.debug("Unliking photo with id $photoId for user $userId")
 
         val uri = "${properties.apiBaseUrl}/photos/$photoId/like"

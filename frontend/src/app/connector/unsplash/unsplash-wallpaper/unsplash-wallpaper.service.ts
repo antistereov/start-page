@@ -2,7 +2,6 @@ import { Injectable } from '@angular/core';
 import {WallpaperService} from '../../../components/shared/wallpaper/wallpaper.service';
 import {BehaviorSubject, map} from 'rxjs';
 import {UnsplashPhotoService} from '../unsplash-photo/unsplash-photo.service';
-import {RandomParams} from 'unsplash-js/dist/methods/photos';
 import {db, UnsplashWallpaper} from './unsplash-wallpaper-db.service';
 import {UnsplashPhoto} from '../unsplash-photo/unsplash-photo.model';
 
@@ -17,11 +16,6 @@ export class UnsplashWallpaperService {
 
     private currentWallpaperSubject = new BehaviorSubject<UnsplashPhoto | undefined>(undefined);
     currentWallpaper$ = this.currentWallpaperSubject.asObservable();
-
-    public randomParams: RandomParams = {
-        orientation: 'landscape',
-        contentFilter: 'low',
-    }
 
     constructor(
         private unsplashPhotoService: UnsplashPhotoService,
@@ -41,7 +35,7 @@ export class UnsplashWallpaperService {
 
             this.unsplashPhotoService.getPhoto(currentWallpaper.photoId).subscribe(photo => {
 
-                this.wallpaperService.setWallpaper(photo.urls.full);
+                this.wallpaperService.setWallpaper(photo.url);
 
                 this.isFirstSubject.next(counter === firstCounter);
                 this.isLastSubject.next(counter === lastCounter);
@@ -64,7 +58,7 @@ export class UnsplashWallpaperService {
             if (firstCounter) {
                 if (previousWallpaper) {
                     this.unsplashPhotoService.getPhoto(previousWallpaper.photoId).subscribe(photo => {
-                        this.wallpaperService.setWallpaper(photo.urls.full);
+                        this.wallpaperService.setWallpaper(photo.url);
 
                         this.setCounter(counter - 1);
 
@@ -88,7 +82,7 @@ export class UnsplashWallpaperService {
 
             if (nextWallpaper) {
                 this.unsplashPhotoService.getPhoto(nextWallpaper.photoId).subscribe(photo => {
-                    this.wallpaperService.setWallpaper(photo.urls.full);
+                    this.wallpaperService.setWallpaper(photo.url);
                     this.setCounter(counter + 1);
 
                     this.isFirstSubject.next(false)
@@ -105,7 +99,7 @@ export class UnsplashWallpaperService {
         const currentWallpaper = this.currentWallpaperSubject.value
 
         if (currentWallpaper) {
-            if (currentWallpaper.likedByUser) {
+            if (currentWallpaper.liked_by_user) {
                 this.unsplashPhotoService.unlikePhoto(currentWallpaper.id).subscribe(() => {
                     const updatedWallpaper = { ...currentWallpaper, likedByUser: false }
                     this.currentWallpaperSubject.next(updatedWallpaper);
@@ -120,12 +114,12 @@ export class UnsplashWallpaperService {
     }
 
     private getNewWallpaper() {
-        return this.unsplashPhotoService.getRandomPhoto(this.randomParams).pipe(
+        return this.unsplashPhotoService.getRandomPhoto().pipe(
             map((photo) => {
                 const wallpaper: UnsplashWallpaper = { dateAdded: new Date(), photoId: photo.id };
 
                 this.addNewWallpaper(wallpaper).then(() => {
-                    this.wallpaperService.setWallpaper(photo.urls.full);
+                    this.wallpaperService.setWallpaper(photo.url);
 
                     this.currentWallpaperSubject.next(photo);
 

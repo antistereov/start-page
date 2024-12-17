@@ -58,4 +58,19 @@ class UnsplashExceptionHandler {
 
         return ResponseEntity(errorResponse, HttpStatus.BAD_REQUEST)
     }
+
+    @ExceptionHandler(UnsplashInvalidParameterException::class)
+    suspend fun handleUnsplashInvalidParameterException(ex: UnsplashInvalidParameterException,
+                                                       exchange: ServerWebExchange): ResponseEntity<ErrorResponse> {
+        logger.error(ex) { "${ex.javaClass.simpleName} - ${ex.message}" }
+
+        val errorResponse = ErrorResponse(
+            status = HttpStatus.BAD_REQUEST.value(),
+            error = ex.javaClass.simpleName,
+            message = "Illegal request parameter: ${ex.message}",
+            path = exchange.request.uri.path
+        )
+
+        return ResponseEntity(errorResponse, HttpStatus.BAD_REQUEST)
+    }
 }

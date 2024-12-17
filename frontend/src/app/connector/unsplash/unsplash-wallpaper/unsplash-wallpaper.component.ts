@@ -39,10 +39,10 @@ export class UnsplashWallpaperComponent implements OnInit {
         });
         this.unsplashWallpaperService.currentWallpaper$.subscribe(currentWallpaper => {
             this.currentWallpaper = currentWallpaper;
-            this.likedByUser = currentWallpaper?.likedByUser;
+            this.likedByUser = currentWallpaper?.liked_by_user;
             this.userName = currentWallpaper?.user.name;
             this.userLink = currentWallpaper?.user.link;
-            this.photoLink = currentWallpaper?.links.html;
+            this.photoLink = currentWallpaper?.link;
         })
 
         this.unsplashWallpaperService.setCurrentWallpaper().then();

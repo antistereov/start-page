@@ -1,6 +1,7 @@
 package io.github.antistereov.start.connector.unsplash
 
 import io.github.antistereov.start.auth.service.PrincipalService
+import io.github.antistereov.start.connector.unsplash.model.UnsplashPhoto
 import io.github.oshai.kotlinlogging.KLogger
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.security.core.Authentication
@@ -19,25 +20,30 @@ class UnsplashController(
     @GetMapping("/photo")
     suspend fun getRandomPhoto(
         authentication: Authentication,
-        @RequestParam params: Map<String, Any?> = emptyMap()
-    ): String {
+        @RequestParam screenWidth: Int,
+        @RequestParam screenHeight: Int,
+        @RequestParam quality: Int = 75,
+    ): UnsplashPhoto {
         logger.info { "Executing Unsplash getRandomPhoto" }
 
         val userId = principalService.getUserId(authentication)
 
-        return service.getRandomPhoto(userId, params)
+        return service.getRandomPhoto(userId, screenWidth, screenHeight, quality)
     }
 
     @GetMapping("/photo/{id}")
     suspend fun getPhoto(
         authentication: Authentication,
-        @PathVariable id: String
-    ): String {
-        logger.info { "Executing Unsplash getPhoto method with id: ${id}" }
+        @PathVariable id: String,
+        @RequestParam screenWidth: Int,
+        @RequestParam screenHeight: Int,
+        @RequestParam quality: Int = 75,
+    ): UnsplashPhoto {
+        logger.info { "Executing Unsplash getPhoto method with id: $id" }
 
         val userId = principalService.getUserId(authentication)
 
-        return service.getPhoto(userId, id)
+        return service.getPhoto(userId, id, screenWidth, screenHeight, quality)
     }
 
     @PostMapping("photo/{id}")
@@ -46,14 +52,14 @@ class UnsplashController(
 
         val userId = principalService.getUserId(authentication)
 
-        return service.likePhoto(userId, id)
+        return "{ liked_by_user: ${service.likePhoto(userId, id)} }"
     }
 
     @DeleteMapping("photo/{id}")
-    suspend fun unlikePhoto(authentication: Authentication, @PathVariable id: String): String {
+    suspend fun unlikePhoto(authentication: Authentication, @PathVariable id: String) {
         logger.info { "Executing Unsplash unlikePhoto method with id: $id" }
 
         val userId = principalService.getUserId(authentication)
-        return service.unlikePhoto(userId, id)
+        service.unlikePhoto(userId, id)
     }
 }

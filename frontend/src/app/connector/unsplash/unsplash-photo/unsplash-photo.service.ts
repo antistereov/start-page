@@ -1,9 +1,8 @@
 import { Injectable } from '@angular/core';
-import {map, Observable} from 'rxjs';
+import {Observable} from 'rxjs';
 import {environment} from '../../../../environment/environment';
-import {FullWithLiked, toUnsplashPhoto, UnsplashPhoto} from './unsplash-photo.model';
-import {HttpClient} from '@angular/common/http';
-import {RandomParams} from 'unsplash-js/dist/methods/photos';
+import {UnsplashPhoto} from './unsplash-photo.model';
+import {HttpClient, HttpParams} from '@angular/common/http';
 
 @Injectable({
   providedIn: 'root'
@@ -12,37 +11,37 @@ export class UnsplashPhotoService {
 
     constructor(private httpClient: HttpClient) {}
 
-    getRandomPhoto(
-        randomParams: RandomParams,
-    ): Observable<UnsplashPhoto> {
+    getRandomPhoto(): Observable<UnsplashPhoto> {
         const uri = `${environment.baseUrl}/unsplash/photo`;
+        const screenWidth = screen.width;
+        const screenHeight = screen.height;
 
-        return this.httpClient.get<FullWithLiked>(uri, { params: paramsToHttpParams(randomParams) }).pipe(
-            map(result => {
-                return toUnsplashPhoto(result);
-            })
-        );
+        // TODO: Add search params and quality
+
+        const params = new HttpParams()
+            .set('screenWidth', screenWidth.toString())
+            .set('screenHeight', screenHeight.toString())
+
+        return this.httpClient.get<UnsplashPhoto>(uri, { params });
     }
 
     getPhoto(id: string): Observable<UnsplashPhoto> {
-        const uri = `${environment.baseUrl}/unsplash/photo/${id}`
+        const uri = `${environment.baseUrl}/unsplash/photo/${id}`;
+        const screenWidth = screen.width;
+        const screenHeight = screen.height;
 
-        return this.httpClient.get<FullWithLiked>(uri).pipe(
-            map(result => {
-                return toUnsplashPhoto(result);
-            })
-        )
+        const params = new HttpParams()
+            .set('screenWidth', screenWidth.toString())
+            .set('screenHeight', screenHeight.toString())
+
+        return this.httpClient.get<UnsplashPhoto>(uri, { params });
     }
 
-    likePhoto(id: string): Observable<boolean> {
+    likePhoto(id: string): Observable<any> {
         console.log(`Like photo ${id}`)
         const uri = `${environment.baseUrl}/unsplash/photo/${id}`;
 
-        return this.httpClient.post<any>(uri, null).pipe(
-            map(result => {
-                return result.liked_by_user;
-            })
-        )
+        return this.httpClient.post<any>(uri, null);
     }
 
     unlikePhoto(id: string): Observable<any> {
@@ -50,14 +49,4 @@ export class UnsplashPhotoService {
 
         return this.httpClient.delete(uri);
     }
-}
-
-function paramsToHttpParams(params: RandomParams): { [param: string]: string } {
-    return Object.entries(params)
-        .reduce((acc, [key, value]) => {
-            if (value !== undefined && value !== null) {
-                acc[key] = value.toString();
-            }
-            return acc;
-        }, {} as { [param: string]: string });
 }
