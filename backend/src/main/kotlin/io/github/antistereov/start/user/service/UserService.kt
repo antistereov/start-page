@@ -21,6 +21,12 @@ class UserService(
         return userRepository.findById(userId) ?: throw UserDoesNotExistException(userId)
     }
 
+    suspend fun findByIdOrNull(userId: String): UserDocument? {
+        logger.debug { "Finding user by ID: $userId" }
+
+        return userRepository.findById(userId)
+    }
+
     suspend fun findByUsername(username: String): UserDocument? {
         logger.debug { "Fetching user with username $username" }
 

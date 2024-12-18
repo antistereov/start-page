@@ -1,6 +1,7 @@
 package io.github.antistereov.start.auth.service
 
 import io.github.antistereov.start.auth.exception.AccessTokenExpiredException
+import io.github.antistereov.start.auth.exception.InvalidTokenException
 import io.github.antistereov.start.auth.properties.JwtProperties
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.springframework.security.oauth2.jwt.JwsHeader
@@ -31,16 +32,18 @@ class TokenService(
         return jwtEncoder.encode(JwtEncoderParameters.from(jwsHeader, claims)).tokenValue
     }
 
-    suspend fun getUserId(token: String): String? {
-        val jwt = jwtDecoder.decode(token).awaitFirstOrNull() ?: return null
-        val expiresAt = jwt.expiresAt ?: return null
+    suspend fun getUserId(token: String): String {
+        val jwt = jwtDecoder.decode(token).awaitFirstOrNull()
+            ?: throw InvalidTokenException("Cannot decode JWT")
+        val expiresAt = jwt.expiresAt
+            ?: throw InvalidTokenException("JWT does not contain expiration information")
 
         if (expiresAt <= Instant.now()) throw AccessTokenExpiredException("Access token is expired")
 
         return try {
             jwt.claims["sub"] as String
         } catch (e: NoSuchElementException) {
-            null
+            throw InvalidTokenException("JWT does not contain sub")
         }
     }
 }

@@ -28,7 +28,8 @@ class LoggingFilter : WebFilter {
                 logger.debug { "Outgoing response - $method $path - Status: $status" }
             }
             .onErrorResume { e ->
-                logger.warn { "Request failed    - $method $path - Error: ${e.message}" }
+                val status = exchange.response.statusCode
+                logger.warn { "Request failed    - $method $path - Status: $status - Error: ${e.message}" }
                 throw e
             }
     }

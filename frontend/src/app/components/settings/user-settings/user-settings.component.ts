@@ -38,6 +38,8 @@ export class UserSettingsComponent implements OnInit {
     }
 
     logout() {
-        this.authService.logout();
+        this.authService.logout().subscribe(() => {
+            this.router.navigate(['/login']).then(() => window.location.reload());
+        });
     }
 }

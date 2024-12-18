@@ -6,6 +6,7 @@ import io.github.antistereov.start.config.properties.FrontendProperties
 import io.github.antistereov.start.user.service.UserService
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.http.HttpStatus
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity
 import org.springframework.security.config.web.server.SecurityWebFiltersOrder
@@ -13,6 +14,9 @@ import org.springframework.security.config.web.server.ServerHttpSecurity
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.web.server.SecurityWebFilterChain
+import org.springframework.security.web.server.ServerAuthenticationEntryPoint
+import org.springframework.security.web.server.authentication.HttpStatusServerEntryPoint
+import org.springframework.security.web.server.context.NoOpServerSecurityContextRepository
 import org.springframework.web.cors.CorsConfiguration
 import org.springframework.web.cors.reactive.CorsConfigurationSource
 import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource
@@ -32,6 +36,11 @@ class WebSecurityConfig(
     }
 
     @Bean
+    fun authenticationEntryPoint(): ServerAuthenticationEntryPoint {
+        return HttpStatusServerEntryPoint(HttpStatus.UNAUTHORIZED)
+    }
+
+    @Bean
     fun filterChain(
         http: ServerHttpSecurity,
         userService: UserService,
@@ -39,6 +48,11 @@ class WebSecurityConfig(
         return http
             .csrf { it.disable() }
             .cors { it.configurationSource(corsConfigurationSource()) }
+            .httpBasic { it.disable() }
+            .formLogin { it.disable() }
+            .exceptionHandling {
+                it.authenticationEntryPoint(authenticationEntryPoint())
+            }
             .authorizeExchange {
                 it.pathMatchers(
                     "/auth/spotify/callback",
@@ -53,13 +67,14 @@ class WebSecurityConfig(
             }
             .addFilterBefore(loggingFilter, SecurityWebFiltersOrder.AUTHENTICATION)
             .addFilterBefore(cookieAuthenticationFilter, SecurityWebFiltersOrder.AUTHENTICATION)
+            .securityContextRepository(NoOpServerSecurityContextRepository.getInstance())
             .build()
     }
 
     @Bean
     fun corsConfigurationSource(): CorsConfigurationSource {
         val configuration = CorsConfiguration()
-        configuration.allowedOrigins = listOf(frontendProperties.baseUrl)  // Angular-Frontend
+        configuration.allowedOrigins = listOf(frontendProperties.baseUrl)
         configuration.allowedMethods = listOf("GET", "POST", "PUT", "DELETE", "OPTIONS")
         configuration.allowedHeaders = listOf("Authorization", "Content-Type")
         configuration.allowCredentials = true

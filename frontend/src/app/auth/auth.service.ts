@@ -14,7 +14,12 @@ export class AuthService {
     }
 
     logout(): Observable<any> {
-        return this.httpClient.post(`${this.baseUrl}/auth/logout`, {});
+        return this.httpClient.post(`${this.baseUrl}/auth/logout`, {}).pipe(
+            map(() => {
+                localStorage.clear();
+                sessionStorage.clear();
+            })
+        );
     }
 
     isLoggedIn(): Observable<boolean> {
