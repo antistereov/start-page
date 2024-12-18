@@ -1,6 +1,7 @@
 package io.github.antistereov.start.config
 
 import io.github.antistereov.start.auth.filter.CookieAuthenticationFilter
+import io.github.antistereov.start.auth.filter.LoggingFilter
 import io.github.antistereov.start.config.properties.FrontendProperties
 import io.github.antistereov.start.user.service.UserService
 import org.springframework.context.annotation.Bean
@@ -21,6 +22,7 @@ import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource
 @EnableMethodSecurity(prePostEnabled = true)
 class WebSecurityConfig(
     private val cookieAuthenticationFilter: CookieAuthenticationFilter,
+    private val loggingFilter: LoggingFilter,
     private val frontendProperties: FrontendProperties,
 ) {
 
@@ -48,6 +50,7 @@ class WebSecurityConfig(
                 ).permitAll()
                 it.anyExchange().authenticated()
             }
+            .addFilterBefore(loggingFilter, SecurityWebFiltersOrder.AUTHENTICATION)
             .addFilterBefore(cookieAuthenticationFilter, SecurityWebFiltersOrder.AUTHENTICATION)
             .build()
     }
