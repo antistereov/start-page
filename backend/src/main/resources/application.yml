@@ -21,7 +21,7 @@ jwt:
 
 logging:
   level:
-    io.github.antistereov.start: ${LOG_LEVEL:DEBUG}
+    io.github.antistereov.orbitab: ${LOG_LEVEL:DEBUG}
 
 spotify:
   service-name: Spotify
