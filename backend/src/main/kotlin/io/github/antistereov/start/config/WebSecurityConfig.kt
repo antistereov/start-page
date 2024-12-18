@@ -31,7 +31,6 @@ class WebSecurityConfig(
         return BCryptPasswordEncoder()
     }
 
-
     @Bean
     fun filterChain(
         http: ServerHttpSecurity,
@@ -46,7 +45,9 @@ class WebSecurityConfig(
                     "/auth/todoist/callback",
                     "/auth/unsplash/callback",
                     "/auth/instagram/callback",
-                    "/api/auth/**",
+                    "/auth/login",
+                    "/auth/logout",
+                    "/auth/check",
                 ).permitAll()
                 it.anyExchange().authenticated()
             }

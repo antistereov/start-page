@@ -7,7 +7,7 @@ import {catchError, map, Observable, of} from "rxjs";
 })
 export class AuthService {
     httpClient = inject(HttpClient);
-    baseUrl = 'http://localhost:8000/api';
+    baseUrl = 'http://localhost:8000';
 
     login(data: any): Observable<any> {
         return this.httpClient.post<any>(`${this.baseUrl}/auth/login`, data);
@@ -24,6 +24,3 @@ export class AuthService {
         );
     }
 }
-
-
-
