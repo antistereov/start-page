@@ -1,6 +1,5 @@
 package io.github.antistereov.orbitab.user.service
 
-import io.github.antistereov.orbitab.user.dto.DeviceInfoDto
 import io.github.antistereov.orbitab.user.exception.UserDoesNotExistException
 import io.github.antistereov.orbitab.user.model.DeviceInfo
 import io.github.antistereov.orbitab.user.model.UserDocument
@@ -53,11 +52,11 @@ class UserService(
         userRepository.deleteById(userId)
     }
 
-    suspend fun getDevices(userId: String): List<DeviceInfoDto> {
+    suspend fun getDevices(userId: String): List<DeviceInfo> {
         logger.debug { "Getting devices for user $userId" }
 
         val user = findById(userId)
-        return user.devices.map { it.toDto() }
+        return user.devices
     }
 
     suspend fun addOrUpdateDevice(userId: String, deviceInfo: DeviceInfo): UserDocument {
@@ -79,12 +78,7 @@ class UserService(
         logger.debug { "Deleting device $deviceId for user $userId" }
 
         val user = findById(userId)
-        val updatedDevices = user.devices.toMutableList()
-
-        val existingDevice = updatedDevices.find { it.deviceId == deviceId }
-        if (existingDevice != null) {
-            updatedDevices.remove(existingDevice)
-        }
+        val updatedDevices = user.devices.filterNot { it.deviceId == deviceId }
 
         return save(user.copy(devices = updatedDevices))
     }

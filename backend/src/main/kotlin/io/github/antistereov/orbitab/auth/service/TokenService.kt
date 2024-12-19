@@ -65,12 +65,8 @@ class TokenService(
         val user = userService.findByIdOrNull(userId)
             ?: throw InvalidTokenException("No user exists with user id provided in refresh token")
 
-        val savedRefreshToken = user.devices.firstOrNull { it.deviceId == deviceId }?.refreshToken
-            ?: throw InvalidTokenException("No refresh token saved for device provided in request")
-
-        if (savedRefreshToken != refreshToken) {
-            throw InvalidTokenException("Refresh token does not match saved refresh token for given device")
-        }
+        user.devices.firstOrNull { it.deviceId == deviceId }
+            ?: throw InvalidTokenException("Device not authorized")
 
         return userId
     }

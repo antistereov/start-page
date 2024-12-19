@@ -4,13 +4,15 @@ import io.github.antistereov.orbitab.auth.exception.AuthException
 import io.github.antistereov.orbitab.auth.exception.InvalidCredentialsException
 import io.github.antistereov.orbitab.auth.exception.InvalidTokenException
 import io.github.antistereov.orbitab.auth.properties.JwtProperties
+import io.github.antistereov.orbitab.auth.service.AuthenticationService
 import io.github.antistereov.orbitab.auth.service.HashService
 import io.github.antistereov.orbitab.auth.service.TokenService
 import io.github.antistereov.orbitab.config.properties.BackendProperties
+import io.github.antistereov.orbitab.service.geolocation.GeoLocationService
 import io.github.antistereov.orbitab.user.dto.LoginUserDto
 import io.github.antistereov.orbitab.user.dto.RegisterUserDto
 import io.github.antistereov.orbitab.user.exception.UsernameAlreadyExistsException
-import io.github.antistereov.orbitab.user.dto.DeviceInfoDto
+import io.github.antistereov.orbitab.user.dto.DeviceInfoRequestDto
 import io.github.antistereov.orbitab.user.model.DeviceInfo
 import io.github.antistereov.orbitab.user.model.UserDocument
 import io.github.oshai.kotlinlogging.KLogger
@@ -26,6 +28,8 @@ class UserSessionService(
     private val hashService: HashService,
     private val jwtProperties: JwtProperties,
     private val backendProperties: BackendProperties,
+    private val authenticationService: AuthenticationService,
+    private val geoLocationService: GeoLocationService,
 ) {
 
     private val logger: KLogger
@@ -68,6 +72,14 @@ class UserSessionService(
         return savedUserDocument.id
     }
 
+    suspend fun logout(deviceId: String): UserDocument {
+        val userId = authenticationService.getCurrentUserId()
+        val user = userService.findById(userId)
+        val updatedDevices = user.devices.filterNot { it.deviceId == deviceId }
+
+        return userService.save(user.copy(devices = updatedDevices))
+    }
+
     fun createAccessTokenCookie(userId: String): ResponseCookie {
         val accessToken = tokenService.createAccessToken(userId)
 
@@ -83,15 +95,30 @@ class UserSessionService(
         return cookie.build()
     }
 
-    suspend fun createRefreshTokenCookie(userId: String, deviceInfoDto: DeviceInfoDto): ResponseCookie {
+    suspend fun createRefreshTokenCookie(
+        userId: String,
+        deviceInfoDto: DeviceInfoRequestDto,
+        ipAddress: String?
+    ): ResponseCookie {
         val refreshToken = tokenService.createRefreshToken(userId, deviceInfoDto.deviceId)
+
+        val location = ipAddress?.let { geoLocationService.getLocation(it) }
 
         val deviceInfo = DeviceInfo(
             deviceId = deviceInfoDto.deviceId,
             browser = deviceInfoDto.browser,
             os = deviceInfoDto.os,
-            refreshToken = refreshToken,
             issuedAt = System.currentTimeMillis(),
+            ipAddress = ipAddress,
+            location = if (location != null) {
+                DeviceInfo.LocationInfo(
+                    location.latitude,
+                    location.longitude,
+                    location.cityName,
+                    location.regionName,
+                    location.countryCode
+                )
+            } else null,
         )
 
         userService.addOrUpdateDevice(userId, deviceInfo)
@@ -137,7 +164,7 @@ class UserSessionService(
         return cookie.build()
     }
 
-    suspend fun validateRefreshTokenAndGetUserId(exchange: ServerWebExchange, deviceInfoDto: DeviceInfoDto): String {
+    suspend fun validateRefreshTokenAndGetUserId(exchange: ServerWebExchange, deviceInfoDto: DeviceInfoRequestDto): String {
         val refreshToken = exchange.request.cookies["refresh_token"]?.firstOrNull()?.value
             ?: throw InvalidTokenException("No refresh token provided")
 
