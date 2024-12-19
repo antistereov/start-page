@@ -46,6 +46,6 @@ export class AuthService {
     }
 
     refreshToken(): Observable<any> {
-        return this.httpClient.post(`${this.baseUrl}/auth/refresh`, {});
+        return this.httpClient.post(`${this.baseUrl}/auth/refresh`, { deviceId: this.getDeviceId() });
     }
 }
