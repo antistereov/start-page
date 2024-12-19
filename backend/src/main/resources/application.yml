@@ -1,6 +1,10 @@
 server:
   port: 8000
 
+backend:
+  base-url: ${BACKEND_BASE_URL}
+  secure: ${SECURE:FALSE}
+
 frontend:
   base-url: ${FRONTEND_BASE_URL}
 

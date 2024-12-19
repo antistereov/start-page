@@ -1,6 +1,7 @@
 package io.github.antistereov.orbitab.config
 
 import io.github.antistereov.orbitab.auth.properties.JwtProperties
+import io.github.antistereov.orbitab.config.properties.BackendProperties
 import io.github.antistereov.orbitab.config.properties.EncryptionProperties
 import io.github.antistereov.orbitab.config.properties.FrontendProperties
 import io.github.antistereov.orbitab.connector.spotify.auth.SpotifyProperties
@@ -14,6 +15,7 @@ import org.springframework.scheduling.annotation.EnableScheduling
 @EnableConfigurationProperties(
     JwtProperties::class,
     EncryptionProperties::class,
+    BackendProperties::class,
     FrontendProperties::class,
     UnsplashProperties::class,
     SpotifyProperties::class,

@@ -6,6 +6,7 @@ import io.github.antistereov.orbitab.auth.exception.InvalidTokenException
 import io.github.antistereov.orbitab.auth.properties.JwtProperties
 import io.github.antistereov.orbitab.auth.service.HashService
 import io.github.antistereov.orbitab.auth.service.TokenService
+import io.github.antistereov.orbitab.config.properties.BackendProperties
 import io.github.antistereov.orbitab.user.dto.LoginUserDto
 import io.github.antistereov.orbitab.user.dto.RegisterUserDto
 import io.github.antistereov.orbitab.user.exception.UsernameAlreadyExistsException
@@ -24,6 +25,7 @@ class UserSessionService(
     private val tokenService: TokenService,
     private val hashService: HashService,
     private val jwtProperties: JwtProperties,
+    private val backendProperties: BackendProperties,
 ) {
 
     private val logger: KLogger
@@ -69,14 +71,16 @@ class UserSessionService(
     fun createAccessTokenCookie(userId: String): ResponseCookie {
         val accessToken = tokenService.createAccessToken(userId)
 
-        return ResponseCookie.from("access_token", accessToken)
+        val cookie = ResponseCookie.from("access_token", accessToken)
             .httpOnly(true)
             .sameSite("Strict")
-            // TODO: Add this for production
-            // .secure(true)
             .maxAge(jwtProperties.expiresIn)
             .path("/")
-            .build()
+
+        if (backendProperties.secure) {
+            cookie.secure(true)
+        }
+        return cookie.build()
     }
 
     suspend fun createRefreshTokenCookie(userId: String, deviceInfoDto: DeviceInfoDto): ResponseCookie {
@@ -92,35 +96,45 @@ class UserSessionService(
 
         userService.addOrUpdateDevice(userId, deviceInfo)
 
-        return ResponseCookie.from("refresh_token", refreshToken)
+        val cookie = ResponseCookie.from("refresh_token", refreshToken)
             .httpOnly(true)
             .sameSite("Strict")
-            // TODO: Add this for production
-            // .secure(true)
             .path("/auth/refresh")
-            .build()
+
+        if (backendProperties.secure) {
+            cookie.secure(true)
+        }
+
+        return cookie.build()
     }
 
     fun clearAccessTokenCookie(): ResponseCookie {
-        return ResponseCookie.from("access_token", "")
+        val cookie = ResponseCookie.from("access_token", "")
             .httpOnly(true)
             .sameSite("Strict")
-            // TODO: Add this for production
-            // .secure(true)
             .maxAge(0)
             .path("/")
-            .build()
+
+        if (backendProperties.secure) {
+            cookie.secure(true)
+        }
+
+        return cookie.build()
+
     }
 
     fun clearRefreshTokenCookie(): ResponseCookie {
-        return ResponseCookie.from("refresh_token", "")
+        val cookie = ResponseCookie.from("refresh_token", "")
             .httpOnly(true)
             .sameSite("Strict")
-            // TODO: Add this for production
-            // .secure(true)
             .maxAge(0)
             .path("/auth/refresh")
-            .build()
+
+        if (backendProperties.secure) {
+            cookie.secure(true)
+        }
+
+        return cookie.build()
     }
 
     suspend fun validateRefreshTokenAndGetUserId(exchange: ServerWebExchange, deviceInfoDto: DeviceInfoDto): String {
