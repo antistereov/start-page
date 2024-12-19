@@ -10,7 +10,14 @@ export class AuthService {
     baseUrl = 'http://localhost:8000';
 
     login(data: any): Observable<any> {
-        return this.httpClient.post<any>(`${this.baseUrl}/auth/login`, data);
+        const payload = {
+            ...data,
+            deviceInfoDto: {
+                deviceId: this.getDeviceId(),
+            }
+        };
+
+        return this.httpClient.post<any>(`${this.baseUrl}/auth/login`, payload);
     }
 
     logout(): Observable<any> {
@@ -27,5 +34,18 @@ export class AuthService {
             map((response) => response.status === 'authenticated'),
             catchError(() => of(false))
         );
+    }
+
+    private getDeviceId(): string {
+        let deviceId = localStorage.getItem('device_id');
+        if (!deviceId) {
+            deviceId = 'device-' + Math.random().toString(36).substring(2) + Date.now().toString(36);
+            localStorage.setItem('device_id', deviceId);
+        }
+        return deviceId;
+    }
+
+    refreshToken(): Observable<any> {
+        return this.httpClient.post(`${this.baseUrl}/auth/refresh`, {});
     }
 }
