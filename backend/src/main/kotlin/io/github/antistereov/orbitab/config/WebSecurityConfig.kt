@@ -60,6 +60,7 @@ class WebSecurityConfig(
                     "/auth/unsplash/callback",
                     "/auth/instagram/callback",
                     "/auth/login",
+                    "/auth/refresh",
                     "/auth/logout",
                     "/auth/check",
                 ).permitAll()
