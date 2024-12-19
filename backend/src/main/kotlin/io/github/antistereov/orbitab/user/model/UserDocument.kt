@@ -12,4 +12,5 @@ data class UserDocument(
     val password: String,
     val roles: List<Role> = listOf(Role.USER),
     val connectors: ConnectorInformation? = null,
+    val devices: List<DeviceInfo> = listOf(),
 )

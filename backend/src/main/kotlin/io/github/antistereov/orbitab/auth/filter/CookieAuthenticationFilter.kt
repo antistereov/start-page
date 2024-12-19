@@ -25,7 +25,7 @@ class CookieAuthenticationFilter(
         val authToken = extractTokenFromRequest(exchange)
 
         if (!authToken.isNullOrBlank()) {
-            val userId = tokenService.getUserId(authToken)
+            val userId = tokenService.validateAccessTokenAndGetUserId(authToken)
 
             val user = userService.findByIdOrNull(userId)
                 ?: throw InvalidTokenException("Access token belongs to user that does not exist")
@@ -51,6 +51,6 @@ class CookieAuthenticationFilter(
     private fun extractTokenFromRequest(exchange: ServerWebExchange): String? {
         return exchange.request.headers["Authorization"]
             ?.firstOrNull()?.removePrefix("Bearer ")
-            ?: exchange.request.cookies["auth"]?.firstOrNull()?.value
+            ?: exchange.request.cookies["access_token"]?.firstOrNull()?.value
     }
 }

@@ -1,0 +1,134 @@
+package io.github.antistereov.orbitab.user.service
+
+import io.github.antistereov.orbitab.auth.exception.AuthException
+import io.github.antistereov.orbitab.auth.exception.InvalidCredentialsException
+import io.github.antistereov.orbitab.auth.exception.InvalidTokenException
+import io.github.antistereov.orbitab.auth.properties.JwtProperties
+import io.github.antistereov.orbitab.auth.service.HashService
+import io.github.antistereov.orbitab.auth.service.TokenService
+import io.github.antistereov.orbitab.user.dto.LoginUserDto
+import io.github.antistereov.orbitab.user.dto.RegisterUserDto
+import io.github.antistereov.orbitab.user.exception.UsernameAlreadyExistsException
+import io.github.antistereov.orbitab.user.dto.DeviceInfoDto
+import io.github.antistereov.orbitab.user.model.DeviceInfo
+import io.github.antistereov.orbitab.user.model.UserDocument
+import io.github.oshai.kotlinlogging.KLogger
+import io.github.oshai.kotlinlogging.KotlinLogging
+import org.springframework.http.ResponseCookie
+import org.springframework.stereotype.Service
+import org.springframework.web.server.ServerWebExchange
+
+@Service
+class UserSessionService(
+    private val userService: UserService,
+    private val tokenService: TokenService,
+    private val hashService: HashService,
+    private val jwtProperties: JwtProperties,
+) {
+
+    private val logger: KLogger
+        get() = KotlinLogging.logger {}
+
+    suspend fun checkCredentialsAndGetUserId(payload: LoginUserDto): String {
+        logger.debug { "Logging in user ${payload.username}" }
+        val user = userService.findByUsername(payload.username)
+            ?: throw InvalidCredentialsException()
+
+        if (!hashService.checkBcrypt(payload.password, user.password)) {
+            throw InvalidCredentialsException()
+        }
+
+        if (user.id == null) {
+            throw AuthException("Login failed: UserDocument contains no id")
+        }
+
+        return user.id
+    }
+
+    suspend fun registerUserAndGetUserId(payload: RegisterUserDto): String {
+        logger.debug { "Registering user ${payload.username}" }
+
+        if (userService.existsByUsername(payload.username)) {
+            throw UsernameAlreadyExistsException("Failed to register user ${payload.username}")
+        }
+
+        val userDocument = UserDocument(
+            username = payload.username,
+            password = hashService.hashBcrypt(payload.password)
+        )
+
+        val savedUserDocument = userService.save(userDocument)
+
+        if (savedUserDocument.id == null) {
+            throw AuthException("Login failed: UserDocument contains no id")
+        }
+
+        return savedUserDocument.id
+    }
+
+    fun createAccessTokenCookie(userId: String): ResponseCookie {
+        val accessToken = tokenService.createAccessToken(userId)
+
+        return ResponseCookie.from("access_token", accessToken)
+            .httpOnly(true)
+            .sameSite("Strict")
+            // TODO: Add this for production
+            // .secure(true)
+            .maxAge(jwtProperties.expiresIn)
+            .path("/")
+            .build()
+    }
+
+    suspend fun createRefreshTokenCookie(userId: String, deviceInfoDto: DeviceInfoDto): ResponseCookie {
+        val refreshToken = tokenService.createRefreshToken(userId, deviceInfoDto.deviceId)
+
+        val deviceInfo = DeviceInfo(
+            deviceId = deviceInfoDto.deviceId,
+            browser = deviceInfoDto.browser,
+            os = deviceInfoDto.os,
+            refreshToken = refreshToken,
+            issuedAt = System.currentTimeMillis(),
+        )
+
+        userService.addOrUpdateDevice(userId, deviceInfo)
+
+        return ResponseCookie.from("refresh_token", refreshToken)
+            .httpOnly(true)
+            .sameSite("Strict")
+            // TODO: Add this for production
+            // .secure(true)
+            .path("/auth/refresh")
+            .build()
+    }
+
+    fun clearAccessTokenCookie(): ResponseCookie {
+        return ResponseCookie.from("access_token", "")
+            .httpOnly(true)
+            .sameSite("Strict")
+            // TODO: Add this for production
+            // .secure(true)
+            .maxAge(0)
+            .path("/")
+            .build()
+    }
+
+    fun clearRefreshTokenCookie(): ResponseCookie {
+        return ResponseCookie.from("refresh_token", "")
+            .httpOnly(true)
+            .sameSite("Strict")
+            // TODO: Add this for production
+            // .secure(true)
+            .maxAge(0)
+            .path("/auth/refresh")
+            .build()
+    }
+
+    suspend fun validateRefreshTokenAndGetUserId(exchange: ServerWebExchange, deviceInfoDto: DeviceInfoDto): String {
+        val refreshToken = exchange.request.cookies["refresh_token"]?.firstOrNull()?.value
+            ?: throw InvalidTokenException("No refresh token provided")
+
+        val userId = tokenService.validateRefreshTokenAndGetUserId(refreshToken, deviceInfoDto.deviceId)
+
+        return userId
+    }
+}
